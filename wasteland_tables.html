@@ -43,8 +43,8 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>Генератор з ігрових таблиць</h1>
-    <p class="tiny">Кістки: великі таблиці — <b>2d6</b> (1-й кубик → стовпчик, 2-й → ряд), малі — <b>d10</b>. Нагороди за справи — <b>d6</b>.</p>
+    <h1>Генератор натхнення</h1>
+    <p class="tiny">Генератори всього чого завгодно для настільної рольової гри "Пустельники".</p>
 
     <div class="grid">
       <!-- Нагороди (d10) -->
@@ -58,7 +58,7 @@
               <option value="large">Велика</option>
             </select>
           </label>
-          <button onclick="generateAward()">Кинути d10</button>
+          <button onclick="generateAward()">Генерувати</button>
           <button class="secondary" onclick="copyOut('awardsOut')">Копіювати</button>
         </div>
         <div class="out" id="awardsOut"></div>
@@ -76,7 +76,7 @@
               <option value="hard">Важка (до 35 кришок)</option>
             </select>
           </label>
-          <button onclick="generateJobAward()">Кинути d6</button>
+          <button onclick="generateJobAward()">Генерувати</button>
           <button class="secondary" onclick="copyOut('jobAwardsOut')">Копіювати</button>
         </div>
         <div class="out" id="jobAwardsOut"></div>
@@ -86,7 +86,7 @@
       <div class="card">
         <h2>Вантажі (2d6)</h2>
         <div class="row">
-          <button onclick="roll2d6Table('cargo', 'cargoOut')">Кинути 2d6</button>
+          <button onclick="roll2d6Table('cargo', 'cargoOut')">Генерувати</button>
           <button class="secondary" onclick="copyOut('cargoOut')">Копіювати</button>
         </div>
         <div class="out" id="cargoOut"></div>
@@ -96,7 +96,7 @@
       <div class="card">
         <h2>Обʼєкти та місця в Пустці (2d6)</h2>
         <div class="row">
-          <button onclick="roll2d6Table('places', 'placesOut')">Кинути 2d6</button>
+          <button onclick="roll2d6Table('places', 'placesOut')">Генерувати</button>
           <button class="secondary" onclick="copyOut('placesOut')">Копіювати</button>
         </div>
         <div class="out" id="placesOut"></div>
@@ -106,7 +106,7 @@
       <div class="card">
         <h2>Небезпеки Пустки (2d6)</h2>
         <div class="row">
-          <button onclick="roll2d6Table('hazards', 'hazardsOut')">Кинути 2d6</button>
+          <button onclick="roll2d6Table('hazards', 'hazardsOut')">Генерувати</button>
           <button class="secondary" onclick="copyOut('hazardsOut')">Копіювати</button>
         </div>
         <div class="out" id="hazardsOut"></div>
@@ -116,7 +116,7 @@
       <div class="card">
         <h2>Теми (2d6)</h2>
         <div class="row">
-          <button onclick="roll2d6Table('themes', 'themesOut')">Кинути 2d6</button>
+          <button onclick="roll2d6Table('themes', 'themesOut')">Генерувати</button>
           <button class="secondary" onclick="copyOut('themesOut')">Копіювати</button>
         </div>
         <div class="out" id="themesOut"></div>
@@ -126,7 +126,7 @@
       <div class="card">
         <h2>Люди (2d6)</h2>
         <div class="row">
-          <button onclick="roll2d6Table('people', 'peopleOut')">Кинути 2d6</button>
+          <button onclick="roll2d6Table('people', 'peopleOut')">Генерувати</button>
           <button class="secondary" onclick="copyOut('peopleOut')">Копіювати</button>
         </div>
         <div class="out" id="peopleOut"></div>
@@ -136,7 +136,7 @@
       <div class="card">
         <h2>Рейдери та дикуни (d10 × 4)</h2>
         <div class="row">
-          <button onclick="generateRaiders()">Згенерувати племʼя</button>
+          <button onclick="generateRaiders()">Генерувати племʼя</button>
           <button class="secondary" onclick="copyOut('raidersOut')">Копіювати</button>
         </div>
         <div class="out" id="raidersOut"></div>
@@ -157,7 +157,7 @@
               <option value="place">Місце</option>
             </select>
           </label>
-          <button onclick="generateEpithet()">Кинути d10</button>
+          <button onclick="generateEpithet()">Генерувати</button>
           <button class="secondary" onclick="copyOut('epitOut')">Копіювати</button>
         </div>
         <div class="out" id="epitOut"></div>
@@ -175,7 +175,7 @@
               <option value="women46">Люди/Гулі (жін.) — стовпчик 4–6</option>
             </select>
           </label>
-          <button onclick="generateName()">Кинути d10</button>
+          <button onclick="generateName()">Генерувати</button>
           <button class="secondary" onclick="copyOut('namesOut')">Копіювати</button>
         </div>
         <div class="out" id="namesOut"></div>
@@ -194,7 +194,7 @@
               <option value="dcFemales">Пазурі Смерті — самиці (d10)</option>
             </select>
           </label>
-          <button onclick="generateExtraName()">Кинути d10</button>
+          <button onclick="generateExtraName()">Генерувати</button>
           <button class="secondary" onclick="copyOut('namesExtraOut')">Копіювати</button>
         </div>
         <div class="out" id="namesExtraOut"></div>
@@ -380,3 +380,4 @@ function copyOut(id){
 </script>
 </body>
 </html>
+
