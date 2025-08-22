@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор Каравану</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c1810 0%, #8b4513 50%, #cd853f 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid #cd853f;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffd700;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            font-weight: bold;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #cd853f;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .main-button {
+            display: block;
+            width: 300px;
+            margin: 0 auto 30px;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #8b4513, #cd853f);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-button:hover {
+            background: linear-gradient(45deg, #cd853f, #ffd700);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .caravan-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(139, 69, 19, 0.3);
+            border: 1px solid #cd853f;
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-title {
+            color: #ffd700;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #cd853f;
+            padding-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .story-section {
+            margin-top: 30px;
+        }
+
+        .story-item {
+            background: rgba(205, 133, 63, 0.2);
+            border-left: 4px solid #ffd700;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+            position: relative;
+        }
+
+        .story-question {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .story-answer {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .reroll-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #8b4513;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reroll-btn:hover {
+            background: #cd853f;
+            transform: rotate(180deg);
+        }
+
+        .improvements-section {
+            margin-top: 30px;
+            background: rgba(139, 69, 19, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #cd853f;
+            position: relative;
+        }
+
+        .improvement-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 3px solid #ffd700;
+        }
+
+        .improvement-name {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .improvement-desc {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .karma-reputation {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .karma-item, .reputation-item {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #cd853f;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .karma-reputation {
+                grid-template-columns: 1fr;
+            }
+            
+            .caravan-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚛 Генератор Каравану 🚛</h1>
+        <div class="subtitle">Генератор каравану для настільної рольової гри "Пустельники"</div>
+        
+        <button class="main-button" onclick="generateCaravan()">Створити Новий Караван</button>
+        
+        <div id="caravan-content" style="display: none;">
+            <div class="caravan-stats">
+                <div class="stat-card">
+                    <div class="stat-title">Характеристики Каравану</div>
+                    <div class="stat-value">Макс. ОЗ: <span id="max-hp"></span></div>
+                    <div class="stat-value">Броня: <span id="armor"></span></div>
+                    <div class="stat-value">Запас ходу: <span id="movement"></span></div>
+                    <div class="stat-value">Бюджет кришок: <span id="budget"></span></div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-title">Назва Компанії</div>
+                    <div class="stat-value" id="company-name-display"></div>
+                    <button class="reroll-btn" onclick="rerollCompanyName()" title="Перегенерувати назву">🎲</button>
+                </div>
+            </div>
+
+            <div class="improvements-section">
+                <div class="stat-title">Покращення Каравану</div>
+                <button class="reroll-btn" onclick="rerollImprovements()" title="Перегенерувати покращення">🎲</button>
+                <div id="improvements-list"></div>
+            </div>
+
+            <div class="story-section">
+                <div class="story-item">
+                    <button class="reroll-btn" onclick="rerollMeeting()" title="Перегенерувати">🎲</button>
+                    <div class="story-question">Як ви познайомились?</div>
+                    <div class="story-answer" id="meeting-answer"></div>
+                </div>
+
+                <div class="story-item">
+                    <button class="reroll-btn" onclick="rerollLastJob()" title="Перегенерувати">🎲</button>
+                    <div class="story-question">Яку останню справу ви провернули разом?</div>
+                    <div class="story-answer" id="last-job-answer"></div>
+                </div>
+
+                <div class="story-item">
+                    <button class="reroll-btn" onclick="rerollWentWrong()" title="Перегенерувати">🎲</button>
+                    <div class="story-question">Що пішло не так в останній справі?</div>
+                    <div class="story-answer" id="went-wrong-answer"></div>
+                </div>
+            </div>
+
+            <div class="karma-reputation">
+                <div class="karma-item">
+                    <div class="stat-title">Карма</div>
+                    <button class="reroll-btn" onclick="rerollKarma()" title="Перегенерувати карму">🎲</button>
+                    <div class="stat-value" id="karma-value"></div>
+                    <div class="stat-value" id="karma-aspect"></div>
+                </div>
+                
+                <div class="reputation-item">
+                    <div class="stat-title">Репутація</div>
+                    <div class="stat-value">ніхто й звати ніяк</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const improvements = [
+            { name: "Додаткова броня", desc: "дає каравану +2 броні." },
+            { name: "Посилена конструкція", desc: "дає каравану +10 ОЗ. Це покращення можна брати до трьох разів." },
+            { name: "Додаткове місце для корму (палива)", desc: "збільшує запас ходу на 5 клітин. Можна взяти до двох разів." },
+            { name: "Турель", desc: "у вашого каравану є стаціонарна турель. Вона вважається важкою зброєю (2d6 шкоди в бою на відстані), але її може використовувати будь-який персонаж, навіть той, хто й підняти цю гармату не міг би." },
+            { name: "Амбразури", desc: "ваш караван можна використовувати як укриття у бою. Якщо ви ховаєтеся за амбразурами, коли отримуєте шкоду, можете вибрати, хто отримає шкоду --- ви чи караван." },
+            { name: "Спостережне гніздо", desc: "при подорожах той, хто робить перевірку подорожі, отримує +1, якщо він знаходиться у гнізді." },
+            { name: "Породисті браміни (або паливний регулятор, якщо у вас тачка)", desc: "перед подорожжю оберіть одне з двох: шлях займає на чверть менше часу або караван витрачає на чверть менше запасу ходу (округлюючи вгору). Якщо у когось із персонажів є перк «Першопроходець» --- цей бонус зростає до половини часу або половини запасу ходу (округлюючи вгору)." },
+            { name: "Скринька з Припасами", desc: "дає вашому каравану місце для зберігання 3 одиниць Припасів. Можна взяти до двох разів." },
+            { name: "Збільшений багажник", desc: "дозволяє взяти вдвічі більше корисного вантажу або вантаж нестандартних розмірів (до 3 кубічних метрів). Це покращення можна взяти до двох разів. Друге покращення збільшить корисний об'єм до 6 кубічних метрів." },
+            { name: "Поліпшена кабіна для пасажирів", desc: "укріплена кабіна з комфортним спальним місцем для двох людей. Чимало заможних клієнтів не погодяться подорожувати з вами, якщо у вас такої немає. Забезпечує пасажирам повну безпеку, крім випадків, коли караван повністю знищують вогнем." },
+            { name: "Свинцева обшивка", desc: "дозволяє вашому каравану подорожувати радіоактивними місцинами, з половинною шкодою (округлюючи вгору) для всіх персонажів. Без цього покращення багато пасажирів відмовляться подорожувати з вашим караваном, якщо маршрут проходитиме зараженими місцями." },
+            { name: "Ліжко для хворого", desc: "окреме ліжко з медичним обладнанням, яке сильно покращує шанси на виживання для того, кому не пощастило. Вміщує одного персонажа. Персонаж, який відпочиває на ліжку для хворого, за витрату одиниці Припасів відновлює всі ОЗ замість половини. Також якщо персонажа лікують на ліжку для хворих, медик отримує +1 до перевірки." }
+        ];
+
+        const meetingOptions = [
+            "Після бурхливої пиятики в барі, що завершилася грандіозною бійкою та набуттям кревної ворожнечі (з ким?)",
+            "Власник каравану (один з персонажів гравців) підібрав нас у Пустці. Інакше ми б померли.",
+            "Ми напали на тих, на кого не слід (на кого?)",
+            "Разом ми програли в казино все до останньої копійчини і тепер повинні відпрацювати борг (який?)",
+            "У нас усіх є спільний друг (хто?)",
+            "Нас разом найняли виконати справу (яку?). Після неї ми вирішили стати командою.",
+            "Ми всі втекли з одного і того ж рабовласницького табору в один день і допомогли один одному вижити.",
+            "Під час торгової угоди нас обманули одні і ті ж шахраї, тому ми об'єдналися, щоб помститися.",
+            "Ми зустрілися під час мародерства на руїнах довоєнного міста (якого?) і вирішили працювати разом.",
+            "Радіаційна буря застала нас усіх у тому ж укритті, де ми провели три дні, ділячись припасами та історіями."
+        ];
+
+        const lastJobOptions = [
+            "Ми доставили небезпечний вантаж (який?) у рекордний строк.",
+            "Ми пограбували впливову шишку однієї з фракцій (кого?).",
+            "Ми влаштували полювання на небезпечного мутанта (якого?).",
+            "Ми проникли на покинутий довоєнний об'єкт (який?).",
+            "Ми взялися за перевезення важливої особи (кого?).",
+            "Нам замовили знайти і доставити одну рідкісну річ (яку?).",
+            "Ми організували ескорт торгового каравану через небезпечну територію рейдерів.",
+            "Нас найняли очистити водяну свердловину від мутантів, що в ній оселилися.",
+            "Ми допомогли евакуювати мирних жителів з міста під час штурму супермутантів.",
+            "Нам доручили знайти та повернути викрадену технологію Братства Сталі."
+        ];
+
+        const wentWrongOptions = [
+            "Нам не заплатили, замовник змився. Він все ще винен нам грошей.",
+            "Проста справа обернулася битвою, з якої ми ледве врятувались.",
+            "Замовник намагався нас підставити.",
+            "Ми вкрали щось важливе і тепер на нас полюють.",
+            "Ми дізнались щось, чого нам не слід було знати.",
+            "Ми натрапили на найманців, яким заплатили, щоб нас здихатися.",
+            "Один з членів команди був таємним агентом ворожої фракції і майже зірвав операцію.",
+            "Радіаційна буря застала нас у найгірший момент, і ми втратили половину обладнання.",
+            "Виявилося, що вантаж був заражений смертельним вірусом, і тепер нас шукає Анклав.",
+            "Ми випадково привели за собою зграю дикунів, які розорили поселення наших замовників."
+        ];
+
+        const companyNames = [
+            "Баба-З-Возу", "Стара Пошта", "Смерть на Колесах", "Джагернаут", "П'яте Колесо", "Голво",
+            "Залізний Верблюд", "Пустельні Вовки", "Кров та Іржа", "Останній Шанс", "Ядерний Експрес",
+            "Браміни та Браття", "Червоний Піщаний Вихор", "Метал і Попіл", "Швидкий Атом", "Чорна Дорога",
+            "Вантажні Привиди", "Токсичний Транзит", "Сталеві Кочівники", "Радіаційні Рейдери"
+        ];
+
+        let currentCaravan = {};
+
+        function rollDice(sides) {
+            return Math.floor(Math.random() * sides) + 1;
+        }
+
+        function getRandomImprovements() {
+            const shuffled = [...improvements].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, 2);
+        }
+
+        function calculateStats(improvements) {
+            let maxHP = 25;
+            let armor = 1;
+            let movement = 10;
+
+            improvements.forEach(imp => {
+                if (imp.name === "Посилена конструкція") maxHP += 10;
+                if (imp.name === "Додаткова броня") armor += 2;
+                if (imp.name === "Додаткове місце для корму (палива)") movement += 5;
+            });
+
+            return { maxHP, armor, movement };
+        }
+
+        function generateCaravan() {
+            const selectedImprovements = getRandomImprovements();
+            const stats = calculateStats(selectedImprovements);
+            const budget = rollDice(6) + 4;
+            
+            const randomMeeting = meetingOptions[Math.floor(Math.random() * meetingOptions.length)];
+            const randomLastJob = lastJobOptions[Math.floor(Math.random() * lastJobOptions.length)];
+            const randomWentWrong = wentWrongOptions[Math.floor(Math.random() * wentWrongOptions.length)];
+            
+            const karmaRoll = rollDice(6);
+            let karmaValue, karmaAspect;
+            if (karmaRoll === 1) {
+                karmaValue = -5;
+                karmaAspect = "темні особи";
+            } else if (karmaRoll >= 2 && karmaRoll <= 4) {
+                karmaValue = 0;
+                karmaAspect = "прості волоцюги";
+            } else {
+                karmaValue = +5;
+                karmaAspect = "гідні люди";
+            }
+
+            currentCaravan = {
+                improvements: selectedImprovements,
+                stats: stats,
+                budget: budget,
+                story: { 
+                    meeting: randomMeeting,
+                    lastJob: randomLastJob,
+                    wentWrong: randomWentWrong,
+                    companyName: companyNames[Math.floor(Math.random() * companyNames.length)]
+                },
+                karma: { value: karmaValue, aspect: karmaAspect }
+            };
+
+            displayCaravan();
+        }
+
+        function displayCaravan() {
+            document.getElementById('caravan-content').style.display = 'block';
+            
+            document.getElementById('max-hp').textContent = currentCaravan.stats.maxHP;
+            document.getElementById('armor').textContent = currentCaravan.stats.armor;
+            document.getElementById('movement').textContent = currentCaravan.stats.movement;
+            document.getElementById('budget').textContent = currentCaravan.budget;
+            
+            document.getElementById('company-name-display').textContent = currentCaravan.story.companyName;
+            
+            const improvementsList = document.getElementById('improvements-list');
+            improvementsList.innerHTML = '';
+            currentCaravan.improvements.forEach(imp => {
+                const div = document.createElement('div');
+                div.className = 'improvement-item';
+                div.innerHTML = `
+                    <div class="improvement-name">${imp.name}</div>
+                    <div class="improvement-desc">${imp.desc}</div>
+                `;
+                improvementsList.appendChild(div);
+            });
+            
+            document.getElementById('meeting-answer').textContent = currentCaravan.story.meeting;
+            document.getElementById('last-job-answer').textContent = currentCaravan.story.lastJob;
+            document.getElementById('went-wrong-answer').textContent = currentCaravan.story.wentWrong;
+            
+            document.getElementById('karma-value').textContent = currentCaravan.karma.value >= 0 ? `+${currentCaravan.karma.value}` : currentCaravan.karma.value;
+            document.getElementById('karma-aspect').textContent = currentCaravan.karma.aspect;
+        }
+
+        function rerollCompanyName() {
+            const randomName = companyNames[Math.floor(Math.random() * companyNames.length)];
+            currentCaravan.story.companyName = randomName;
+            document.getElementById('company-name-display').textContent = currentCaravan.story.companyName;
+        }
+
+        function rerollImprovements() {
+            const newImprovements = getRandomImprovements();
+            const newStats = calculateStats(newImprovements);
+            
+            currentCaravan.improvements = newImprovements;
+            currentCaravan.stats = newStats;
+            
+            // Оновлюємо відображення характеристик
+            document.getElementById('max-hp').textContent = currentCaravan.stats.maxHP;
+            document.getElementById('armor').textContent = currentCaravan.stats.armor;
+            document.getElementById('movement').textContent = currentCaravan.stats.movement;
+            
+            // Оновлюємо список покращень
+            const improvementsList = document.getElementById('improvements-list');
+            improvementsList.innerHTML = '';
+            currentCaravan.improvements.forEach(imp => {
+                const div = document.createElement('div');
+                div.className = 'improvement-item';
+                div.innerHTML = `
+                    <div class="improvement-name">${imp.name}</div>
+                    <div class="improvement-desc">${imp.desc}</div>
+                `;
+                improvementsList.appendChild(div);
+            });
+        }
+
+        function rerollKarma() {
+            const karmaRoll = rollDice(6);
+            let karmaValue, karmaAspect;
+            if (karmaRoll === 1) {
+                karmaValue = -5;
+                karmaAspect = "темні особи";
+            } else if (karmaRoll >= 2 && karmaRoll <= 4) {
+                karmaValue = 0;
+                karmaAspect = "прості волоцюги";
+            } else {
+                karmaValue = +5;
+                karmaAspect = "гідні люди";
+            }
+            
+            currentCaravan.karma = { value: karmaValue, aspect: karmaAspect };
+            
+            document.getElementById('karma-value').textContent = currentCaravan.karma.value >= 0 ? `+${currentCaravan.karma.value}` : currentCaravan.karma.value;
+            document.getElementById('karma-aspect').textContent = currentCaravan.karma.aspect;
+        }
+
+        function rerollMeeting() {
+            const randomMeeting = meetingOptions[Math.floor(Math.random() * meetingOptions.length)];
+            currentCaravan.story.meeting = randomMeeting;
+            document.getElementById('meeting-answer').textContent = currentCaravan.story.meeting;
+        }
+
+        function rerollLastJob() {
+            const randomLastJob = lastJobOptions[Math.floor(Math.random() * lastJobOptions.length)];
+            currentCaravan.story.lastJob = randomLastJob;
+            document.getElementById('last-job-answer').textContent = currentCaravan.story.lastJob;
+        }
+
+        function rerollWentWrong() {
+            const randomWentWrong = wentWrongOptions[Math.floor(Math.random() * wentWrongOptions.length)];
+            currentCaravan.story.wentWrong = randomWentWrong;
+            document.getElementById('went-wrong-answer').textContent = currentCaravan.story.wentWrong;
+        }
+    </script>
+</body>
+</html>
