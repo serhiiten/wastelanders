@@ -183,9 +183,9 @@
         }
         
         @keyframes loadingDots {
-            0%, 33% { content: 'Генерується новина.'; }
-            34%, 66% { content: 'Генерується новина..'; }
-            67%, 100% { content: 'Генерується новина...'; }
+            0%, 33% { content: 'Дізнаємось останні новини.'; }
+            34%, 66% { content: 'Дізнаємось останні новини..'; }
+            67%, 100% { content: 'Дізнаємось останні новини...'; }
         }
         
         .radioactive-symbol {
@@ -339,7 +339,7 @@
             const counter = document.getElementById('newsCounter');
             
             // Показати завантаження
-            container.innerHTML = '<div class="loading">Генерується новина...</div>';
+            container.innerHTML = '<div class="loading">Дізнаємось останні новини...</div>';
             
             setTimeout(() => {
                 const randomNews = newsTemplates[Math.floor(Math.random() * newsTemplates.length)];
