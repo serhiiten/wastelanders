@@ -936,9 +936,9 @@ if (species === "Робот") {
             // If Deathclaw, convert any resulting light armor to caps again (covers chain replacements), then add Claws
             if (species === "Розумний Пазур Смерті") {
                 items = items.map(replLightArmorToCaps);
-                const clawsPattern = /Пазурі \(1d10, ігнорує 1 фізичої броні\)/i;
+                const clawsPattern = /Пазурі \(1d10, ігнорує 1 фізичної броні\)/i;
                 if (!items.some(i => clawsPattern.test(i))) {
-                    items.push("Пазурі (1d10 ігнорує 1 фізичої броні)");
+                    items.push("Пазурі (1d10 ігнорує 1 фізичної броні)");
                 }
             }
             return items.join(', ');
