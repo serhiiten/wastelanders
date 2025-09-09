@@ -356,17 +356,70 @@ function generateName(){
   document.getElementById('namesOut').textContent = word;
 }
 
+
 /* Копіювання */
-function copyOut(id){
-  const el=document.getElementById(id);
-  const txt=el.textContent.trim();
+async function copyOut(id){
+  const el = document.getElementById(id);
+  const txt = (el && el.textContent ? el.textContent.trim() : "");
   if(!txt) return;
-  navigator.clipboard.writeText(txt).then(()=>{
-    el.style.outline=`2px solid var(--brand)`;
-    setTimeout(()=> el.style.outline="", 600);
-  });
+
+  const flash = () => {
+    el.style.outline = `2px solid var(--brand)`;
+    setTimeout(()=> el.style.outline = "", 650);
+  };
+
+  // 1) Спроба через сучасний Clipboard API в захищеному контексті
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(txt);
+      flash();
+      return;
+    }
+  } catch(e){ /* ігноруємо, підемо у фолбек */ }
+
+  // 2) Фолбек через тимчасове <textarea>
+  let ok = false;
+  const ta = document.createElement("textarea");
+  ta.value = txt;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "fixed";
+  ta.style.top = "-1000px";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    ok = document.execCommand("copy");
+  } catch(e) {
+    ok = false;
+  }
+  document.body.removeChild(ta);
+  if (ok) { flash(); return; }
+
+  // 3) Останній шанс: виділити текст у блоці та спробувати скопіювати
+  try {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    ok = document.execCommand("copy");
+    sel.removeAllRanges();
+    if (ok) { flash(); return; }
+  } catch(e){ /* no-op */ }
+
+  // Якщо всі способи провалилися — відкриємо нативний вибір тексту
+  // (корисно для мобільних — користувач зможе вручну натиснути "Копіювати")
+  try {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  } catch(e){ /* no-op */ }
 }
 </script>
+
 </body>
 </html>
 
