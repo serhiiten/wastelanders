@@ -202,6 +202,66 @@
                 display: none;
             }
         }
+    
+        /* --- Text export area (added) --- */
+        .export-section {
+            padding: 20px 30px 30px;
+            background: #f8f7f3;
+            border-top: 2px solid #2d5016;
+        }
+        .export-section h2 {
+            color: #2d5016;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4a7c59;
+        }
+        .text-output {
+            width: 100%;
+            min-height: 220px;
+            resize: vertical;
+            padding: 12px;
+            background: #ffffff;
+            border-radius: 10px;
+            border: 1px solid #2d5016;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.95em;
+            line-height: 1.35;
+        }
+        .copy-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .copy-hint {
+            font-size: 0.9em;
+            color: #2d5016;
+            opacity: 0.8;
+        }
+        .copy-btn {
+            background: linear-gradient(135deg, #4a7c59 0%, #6ba16e 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 3px 10px rgba(45,80,22,0.25);
+        }
+        .copy-btn:hover {
+            background: #2d5016;
+            transform: translateY(-1px);
+        }
+        @media print {
+            .export-section {
+                border-top: none;
+                padding-top: 0;
+            }
+            .copy-row { display: none; }
+            .text-output { min-height: 0; }
+        }
+
     </style>
 </head>
 <body>
@@ -223,6 +283,16 @@
         <div id="characterSheet" class="character-sheet" style="display: none;">
             <!-- Character data will be inserted here -->
         </div>
+        
+        <div class="export-section">
+            <h2>🧾 Текстовий вивід</h2>
+            <textarea id="textOutput" class="text-output" readonly placeholder="Згенеруйте персонажа, щоб побачити тут текстовий вивід…"></textarea>
+            <div class="copy-row">
+                <span class="copy-hint">Скопіює усе як простий текст.</span>
+                <button type="button" class="copy-btn" id="copyBtn">📋 Скопіювати</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -1235,5 +1305,106 @@ characterEquipment = applySpeciesEquipmentRules(species, characterEquipment);
             sheetDiv.scrollIntoView({ behavior: 'smooth' });
         }
     </script>
+
+    <script>
+    // --- Text export logic (added) ---
+    function fmtSigned(n) { return (n >= 0 ? ('+' + n) : ('' + n)); }
+
+    function characterToPlainText(ch) {
+        if (!ch) return "";
+        try {
+            const a = ch.attributes || {};
+            const attrs = [
+                "СЛ " + fmtSigned(a.СЛ ?? 0),
+                "СПР " + fmtSigned(a.СПР ?? 0),
+                "ВТР " + fmtSigned(a.ВТР ?? 0),
+                "ПВ " + fmtSigned(a.ПВ ?? 0),
+                "ІН " + fmtSigned(a.ІН ?? 0),
+                "ВП " + fmtSigned(a.ВП ?? 0),
+                "УДЧ " + fmtSigned(a.УДЧ ?? 0)
+            ].join(", ");
+
+            // Replicate the displayed skill levels: default (Учень), first becomes (Підмайстер) with "Добра душа"
+            const hasGoodSoul = (ch.traits || []).includes("Добра душа");
+            const skillsList = (ch.skills || []).map((s, i) => {
+                const hasLevel = /(\(|（)/.test(s);
+                if (hasLevel) return s;
+                if (hasGoodSoul && i === 0) return s + " (Підмайстер)";
+                return s + " (Учень)";
+            }).join(", ");
+
+            const traitsLine = (ch.traits && ch.traits.length > 0) ? ch.traits.join(", ") : "—";
+            const perksLine = (ch.perks && ch.perks.length > 0) ? ch.perks.join(", ") : "—";
+            const equip = "Легка зброя (1d6)" + (ch.equipment ? (", " + ch.equipment) : "");
+
+            return [
+                "Ім'я: " + (ch.name || "—"),
+                "Архетип: " + (ch.archetype || "—"),
+                "Вид: " + (ch.species || "—"),
+                "Макс. ОЗ: " + (ch.health ?? "—"),
+                "Жетони Долі: " + (ch.fate ?? "—"),
+                "Атрибути: " + attrs,
+                "Навички: " + skillsList,
+                "Перки: " + perksLine,
+                "Особливості: " + traitsLine,
+                "Спорядження: " + equip,
+                "Деталь: " + (ch.detail || "—"),
+                "Аспекти:",
+                "  Концепція — " + (ch.concept || "—"),
+                "  Проблема — " + (ch.problem || "—"),
+                "  Ціль — " + (ch.goal || "—")
+            ].join("\n");
+        } catch(e) {
+            return "";
+        }
+    }
+
+    function updateTextOutput() {
+        var ta = document.getElementById("textOutput");
+        if (!ta) return;
+        if (typeof currentCharacter !== "undefined" && currentCharacter) {
+            ta.value = characterToPlainText(currentCharacter);
+        } else {
+            ta.value = "";
+        }
+    }
+
+    // Copy text button
+    function setupCopyButton() {
+        var btn = document.getElementById("copyBtn");
+        if (!btn) return;
+        btn.addEventListener("click", async function() {
+            var ta = document.getElementById("textOutput");
+            if (!ta) return;
+            try {
+                await navigator.clipboard.writeText(ta.value || "");
+                btn.textContent = "✅ Скопійовано";
+                setTimeout(function(){ btn.textContent = "📋 Скопіювати"; }, 1500);
+            } catch (err) {
+                // Fallback
+                ta.focus();
+                ta.select();
+                document.execCommand("copy");
+                btn.textContent = "✅ Скопійовано";
+                setTimeout(function(){ btn.textContent = "📋 Скопіювати"; }, 1500);
+            }
+        });
+    }
+
+    // Observe #characterSheet for changes to refresh text output automatically
+    document.addEventListener("DOMContentLoaded", function() {
+        setupCopyButton();
+        var sheet = document.getElementById("characterSheet");
+        if (sheet && "MutationObserver" in window) {
+            var obs = new MutationObserver(function() {
+                updateTextOutput();
+            });
+            obs.observe(sheet, { childList: true, subtree: true });
+        }
+        // Initial fill if any character is already present
+        updateTextOutput();
+    });
+    </script>
+
 </body>
 </html>
