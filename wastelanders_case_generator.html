@@ -172,6 +172,67 @@
                 padding: 15px;
             }
         }
+    
+        /* --- Text export area (added) --- */
+        .export-section {
+            margin-top: 30px;
+            padding: 20px 30px 30px;
+            background: rgba(0, 0, 0, 0.55);
+            border-radius: 12px;
+            border: 1px solid #8b4513;
+        }
+        .export-section h2 {
+            color: #ffd700;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #8b4513;
+        }
+        .text-output {
+            width: 100%;
+            min-height: 220px;
+            resize: vertical;
+            padding: 12px;
+            background: rgba(0,0,0,0.35);
+            color: #f0e6d2;
+            border-radius: 10px;
+            border: 1px solid #8b4513;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.95em;
+            line-height: 1.35;
+        }
+        .copy-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .copy-hint {
+            font-size: 0.9em;
+            color: #ffd700;
+            opacity: 0.85;
+        }
+        .copy-btn {
+            background: linear-gradient(45deg, #8b4513, #cd853f);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            font-weight: 600;
+            letter-spacing: .3px;
+        }
+        .copy-btn:hover {
+            background: linear-gradient(45deg, #cd853f, #ffd700);
+            transform: translateY(-1px);
+        }
+        @media print {
+            .copy-row { display: none; }
+            .text-output { min-height: 0; }
+        }
+
     </style>
 </head>
 <body>
@@ -281,6 +342,15 @@
             </div>
         </div>
     </div>
+        <div class="export-section">
+            <h2>🧾 Текстовий вивід</h2>
+            <textarea id="textOutputCase" class="text-output" readonly placeholder="Згенеруйте справу, щоб побачити тут текстовий вивід…"></textarea>
+            <div class="copy-row">
+                <span class="copy-hint">Скопіює усе як простий текст.</span>
+                <button type="button" class="copy-btn" id="copyBtnCase">📋 Скопіювати</button>
+            </div>
+        </div>
+
 
     <script>
         let currentDifficulty = 'легка';
@@ -572,5 +642,73 @@
             }
         }
     </script>
+
+    <script>
+    // --- Text export logic for Case Generator (added) ---
+    function readText(id) {
+        var el = document.getElementById(id);
+        return el ? (el.textContent || "").trim() : "";
+    }
+
+    function caseToPlainText() {
+        var lines = [];
+        lines.push("Складність: " + (readText("difficulty") || "—"));
+        lines.push("Замовник: " + (readText("customer") || "—"));
+        lines.push("Ціль: " + (readText("goal") || "—"));
+        lines.push("Ускладнення: " + (readText("complication") || "—"));
+        lines.push("Можливий вантаж: " + (readText("cargo") || "—"));
+        lines.push("Місце на шляху: " + (readText("location") || "—"));
+        lines.push("Точка прибуття: " + (readText("destination") || "—"));
+        lines.push("Небезпека на шляху: " + (readText("danger") || "—"));
+        lines.push("Супротивники: " + (readText("enemies") || "—"));
+        lines.push("Міць супротивників: " + (readText("enemyPower") || "—"));
+        lines.push("Винагорода: " + (readText("reward") || "—"));
+        return lines.join("\n");
+    }
+
+    function updateTextOutputCase() {
+        var ta = document.getElementById("textOutputCase");
+        if (!ta) return;
+        var resultRoot = document.getElementById("caseResult");
+        if (!resultRoot || resultRoot.classList.contains("hidden")) {
+            ta.value = "";
+            return;
+        }
+        ta.value = caseToPlainText();
+    }
+
+    function setupCopyButtonCase() {
+        var btn = document.getElementById("copyBtnCase");
+        if (!btn) return;
+        btn.addEventListener("click", async function() {
+            var ta = document.getElementById("textOutputCase");
+            if (!ta) return;
+            try {
+                await navigator.clipboard.writeText(ta.value || "");
+                btn.textContent = "✅ Скопійовано";
+                setTimeout(function(){ btn.textContent = "📋 Скопіювати"; }, 1500);
+            } catch (err) {
+                ta.focus();
+                ta.select();
+                document.execCommand("copy");
+                btn.textContent = "✅ Скопійовано";
+                setTimeout(function(){ btn.textContent = "📋 Скопіювати"; }, 1500);
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        setupCopyButtonCase();
+        var root = document.getElementById("caseResult");
+        if (root && "MutationObserver" in window) {
+            var obs = new MutationObserver(function() {
+                updateTextOutputCase();
+            });
+            obs.observe(root, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["class"] });
+        }
+        updateTextOutputCase();
+    });
+    </script>
+
 </body>
 </html>
