@@ -209,6 +209,67 @@
                 grid-template-columns: 1fr;
             }
         }
+    
+        /* --- Text export area (added) --- */
+        .export-section {
+            margin-top: 30px;
+            padding: 20px 30px 30px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 12px;
+            border: 1px solid #cd853f;
+        }
+        .export-section h2 {
+            color: #ffd700;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #cd853f;
+        }
+        .text-output {
+            width: 100%;
+            min-height: 220px;
+            resize: vertical;
+            padding: 12px;
+            background: rgba(0,0,0,0.35);
+            color: #f4f4f4;
+            border-radius: 10px;
+            border: 1px solid #cd853f;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.95em;
+            line-height: 1.35;
+        }
+        .copy-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .copy-hint {
+            font-size: 0.9em;
+            color: #ffd700;
+            opacity: 0.85;
+        }
+        .copy-btn {
+            background: linear-gradient(45deg, #8b4513, #cd853f);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            font-weight: 600;
+            letter-spacing: .3px;
+        }
+        .copy-btn:hover {
+            background: linear-gradient(45deg, #cd853f, #ffd700);
+            transform: translateY(-1px);
+        }
+        @media print {
+            .copy-row { display: none; }
+            .text-output { min-height: 0; }
+        }
+
     </style>
 </head>
 <body>
@@ -276,6 +337,15 @@
             </div>
         </div>
     </div>
+        <div class="export-section">
+            <h2>🧾 Текстовий вивід</h2>
+            <textarea id="textOutput" class="text-output" readonly placeholder="Згенеруйте караван, щоб побачити тут текстовий вивід…"></textarea>
+            <div class="copy-row">
+                <span class="copy-hint">Скопіює усе як простий текст.</span>
+                <button type="button" class="copy-btn" id="copyBtn">📋 Скопіювати</button>
+            </div>
+        </div>
+
 
     <script>
         const improvements = [
@@ -502,5 +572,77 @@
             document.getElementById('went-wrong-answer').textContent = currentCaravan.story.wentWrong;
         }
     </script>
+
+    <script>
+    // --- Text export logic (added) ---
+    function caravanToPlainText(c) {
+        if (!c || !c.stats) return "";
+        const lines = [];
+        const val = (n) => (n != null ? n : "—");
+        const sign = (n) => (n >= 0 ? ("+" + n) : ("" + n));
+        try {
+            lines.push("Компанія: " + (c.story?.companyName || "—"));
+            lines.push("Макс. ОЗ: " + val(c.stats.maxHP));
+            lines.push("Броня: " + val(c.stats.armor));
+            lines.push("Запас ходу: " + val(c.stats.movement));
+            lines.push("Бюджет кришок: " + val(c.budget));
+            lines.push("Покращення:");
+            (c.improvements || []).forEach((imp, i) => {
+                lines.push("  - " + (imp.name || "—") + (imp.desc ? (": " + imp.desc) : ""));
+            });
+            lines.push("Історія:");
+            lines.push("  Як познайомились — " + (c.story?.meeting || "—"));
+            lines.push("  Остання справа — " + (c.story?.lastJob || "—"));
+            lines.push("  Що пішло не так — " + (c.story?.wentWrong || "—"));
+            lines.push("Карма: " + (c.karma ? sign(c.karma.value || 0) + " — " + (c.karma.aspect || "—") : "—"));
+            lines.push("Репутація: ніхто й звати ніяк");
+        } catch(e) {}
+        return lines.join("\n");
+    }
+
+    function updateTextOutput() {
+        var ta = document.getElementById("textOutput");
+        if (!ta) return;
+        if (typeof currentCaravan !== "undefined" && currentCaravan && currentCaravan.stats) {
+            ta.value = caravanToPlainText(currentCaravan);
+        } else {
+            ta.value = "";
+        }
+    }
+
+    function setupCopyButton() {
+        var btn = document.getElementById("copyBtn");
+        if (!btn) return;
+        btn.addEventListener("click", async function() {
+            var ta = document.getElementById("textOutput");
+            if (!ta) return;
+            try {
+                await navigator.clipboard.writeText(ta.value || "");
+                btn.textContent = "✅ Скопійовано";
+                setTimeout(function(){ btn.textContent = "📋 Скопіювати"; }, 1500);
+            } catch (err) {
+                ta.focus();
+                ta.select();
+                document.execCommand("copy");
+                btn.textContent = "✅ Скопійовано";
+                setTimeout(function(){ btn.textContent = "📋 Скопіювати"; }, 1500);
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        setupCopyButton();
+        // Observe Caravan content changes to refresh text output automatically
+        var root = document.getElementById("caravan-content") || document.querySelector(".container") || document.body;
+        if (root && "MutationObserver" in window) {
+            var obs = new MutationObserver(function() {
+                updateTextOutput();
+            });
+            obs.observe(root, { childList: true, subtree: true, characterData: true });
+        }
+        updateTextOutput();
+    });
+    </script>
+
 </body>
 </html>
