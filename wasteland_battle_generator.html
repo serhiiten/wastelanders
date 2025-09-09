@@ -166,6 +166,11 @@
       </div>
       <div class="bd">
         <div id="textOut" class="out small mono">(порожньо)</div>
+        <div class="row" style="margin-top:8px">
+  <div style="flex:1 1 auto"></div>
+  <button class="ghost" id="copyText">Скопіювати текст</button>
+</div>
+      
       </div>
     </section>
 
@@ -443,6 +448,16 @@ window.addEventListener('DOMContentLoaded', ()=>{
   }
 
   // ---------- ЛОГІКА СЦЕНАРІЇВ ----------
+
+// --- ПОТОЧНИЙ СТАН БИТВИ (додано) ---
+let _lastBattle = null;
+function refreshTextExport(){
+  const out = document.getElementById('textOut');
+  if(!_lastBattle || !out) return;
+  const {factionKey, pickedCase, allocations} = _lastBattle;
+  out.textContent = buildTextExport(factionKey, pickedCase, allocations);
+}
+
   const Cases = {
     easy:[
       {statists:"1d4+5"},
@@ -540,6 +555,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   }
 
   function renderBattle(factionKey, pickedCase, allocations){
+    _lastBattle = { factionKey, pickedCase, allocations };
     clearBuckets()
     // показати кейс
     const caseText = Object.entries(pickedCase).map(([k,v])=>`${labelCat(k)}: ${typeof v==='number'? v : v}`).join(' • ')
@@ -561,6 +577,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     // Текстовий вивід
     const out = document.getElementById('textOut')
     if(out) out.textContent = buildTextExport(factionKey, pickedCase, allocations)
+    refreshTextExport()
   }
 
   function labelCat(cat){
@@ -634,18 +651,21 @@ window.addEventListener('DOMContentLoaded', ()=>{
   }
 
   function rollReward(){
+    // (додано) після оновлення винагороди синхронізуємо текстовий вивід
     const diff = document.getElementById('difficulty').value
     const box = document.getElementById('rewardBox')
     if(!box) return
     if(diff==='deadly'){
       const a = pick(Rewards.hard), b = pick(Rewards.hard)
       box.dataset.last = `1) ${a}  \n2) ${b}`
-      box.innerHTML = `<div class="title">Винагорода (смертельна → дві важкі)</div><div class="small">1) ${parseAndWrapDice(a)}<br>2) ${parseAndWrapDice(b)}</div><div class="flex" style="margin-top:6px"><button class="ghost" id="rollRewardBtn">Кинути ще</button></div>`
+      box.innerHTML = `<div class=\"title\">Винагорода (смертельна → дві важкі)</div><div class=\"small\">1) ${parseAndWrapDice(a)}<br>2) ${parseAndWrapDice(b)}</div><div class=\"flex\" style=\"margin-top:6px\"><button class=\"ghost\" id=\"rollRewardBtn\">Кинути ще</button></div>`;
+    refreshTextExport();
     } else {
       const src = Rewards[diff]
       const item = pick(src)
       box.dataset.last = item
-      box.innerHTML = `<div class="title">Винагорода</div><div class="small">${parseAndWrapDice(item)}</div><div class="flex" style="margin-top:6px"><button class="ghost" id="rollRewardBtn">Кинути ще</button></div>`
+      box.innerHTML = `<div class=\"title\">Винагорода</div><div class=\"small\">${parseAndWrapDice(item)}</div><div class=\"flex\" style=\"margin-top:6px\"><button class=\"ghost\" id=\"rollRewardBtn\">Кинути ще</button></div>`;
+    refreshTextExport();
     }
   }
 
@@ -662,6 +682,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     if(id==='gen') generate()
     if(id==='rollRewardBtn') rollReward()
     if(id==='copyAll') copyAll()
+    if(id==='copyText') copyAll()
   })
   // Кидки кубів — окремий делегований слухач
   document.addEventListener('click', handleDieClick)
