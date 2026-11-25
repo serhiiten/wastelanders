@@ -162,7 +162,7 @@ button { cursor: pointer; }
 .btn-quick:hover { background-image: linear-gradient(180deg, #d8ebde, #b8d0c0 45%, #96b3a1); }
 .btn-quick.armed { background-image: linear-gradient(180deg, #ffd27a, #e8a21f 45%, #a8650c); color: #2a1a04; border-color: #5a3606; box-shadow: inset 0 1px 0 rgba(255,240,200,.7), 0 2px 0 #5a3606; }
 .btn-primary.armed { background-image: linear-gradient(180deg, #ffd27a, #e8a21f 45%, #a8650c); color: #2a1a04; border-color: #5a3606; text-shadow: none; box-shadow: inset 0 1px 0 rgba(255,240,200,.7), 0 2px 0 #5a3606; }
-.btn-clear.armed { background-image: linear-gradient(180deg, #ff9a70, var(--red) 45%, #a83114); color: #fff6ee; border-color: #4d1607; text-shadow: 0 1px 0 rgba(0,0,0,.35); box-shadow: inset 0 1px 0 rgba(255,220,200,.6), 0 2px 0 #4d1607; }
+.btn-clear.armed, #defReset.armed { background-image: linear-gradient(180deg, #ff9a70, var(--red) 45%, #a83114); color: #fff6ee; border-color: #4d1607; text-shadow: 0 1px 0 rgba(0,0,0,.35); box-shadow: inset 0 1px 0 rgba(255,220,200,.6), 0 2px 0 #4d1607; }
 .more summary { list-style: none; }
 .more summary::-webkit-details-marker { display: none; }
 .more-menu {
@@ -343,6 +343,21 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
 .plate-desc .warn { color: var(--red-lo); font-weight: 700; }
 .plate-ctrl { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
 .rbtns { display: flex; gap: 14px; padding: 4px; }
+/* «Турель» і «Дефібрилятор» (рядок 3.2, як у Foundry): дія на плитці взятого покращення */
+.imp-act { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.imp-act[hidden] { display: none; }
+.imp-act .svc-btn { gap: 5px; }
+.imp-act .svc-btn svg { width: 15px; height: 15px; }
+.imp-act [data-turret-roll] { text-transform: none; }
+.imp-lim { flex: none; padding: 2px 6px; border-radius: 3px; background: #3f6d8c; color: #fff; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+.imp-used { font-size: 13px; font-weight: 700; color: var(--red-lo); white-space: nowrap; }
+.imp-type { font-size: 12px; font-weight: 700; color: var(--ink-soft); white-space: nowrap; }
+.imp-free { padding: 0 2px; border: 0; background: none; cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; color: var(--red-lo); text-decoration: underline; white-space: nowrap; }
+.turret-set { display: grid; gap: 6px; }
+.turret-set[hidden] { display: none; }
+.turret-set h3 { margin: 4px 0 0; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+.turret-set .set-row { grid-template-columns: minmax(0, 1fr) minmax(0, 220px); }
+.turret-set .field { width: 100%; }
 .rbtn {
   width: 32px; height: 32px; padding: 0; border-radius: 50%;
   border: 2px solid #2a2321;
@@ -517,6 +532,65 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
 .toast button { flex: none; background: transparent; border: 1px solid #7fbf97; color: #b9e3c6; border-radius: 4px; padding: 4px 10px; font-family: var(--display); text-transform: uppercase; letter-spacing: .05em; font-size: 12px; }
 .busy { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(30,25,18,.45); color: #fff; font-family: var(--display); font-size: 20px; letter-spacing: .06em; text-transform: uppercase; }
 
+/* ---------- Етап 3 (як у Foundry): послуги з бюджету, вибір брамінів, позначки рядків вантажу, «Налаштування» ---------- */
+#hpMax, #armorVal { display: inline-block; min-width: 50px; text-align: center; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.hp-max.custom { color: var(--red-lo); border-bottom: 1px dashed var(--red); }
+.svc-btn { font-size: 12px; letter-spacing: .04em; padding: 4px 10px; min-height: 28px; justify-content: center; white-space: nowrap; }
+.svc-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.move-foot .svc-btn { grid-column: 1 / -1; grid-row: 3; margin-top: 4px; }
+.brah-row { display: grid; gap: 5px; padding-top: 2px; }
+.brah-row[hidden] { display: none; }
+.brah-name { text-align: center; font-size: 12px; font-weight: 700; color: #e9e6dd; text-shadow: 0 1px 0 #000; }
+.brah-switch { padding: 2px; }
+.brah-switch .veh-opt { font-size: 12px; min-height: 24px; padding: 2px 6px; white-space: nowrap; }
+.cargo .tick-cell { width: 56px; text-align: center; }
+.cargo td.tick-cell { padding-top: 9px; }
+.lamp-tick { appearance: none; -webkit-appearance: none; margin: 0; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #2a2321; background: radial-gradient(circle at 35% 30%, #a2847b, #5b3d35 60%, #3a2622); cursor: pointer; vertical-align: middle; }
+.lamp-tick:checked { background: radial-gradient(circle at 35% 30%, #ffc2a5 0 10%, var(--red-hi) 25%, var(--red) 55%, var(--red-lo)); box-shadow: 0 0 8px rgba(255,100,50,.6); }
+.cargo td.sum.hurt { color: var(--red-lo); font-weight: 700; }
+/* ---------- Етап 6в (як у Foundry): купівля й продаж рядків вантажу, «Списати N(к) з бюджету?» ---------- */
+.cargo td.sum .sum-n { display: block; }
+.cargo td.sum .svc-btn { margin: 4px 0 2px; }
+/* Назва рядка не стискається кнопками «Купити / Продати» у «Сумі» (6в, 360 px): таблиця прокручується всередині .cargo-wrap */
+.cargo th:first-child, .cargo td:first-child { min-width: 120px; }
+.cargo td.sum.hurt .svc-btn { font-weight: 500; }
+.cg-buy, .spend-pay { background-image: linear-gradient(180deg, #ffd27a, #e8a21f 45%, #a8650c); color: #2a1a04; border-color: #5a3606; box-shadow: inset 0 1px 0 rgba(255,240,200,.7), 0 2px 0 #5a3606; }
+.cg-buy:hover, .spend-pay:hover { background-image: linear-gradient(180deg, #ffe09a, #f0b03a 45%, #b8741a); }
+.cg-sell, .cg-sell-all { background-image: linear-gradient(180deg, #d8ebde, #b8d0c0 45%, #96b3a1); }
+.cg-sell:hover, .cg-sell-all:hover { background-image: linear-gradient(180deg, #e4f3e8, #c6dccd 45%, #a5c0ae); }
+.cg-sell-all[hidden], .spend-ask[hidden] { display: none; }
+.spend-ask { position: fixed; inset: 0; z-index: 55; display: grid; place-items: center; padding: 16px; background: rgba(30,25,18,.45); }
+.spend-box { width: min(380px, 100%); display: grid; gap: 10px; }
+.spend-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-left: 4px; }
+.spend-head .plate-label { font-size: 16px; }
+.pust-rcpt { display: grid; gap: 4px; font-size: 14px; }
+.pust-rcpt-ln { display: flex; align-items: baseline; gap: 6px; }
+.pust-rcpt-ln > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.pust-rcpt-ln > i { flex: 1; border-bottom: 1px dotted var(--ink-soft); min-width: 12px; }
+.pust-rcpt-ln > span:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pust-rcpt hr { width: 100%; margin: 2px 0; border: 0; border-top: 1px dashed var(--ink-soft); }
+.pust-rcpt-tot { font-weight: 700; }
+.pust-spend-short { color: var(--red-lo); }
+.pust-spend-q { margin: 8px 0 0; text-align: center; }
+.spend-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.spend-btns .svc-btn { flex: 1 1 140px; min-height: 34px; }
+.set-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 900px) { .app .set-cols { grid-template-columns: 1fr; } }
+.set-box { display: grid; gap: 8px; align-content: start; height: 100%; }
+.set-box .legend small { margin-left: 8px; font-size: 11px; letter-spacing: .04em; text-transform: none; }
+.set-grid { display: grid; gap: 6px; }
+.set-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 26px; align-items: center; gap: 6px 10px; }
+/* захист: одна сітка на всі типи, щоб списки стояли рівно (рядок — display: contents) */
+#defGrid { grid-template-columns: max-content minmax(0, 1fr) 26px; align-items: center; gap: 6px 10px; }
+#defGrid .def-row { display: contents; }
+#defGrid .set-name { grid-column: 1; }
+#defGrid .dd { grid-column: 2; }
+#defGrid .reset-btn { grid-column: 3; }
+.set-name { font-size: 14px; font-weight: 700; color: var(--ink); min-width: 0; }
+.set-row .reset-btn { width: 26px; height: 26px; }
+.set-row .stepper input { width: 56px; }
+.set-hint { margin: 0; }
+@media (max-width: 560px) { .app #defGrid { grid-template-columns: minmax(0, 1fr) 26px; row-gap: 2px; } .app #defGrid .set-name { grid-column: 1 / -1; margin-top: 4px; } .app #defGrid .dd { grid-column: 1; } .app #defGrid .reset-btn { grid-column: 2; } }
 @media (max-width: 820px) {
   .app .r-head { grid-template-columns: 1fr 1fr; }
   .app .r-head .name-panel { grid-column: 1 / -1; order: -1; }
@@ -540,6 +614,84 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
+/* Компактний аркуш (рядок 5.1, макет А, як компактний аркуш каравану Foundry): одна колонка до 520 px, «Вантажі та пасажири» — блок повного аркуша */
+.name-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; }
+/* «Повний / Компактний» — як власні перемикачі каравану (.veh-switch / .veh-opt: «Браміни / Тачка», «−¼ запасу / −¼ часу»):
+   темна доріжка, натиснута половина світло-зелена (жива перевірка 5.1) */
+.cmp-seg { display: inline-flex; flex: none; gap: 0; padding: 3px; border-radius: 8px; background: #2b2a27; box-shadow: inset 0 1px 3px rgba(0,0,0,.6); }
+.cmp-seg button { border: 0; border-radius: 6px; padding: 3px 8px; min-height: 24px; background: transparent; color: #a9a59b; font-size: 12px; font-weight: 700; transition: background .15s ease, color .15s ease; }
+.cmp-seg button:hover { color: #e9e6dd; }
+.cmp-seg button.on { background-image: linear-gradient(180deg, #b8d0c0, var(--screen-lo)); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 1px 2px rgba(0,0,0,.5); }
+.app.cmp-on main.sheet { max-width: 520px; width: 100%; margin: 0 auto; }
+.app.cmp-on main.sheet > :not(#cmpView):not(#secCargo):not(.foot) { display: none; }
+.cmp-view { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.cmp-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.cmp-port { width: 56px; height: 56px; flex: none; display: grid; place-items: center; border: 2px solid #1e1b17; border-radius: 8px; background: #2a2722; color: #d9cfb2; }
+.cmp-port svg { width: 36px; height: 36px; }
+.cmp-who { flex: 1 1 150px; min-width: 0; display: flex; flex-direction: column; }
+.cmp-who b { font-family: var(--display); font-stretch: 75%; font-size: 24px; line-height: 1.05; text-transform: uppercase; color: var(--ink); overflow-wrap: anywhere; }
+.cmp-who small { font-size: 13px; color: var(--ink-soft); }
+html[data-theme="dark"] .cmp-who b { color: #ece5d3; }
+html[data-theme="dark"] .cmp-who small { color: #b9b3a8; }
+.cmp-asps { display: flex; flex-wrap: wrap; gap: 5px; }
+.cmp-asp { display: inline-flex; flex-direction: column; max-width: 100%; padding: 3px 8px 4px; border-radius: 4px; border-left: 4px solid #2c4733; background: var(--paper); color: var(--ink); font-size: 13px; line-height: 1.25; overflow-wrap: anywhere; }
+.cmp-asp b { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #2c4733; }
+.cmp-asp.karma { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 8px; border-left-color: #8a6200; }
+.cmp-asp.karma b { color: #8a6200; }
+.cmp-num { min-width: 26px; text-align: center; font-family: var(--display); font-stretch: 75%; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cmp-num.long { font-size: 15px; }
+.cmp-ka { font-weight: 700; }
+.cmp-quick { padding: 8px 10px 10px; }
+.cmp-quick.sticky { position: sticky; top: 0; z-index: 5; box-shadow: 0 6px 14px rgba(0,0,0,.25); }
+.cmp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.cmp-q { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; min-width: 0; min-height: 60px; padding: 5px 6px 6px; border: 1px solid rgba(19,35,26,.45); border-radius: 6px; background: rgba(255,255,255,.28); }
+.cmp-q.bad { border-color: var(--red-lo); background: rgba(242,185,173,.45); }
+.cmp-q.wide { grid-column: 1 / -1; }
+.cmp-qi { display: flex; justify-content: center; }
+.cmp-ic { width: 18px; height: 18px; flex: none; }
+.cmp-ctl { display: flex; align-items: center; justify-content: space-between; gap: 3px; min-width: 0; }
+.cmp-ctl.mid { justify-content: center; align-items: baseline; gap: 5px; flex-wrap: wrap; }
+.cmp-ctl.stepper button { width: 24px; height: 24px; }
+.cmp-big { font-family: var(--display); font-stretch: 75%; font-size: 24px; line-height: 1; }
+.cmp-tag { padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(19,35,26,.45); background: rgba(255,255,255,.55); font-size: 12px; }
+.cmp-bar { position: relative; flex: 1 1 auto; min-width: 0; height: 22px; border: 2px solid #26231d; border-radius: 4px; background: #2b2822; overflow: hidden; }
+.cmp-bar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(#5fbf6c, #2c6a3a); }
+.cmp-bar.mid i { background: linear-gradient(#e0c24f, #9a7a12); }
+.cmp-bar.low i, .cmp-bar.out i { background: linear-gradient(#e0644f, #9b2618); }
+.cmp-bar b { position: relative; display: block; text-align: center; font-family: var(--mono); font-size: 13px; line-height: 18px; color: #fff; text-shadow: 0 1px 1px #000; white-space: nowrap; }
+.cmp-svc { position: absolute; top: 3px; right: 3px; width: 26px; height: 22px; display: grid; place-items: center; padding: 0; border: 1px solid #10301a; border-radius: 4px; background: linear-gradient(#4f8f5b, #2b5e35); color: #e9f7ea; }
+.cmp-svc:disabled { background: linear-gradient(#a39d93, #77716a); color: #2a271f; opacity: .6; cursor: not-allowed; }
+.cmp-svc .cmp-ic { width: 15px; height: 15px; }
+.cmp-mvhd { display: flex; align-items: center; gap: 6px; padding-right: 30px; font-size: 13px; }
+.cmp-pips { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.cmp-pips .pip { width: 20px; height: 20px; }
+.cmp-blk { border: 2px solid #3f3e3a; border-radius: 8px; background: var(--paper); color: var(--ink); padding: 6px 10px 8px; min-width: 0; }
+.cmp-blk h3 { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; font-family: var(--display); font-stretch: 75%; font-size: 18px; text-transform: uppercase; letter-spacing: .04em; }
+.cmp-blk h3 small { font-family: var(--body); font-stretch: normal; font-size: 12px; text-transform: none; letter-spacing: 0; color: var(--ink-soft); }
+.cmp-card { margin: 6px 0 2px; padding: 4px 8px 5px; border: 1px solid #b9ad8a; border-left: 4px solid #7a7262; border-radius: 4px; background: rgba(255,255,255,.35); }
+.cmp-card.used { background: rgba(120,110,90,.25); }
+.cmp-card-top { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; min-height: 28px; }
+.cmp-card-n { font-weight: 700; font-size: 13px; min-width: 0; overflow-wrap: anywhere; }
+.cmp-card-act { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-left: auto; }
+.cmp-card-act[hidden] { display: inline-flex !important; }
+.cmp-card-t { margin: 3px 0 0; font-size: 13px; font-weight: 500; line-height: 1.35; }
+.cmp-seg2 { display: inline-flex; border: 2px solid #26231d; border-radius: 6px; overflow: hidden; }
+.cmp-seg2 button { border: 0; padding: 3px 7px; min-height: 24px; background: #2b2822; color: #d9d2bf; font-size: 12px; font-weight: 700; }
+.cmp-seg2 button.on { background: var(--screen); color: var(--ink); }
+.cmp-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.cmp-chip { padding: 3px 8px; border-radius: 5px; border: 1px solid #5e5a4e; background: rgba(255,255,255,.45); font-size: 13px; }
+.cmp-empty { margin: 4px 0 0; font-size: 13px; color: var(--ink-soft); }
+.app.cmp-on .cargo td:first-child, .app.cmp-on .cargo th:first-child { min-width: 120px; }
+/* Вантаж у компактному на 1366 (жива перевірка 5.1): таблиця вміщається в колонку ~460 px, «Купити / Продати» видно без прокрутки —
+   без min-width таблиці, вужчі відступи й числа, кнопка «Суми» й заголовки переносяться; на 360 таблиця, як і в повному, прокручується в .cargo-wrap */
+.app.cmp-on table.cargo { min-width: 0; }
+.app.cmp-on .cargo th, .app.cmp-on .cargo td { padding-left: 3px; padding-right: 3px; }
+.app.cmp-on .cargo th { white-space: normal; }
+.app.cmp-on .cargo th[style] { width: auto !important; }
+.app.cmp-on .cargo .kind-cell, .app.cmp-on .cargo .tick-cell { width: auto; }
+.app.cmp-on .cargo .num { width: 44px; }
+.app.cmp-on .cargo td.sum .svc-btn { white-space: normal; padding-left: 6px; padding-right: 6px; line-height: 1.15; }
+@media (max-width: 420px) { .cmp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cmp-pips .pip { width: 24px; height: 24px; } }   /* лампи запасу ходу й скриньки — 24 px, як −/+ */
 </style>
 </head>
 <body>
@@ -588,6 +740,8 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
   </section>
 
   <main class="sheet">
+    <!-- Компактний аркуш (5.1): малює renderCompact -->
+    <section class="cmp-view" id="cmpView" hidden></section>
     <!-- Перший рядок: УДЧ, назва, тачка -->
     <section class="row r-head">
       <div class="panel luck-panel" id="luckPanel" tabindex="0" title="Натисніть на панель поза полем, щоб кинути кістку Долі: 1d10 + Удача партії. 6 і вище — на користь персонажів, 5 і нижче — ні.&#10;&#10;Удача партії: підсумуйте УДЧ усіх персонажів і знайдіть результат у таблиці.&#10;−4 і нижче → −2&#10;−3 або −2 → −1&#10;від −1 до +1 → 0&#10;+2 або +3 → +1&#10;+4 і вище → +2&#10;Змінюйте, лише коли хтось із персонажів підвищує Удачу.">
@@ -602,7 +756,7 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
       </div>
       <div class="panel name-panel" id="secName">
         <div class="plate-bg name-box">
-          <label class="plate-label" for="companyName">Назва компанії</label>
+          <div class="name-top"><label class="plate-label" for="companyName">Назва компанії</label><span id="nameSeg"></span></div>
           <div class="name-line">
             <textarea id="companyName" class="field big-field autogrow" rows="1" placeholder="Вигадайте назву" spellcheck="false"></textarea>
             <button type="button" class="die" data-lock="name" id="rollName" title="Кинути на назву компанії" aria-label="Кинути на назву компанії"></button>
@@ -656,6 +810,15 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
           <b id="moveNow">10 / 10</b>
           <span class="move-rule" id="cellRule">1 клітина за день і одиницю</span>
           <span id="refill">Повний запас</span>
+          <button type="button" class="btn svc-btn" id="btnRefill" disabled>Поповнити</button>
+        </div>
+        <div class="brah-row" id="brahRow" hidden>
+          <span class="brah-name" id="brahName">Породисті браміни</span>
+          <div class="veh-switch brah-switch" role="radiogroup" aria-labelledby="brahName">
+            <button type="button" role="radio" class="veh-opt" data-brah="range" id="brahRange" aria-checked="true" title="Караван витрачає менше запасу ходу">−¼ запасу</button>
+            <button type="button" role="radio" class="veh-opt" data-brah="time" id="brahTime" aria-checked="false" title="Шлях займає менше часу">−¼ часу</button>
+          </div>
+          <button type="button" class="btn lamp-btn svc-btn" id="pathfinder" aria-pressed="false" title="У когось із персонажів є перк «Першопроходець»: бонус зростає до половини"><span class="lamp" aria-hidden="true"></span>Першопроходець</button>
         </div>
       </div>
 
@@ -668,12 +831,13 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
               <input id="hpCurrent" class="field" type="number" min="0" step="1" inputmode="numeric" aria-label="Поточні очки здоров'я">
               <button type="button" data-step="hpCurrent" data-d="1" aria-label="Плюс 1 ОЗ">+</button>
             </span>
-            <span class="slash">/</span><input id="hpMax" class="field hp-max-input" type="number" min="1" step="1" inputmode="numeric" aria-label="Максимум ОЗ" title="Максимум ОЗ можна змінити вручну"><small class="note" id="hpMaxNote">макс</small><button type="button" class="icon-btn reset-btn" id="hpMaxReset" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5V5h2.5"/></svg></button>
+            <span class="slash">/</span><b id="hpMax" class="hp-max" aria-label="Максимум ОЗ"></b><small class="note" id="hpMaxNote">макс</small><button type="button" class="icon-btn reset-btn" id="hpMaxReset" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5V5h2.5"/></svg></button>
           </div>
           <div class="note" id="repairNote">Караван цілий</div>
+          <button type="button" class="btn svc-btn" id="btnRepair" disabled>Відремонтувати</button>
           <div class="legend">Броня</div>
           <div class="armor-line">
-            <input id="armorVal" class="field armor-input" type="number" min="0" step="1" inputmode="numeric" aria-label="Броня">
+            <b id="armorVal" class="hp-max armor-show" aria-label="Броня"></b>
             <button type="button" class="icon-btn reset-btn" id="armorReset" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5V5h2.5"/></svg></button>
             <div class="armor-type-line"><label for="armorType">Тип:</label><input id="armorType" class="field armor-type" type="text" autocomplete="off" placeholder="фізична"></div>
           </div>
@@ -724,24 +888,64 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     </section>
 
     <!-- Вантажі -->
-    <section class="block">
+    <section class="block" id="secCargo">
       <div class="panel">
         <div class="screen">
           <div class="legend">Вантажі та пасажири</div>
           <div class="cargo-wrap">
             <table class="cargo">
-              <thead><tr><th style="width:34%">Назва</th><th class="kind-cell">Тип</th><th>Ціна</th><th>Кількість</th><th>Разом</th><th style="width:30%">Примітка</th><th></th></tr></thead>
+              <thead><tr><th style="width:30%">Назва</th><th class="kind-cell">Тип</th><th>Ціна</th><th>Кількість</th><th class="tick-cell" title="Далека доставка (понад 15 клітин): ×2 замість ×1,5">Далека</th><th class="tick-cell" title="Вантаж пошкоджено: ×1,25 (далека — ×1,5)">Пошк.</th><th title="За скільки продасться рядок">Сума</th><th style="width:26%">Примітка</th><th></th></tr></thead>
               <tbody id="cargoBody"></tbody>
             </table>
           </div>
           <div class="cargo-foot">
             <div class="cargo-btns">
               <button type="button" class="btn" id="addCargo">Додати рядок</button>
-              <button type="button" class="btn lamp-btn" id="longHaul" aria-pressed="false" title="Особливо далекі доставки (понад 15 клітин) оплачуються краще: до ціни продажу додається ще половина ціни купівлі (з округленням угору)."><span class="lamp" aria-hidden="true"></span>Далека доставка (понад 15 клітин)</button>
+              <button type="button" class="btn cg-sell-all" id="cargoSellAll" hidden>Продати все</button>
             </div>
             <span id="cargoSummary"></span>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Налаштування: надбавки й захист -->
+    <section class="block" id="secSettings">
+      <div class="block-head">
+        <h2>Налаштування</h2>
+        <div class="tools"><button type="button" class="btn" id="defReset" title="Прибрати обидві надбавки й повернути захист до звичайного (натисніть двічі)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ico"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5V5h2.5"/></svg><span id="defResetText">Повернути все до стандартних значень</span></button></div>
+      </div>
+      <div class="set-cols">
+        <div class="panel"><div class="screen set-box">
+          <div class="legend"><span>Надбавки<small id="setCount"></small></span></div>
+          <div class="set-grid">
+            <div class="set-row">
+              <label class="set-name" for="hpBonus">до максимуму ОЗ</label>
+              <span class="stepper"><button type="button" data-step="hpBonus" data-d="-1" aria-label="Мінус 1" title="Мінус 1"></button><input id="hpBonus" class="field" type="number" step="1" inputmode="numeric" placeholder="—" title=""><button type="button" data-step="hpBonus" data-d="1" aria-label="Плюс 1" title="Плюс 1"></button></span>
+              <button type="button" class="icon-btn reset-btn" data-ov-reset="hpBonus" title="Скинути до стандартного значення" aria-label="Скинути до стандартного значення" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5V5h2.5"/></svg></button>
+            </div>
+            <div class="set-row">
+              <label class="set-name" for="armorBonus">до броні</label>
+              <span class="stepper"><button type="button" data-step="armorBonus" data-d="-1" aria-label="Мінус 1" title="Мінус 1"></button><input id="armorBonus" class="field" type="number" step="1" inputmode="numeric" placeholder="—" title=""><button type="button" data-step="armorBonus" data-d="1" aria-label="Плюс 1" title="Плюс 1"></button></span>
+              <button type="button" class="icon-btn reset-btn" data-ov-reset="armorBonus" title="Скинути до стандартного значення" aria-label="Скинути до стандартного значення" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5V5h2.5"/></svg></button>
+            </div>
+            <div class="set-row">
+              <label class="set-name" for="psiArmor">пси-броня</label>
+              <span class="stepper"><button type="button" data-step="psiArmor" data-d="-1" aria-label="Мінус 1" title="Мінус 1"></button><input id="psiArmor" class="field" type="number" step="1" inputmode="numeric" placeholder="—" title="Пси-броня каравану: зменшує кожну психічну шкоду на це число (від 0); за правилами її немає"><button type="button" data-step="psiArmor" data-d="1" aria-label="Плюс 1" title="Плюс 1"></button></span>
+              <button type="button" class="icon-btn reset-btn" data-ov-reset="psiArmor" title="Скинути до стандартного значення" aria-label="Скинути до стандартного значення" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5V5h2.5"/></svg></button>
+            </div>
+          </div>
+          <div class="turret-set" id="turretSet" hidden>
+            <h3>Турель</h3>
+            <div class="set-row"><label class="set-name" for="turretDice">Шкода</label><input id="turretDice" class="field" type="text" maxlength="20" placeholder="2d6" aria-label="Шкода турелі" title="Кістки шкоди турелі, напр. 2d6, 3d6+2; за правилами 2d6 (важка зброя)"></div>
+            <div class="set-row"><label class="set-name" for="turretType">Тип</label><select id="turretType" class="field" aria-label="Тип шкоди турелі"></select></div>
+          </div>
+          <p class="note set-hint">Порожньо — за правилами. Максимум ОЗ і броня каравану не редагуються напряму: надбавка (можна від'ємну) додається до того, що порахував аркуш за транспортом і покращеннями.</p>
+        </div></div>
+        <div class="panel"><div class="screen set-box">
+          <div class="legend"><span>Захист<small id="defCount"></small></span></div>
+          <div class="set-grid" id="defGrid"></div>
+        </div></div>
       </div>
     </section>
 
@@ -778,6 +982,13 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
   </main>
 </div>
 
+<div class="spend-ask" id="spendAsk" hidden>
+  <div class="panel spend-box" role="dialog" aria-modal="true" aria-labelledby="spendTitle">
+    <div class="spend-head"><span class="plate-label" id="spendTitle"></span><button type="button" class="icon-btn" id="spendClose" aria-label="Закрити"></button></div>
+    <div class="screen" id="spendBody"></div>
+    <div class="spend-btns"><button type="button" class="btn svc-btn spend-pay" id="spendPay">Так, списати</button><button type="button" class="btn svc-btn" id="spendFree">Ні, без списання</button></div>
+  </div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText"></span><button type="button" id="toastUndo" hidden>Скасувати</button></div>
 
 <!-- pdf-lib 1.17.1 (MIT) -->
@@ -900,6 +1111,118 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
   const LICENSE = "Електронний аркуш каравану для гри «Пустельники». Автор: Сергій Тен. Графічний дизайн: Іллаір. Весь контент поширюється за ліцензією Creative Commons 4.0 BY-NC-SA.";
   const STORE_KEY = "pustelnyky-caravan-v1";
 
+  /* ================= Захист каравану =================
+     Копія module/rules/caravan-defence.mjs системи Foundry (рядок 2.5): S.defOv — захист за типами шкоди
+     ("" — за правилами), S.hpBonus / S.armorBonus — надбавки (можуть бути від'ємні), S.psiArmor — пси-броня */
+  /** The defence types a caravan can set (keys and names as the character sheet's DEF_TYPES) */
+  const CARAVAN_DEF_TYPES = [
+    ["phys", "Фізична шкода"],
+    ["energy", "Енергетична зброя"],
+    ["fire", "Вогонь"],
+    ["rad", "Радіація"],
+    ["poison", "Отрути"],
+    ["psy", "Психічна шкода"],
+  ];
+
+  /** The choices of each select (labels as the character sheet's DEF_LABEL) */
+  const CARAVAN_DEF_OPTIONS = [
+    ["normal", "звичайна"],
+    ["half", "½ шкоди"],
+    ["immune", "імунітет"],
+  ];
+  const CARAVAN_DEF_LABEL = { normal: "звичайна", half: "½ шкоди", immune: "імунітет" };
+
+  /** The defences the rules give: «Тачка» immune to psychic damage, poisons and radiation; «Свинцева обшивка» ½ radiation */
+  function caravanDefAuto({ tachka = false, lead = false } = {}) {
+    const d = Object.fromEntries(CARAVAN_DEF_TYPES.map(([k]) => [k, "normal"]));
+    if (tachka) Object.assign(d, { psy: "immune", poison: "immune", rad: "immune" });
+    if (lead && d.rad === "normal") d.rad = "half";
+    return d;
+  }
+
+  /** The final defences: the rules', each replaced by a value set by hand */
+  function caravanDefences(auto, ov) {
+    const out = { ...auto };
+    for (const [k] of CARAVAN_DEF_TYPES) if (["normal", "half", "immune"].includes(ov?.[k])) out[k] = ov[k];
+    return out;
+  }
+
+  const blankDefOv = () => Object.fromEntries(CARAVAN_DEF_TYPES.map(([k]) => [k, ""]));
+
+  /** Anything → a complete defOv with only «half» / «immune» kept */
+  function cleanDefOv(o) {
+    const out = blankDefOv();
+    if (o && typeof o === "object") for (const [k] of CARAVAN_DEF_TYPES) if (["normal", "half", "immune"].includes(o[k])) out[k] = o[k];
+    return out;
+  }
+
+  /** How many defences are set */
+  const defOvCount = (o) => CARAVAN_DEF_TYPES.filter(([k]) => ["normal", "half", "immune"].includes(o?.[k])).length;
+
+  /* ================= Продаж і послуги: копії Foundry (caravan-adapter.mjs: rowSale, cargoHurtAt; caravan-range.mjs: buyPlan) ================= */
+  // Ціна продажу рядка: звичайна доставка ×1,5, далека ×2; пошкоджений ×1,25 / ×1,5; округлення вгору. Пасажири — плата як є
+  function rowSale(r) {
+    const v = Math.max(0, int(r.price)) * Math.max(0, int(r.qty, 1));
+    if (r.kind === "pass") return v;
+    return Math.ceil(v * (r.far ? (r.hurt ? 1.5 : 2) : r.hurt ? 1.25 : 1.5));
+  }
+  // Вантаж страждає, коли шкоди БІЛЬШЕ ніж половина ОЗ (половина з округленням угору), і ОЗ > 0
+  const cargoHurtAt = (hp, max) => int(hp) > 0 && int(max) - int(hp) > Math.ceil(int(max) / 2);
+  // Поповнення: 3 одиниці запасу ходу за кришку; ремонт: 5 ОЗ за кришку; з бюджету, на скільки вистачить
+  const UNITS_PER_CAP = 3, HP_PER_CAP = 5;
+  function buyPlan(lack, caps, per) {
+    const need = Math.max(0, Math.round(Number(lack)) || 0);
+    const have = Math.max(0, Math.round(Number(caps)) || 0);
+    if (!need || !have) return { units: 0, cost: 0 };
+    const cost = Math.min(Math.ceil(need / per), have);
+    return { units: Math.min(need, cost * per), cost };
+  }
+  // Вписане число (як num у caravan-controller.mjs Foundry): ціле, округлене, у межах [lo, hi]; не число — def
+  function numIn(v, def = 0, lo = -Infinity, hi = Infinity) {
+    const t = String(v ?? "").trim().replace(",", ".");
+    let n = t === "" ? NaN : Number(t);
+    if (!Number.isFinite(n)) n = parseInt(t, 10);
+    if (!Number.isFinite(n)) return def;
+    return Math.max(lo, Math.min(hi, Math.round(n)));
+  }
+  /* Купівля й продаж рядків вантажу (A3), покращення понад два (A13): копії Foundry (caravan-adapter.mjs: rowKey, rowCost, salePlan;
+     caravan-controller.mjs: IMP_PRICE, impCost; spend-ask.mjs: spendText), прив'язані тестом DEV tests/caravan-trade-html.test.mjs */
+  const rowKey = (r) => [r.kind || "cargo", r.name || "", int(r.price), int(r.qty, 1), r.far ? 1 : 0, r.hurt ? 1 : 0].join("|");
+  const rowCost = (r) => Math.max(0, int(r.price)) * Math.max(0, int(r.qty, 1));
+  function salePlan(S, { i = -1, all = false } = {}) {
+    const rows = [];
+    (S.cargo || []).forEach((r, k) => {
+      if (all ? r.kind === "pass" || r.unpaid : k !== i || (r.kind !== "pass" && r.unpaid)) return;
+      const sum = rowSale(r);
+      if (sum > 0) rows.push({ i: k, name: r.name || "", pass: r.kind === "pass", qty: Math.max(0, int(r.qty, 1)), price: Math.max(0, int(r.price)), far: !!r.far, hurt: !!r.hurt, sum });
+    });
+    return { rows, total: rows.reduce((t, r) => t + r.sum, 0) };
+  }
+  const IMP_PRICE = 25;
+  function impCost(S, impCount, id, k) {
+    const cur = id ? int(S.imp?.[id]) : 0;
+    const added = id ? (cur > int(k) ? int(k) : int(k) + 1) - cur : 1;
+    if (added <= 0) return 0;
+    return IMP_PRICE * (Math.max(0, impCount + added - 2) - Math.max(0, impCount - 2));
+  }
+  function spendText({ what = "", cost = 0, have = 0, unit = 0, qty = 1 } = {}) {
+    const short = cost > have;
+    const many = qty > 1 && unit > 0;
+    const line = (l, r, cls = "") => `<div class="pust-rcpt-ln${cls}"><span>${l}</span><i aria-hidden="true"></i><span>${r}</span></div>`;
+    const budget = short
+      ? `<b class="pust-spend-short">${have}(к): бракує ${cost - have}(к)</b>`
+      : `${have} → <b class="pust-spend-left">${have - cost}(к)</b>`;
+    return {
+      short,
+      html: `<div class="pust-rcpt">`
+        + line(`<b>${esc(what || "без назви")}</b>`, many ? `${unit}(к) × ${qty}` : `${cost}(к)`)
+        + `<hr>`
+        + (many ? line("Разом", `${cost}(к)`, " pust-rcpt-tot") : "")
+        + line("Бюджет", budget)
+        + `</div><p class="pust-spend-q"><b>Списати ${cost}(к) з бюджету?</b></p>`,
+    };
+  }
+
   /* ================= Стан ================= */
   function blankImps() { const o = {}; IMPS.forEach(i => o[i.id] = 0); return o; }
   // Поля, які гравці заповнили вручну: кубики для них блокуються
@@ -913,7 +1236,7 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
       imp: blankImps(),
       cargo: [], counters: [],
       story: { meeting: "", face: "", lastJob: "", wentWrong: "" }, notes: "",
-      longHaul: false, hpMaxOverride: null, armorOverride: null, armorType: DEFAULT_ARMOR_TYPE, customImps: [],
+      longHaul: false, hpBonus: 0, armorBonus: 0, psiArmor: 0, defOv: blankDefOv(), armorType: DEFAULT_ARMOR_TYPE, customImps: [],
       manual: blankManual()
     };
   }
@@ -932,9 +1255,9 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
   function derived(st = S) {
     const t = st.tachka;
     const baseMaxHP = (t ? 35 : 25) + 10 * st.imp.structure;
-    const maxHP = st.hpMaxOverride != null ? st.hpMaxOverride : baseMaxHP;
+    const maxHP = Math.max(1, baseMaxHP + int(st.hpBonus));
     const baseArmor = (t ? 2 : 1) + 2 * st.imp.armor;
-    const armor = st.armorOverride != null ? st.armorOverride : baseArmor;
+    const armor = Math.max(0, baseArmor + int(st.armorBonus));
     const maxMove = 10 + 5 * st.imp.feed;
     const supCap = 3 * st.imp.chest;
     const cargoCap = 10 * (1 + st.imp.trunk);
@@ -945,7 +1268,7 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
       const v = int(r.price) * Math.max(0, int(r.qty, 1));
       if (r.kind === "pass") passengers += Math.max(0, int(r.qty, 1)); else cargoVal += v;
     });
-    return { maxHP, baseMaxHP, armor, baseArmor, maxMove, supCap, cargoCap, impCount, cargoVal, passengers, cells: t ? 3 : 1 };
+    return { maxHP, baseMaxHP, armor, baseArmor, psiArmor: Math.max(0, int(st.psiArmor)), maxMove, supCap, cargoCap, impCount, cargoVal, passengers, cells: t ? 3 : 1 };
   }
   function aspectFor(k) {
     if (k <= -20) return "Втілення зла";
@@ -986,16 +1309,26 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     st.imp = Object.assign(blankImps(), o.imp || {});
     IMPS.forEach(i => { st.imp[i.id] = Math.max(0, Math.min(i.max, int(st.imp[i.id]))); });
     st.story = Object.assign(blankState().story, o.story || {});
-    st.cargo = Array.isArray(o.cargo) ? o.cargo.map(r => ({ name: String(r.name || ""), kind: r.kind === "pass" ? "pass" : "cargo", price: String(r.price ?? ""), qty: String(r.qty ?? ""), note: String(r.note || "") })) : [];
+    st.cargo = Array.isArray(o.cargo) ? o.cargo.map(r => ({ name: String(r.name || ""), kind: r.kind === "pass" ? "pass" : "cargo", price: String(r.price ?? ""), qty: String(r.qty ?? ""), note: String(r.note || ""), ...(r.far ? { far: true } : {}), ...(r.hurt ? { hurt: true } : {}), ...(r.unpaid ? { unpaid: true } : {}) })) : [];
     st.counters = Array.isArray(o.counters) ? o.counters.map(c => ({ name: String(c.name || ""), size: [4, 6, 8, 10, 12].includes(int(c.size)) ? int(c.size) : 6, value: Math.max(0, int(c.value)) })) : [];
     ["luck", "karma", "budget", "hpCurrent", "moveCurrent", "supplies"].forEach(k => st[k] = int(st[k]));
     st.luck = Math.max(-2, Math.min(2, st.luck));
     st.tachka = !!st.tachka;
-    st.longHaul = !!o.longHaul;
+    // «Далека доставка» старого файлу (на весь караван) стає позначкою кожного рядка вантажу, лише якщо жоден рядок не має своєї
+    if (o.longHaul && !st.cargo.some(r => r.far)) st.cargo.forEach(r => { if (r.kind !== "pass") r.far = true; });
+    st.longHaul = false;
+    // Максимум ОЗ і броня = правила + надбавка. Файл пише й старі абсолютні hpMaxOverride / armorOverride (null — без надбавки):
+    // якщо старий ключ не збігається з правилами + надбавкою (файл змінив старий аркуш), надбавка рахується з нього (вердикт Fable)
+    const baseHP = (st.tachka ? 35 : 25) + 10 * st.imp.structure, baseAr = (st.tachka ? 2 : 1) + 2 * st.imp.armor;
     const ov = parseInt(o.hpMaxOverride, 10);
-    st.hpMaxOverride = Number.isFinite(ov) && ov >= 1 ? ov : null;
     const ar = parseInt(o.armorOverride, 10);
-    st.armorOverride = Number.isFinite(ar) && ar >= 0 ? ar : null;
+    st.hpBonus = int(o.hpBonus);
+    if ("hpMaxOverride" in o) { const was = Number.isFinite(ov) && ov >= 1 ? ov : baseHP; if (was !== Math.max(1, baseHP + st.hpBonus)) st.hpBonus = was - baseHP; }
+    st.armorBonus = int(o.armorBonus);
+    if ("armorOverride" in o) { const was = Number.isFinite(ar) && ar >= 0 ? ar : baseAr; if (was !== Math.max(0, baseAr + st.armorBonus)) st.armorBonus = was - baseAr; }
+    delete st.hpMaxOverride; delete st.armorOverride;
+    st.defOv = cleanDefOv(o.defOv);
+    st.psiArmor = Math.max(0, int(o.psiArmor));
     st.armorType = typeof o.armorType === "string" ? o.armorType : DEFAULT_ARMOR_TYPE;
     st.customImps = Array.isArray(o.customImps) ? o.customImps.map(c => ({ name: String((c && c.name) || ""), desc: String((c && c.desc) || "") })) : [];
     st.manual = blankManual();
@@ -1005,6 +1338,7 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
 
   /* ================= Кубики й іконки ================= */
   const DIE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.4" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.4" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.4" fill="currentColor"/></svg>';
+  const RESET_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5V5h2.5"/></svg>';
   const X_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
   const LOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></svg>';
   document.querySelectorAll(".die").forEach(b => b.innerHTML = DIE_SVG);
@@ -1133,6 +1467,8 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     renderImps();
     renderCounters();
     renderCargo();
+    hurtWas = null;
+    karmaQuiet();
     renderDerived();
   }
 
@@ -1152,22 +1488,33 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     $("feedBrahmin").classList.toggle("lbl-on", !S.tachka);
     $("feedTachka").classList.toggle("lbl-on", S.tachka);
 
-    // ОЗ і броня
+    // Караван уперше отримав понад половину ОЗ шкоди: увесь вантаж, що є зараз, пошкоджено (як WastelandersActor._onUpdate
+    // у Foundry); вантаж, завантажений пізніше, цілий; ремонт позначки не знімає, знімає позначка «Пошк.»
+    const hurtNow = cargoHurtAt(S.hpCurrent, D.maxHP);
+    let hurtMarked = false;
+    if (hurtNow && hurtWas === false) {
+      const rows = S.cargo.filter(r => r.kind !== "pass" && !r.hurt);
+      rows.forEach(r => { r.hurt = true; });
+      if (rows.length) { hurtMarked = true; renderCargo(); }
+    }
+    hurtWas = hurtNow;
+
+    // ОЗ і броня: правила + надбавка з «Налаштування» (як у Foundry), тут лише показ
     $("hpCurrent").value = S.hpCurrent;
     $("hpCurrent").max = D.maxHP;
-    const hm = $("hpMax"), custom = S.hpMaxOverride != null;
-    if (document.activeElement !== hm) hm.value = D.maxHP;
+    const hm = $("hpMax"), custom = !!int(S.hpBonus);
+    hm.textContent = D.maxHP;
     hm.classList.toggle("custom", custom);
     $("hpMaxNote").hidden = custom;
-    hm.title = custom ? `Встановлено вручну. Стандартно: ${D.baseMaxHP}` : "Максимум ОЗ можна змінити вручну";
+    hm.title = `Максимум ОЗ: за правилами ${D.baseMaxHP} плюс надбавка з «Налаштування → Захист»`;
     const rb = $("hpMaxReset");
     rb.hidden = !custom;
     rb.title = `Повернути стандартний максимум (${D.baseMaxHP})`;
     rb.setAttribute("aria-label", rb.title);
-    const av = $("armorVal"), armorCustom = S.armorOverride != null;
-    if (document.activeElement !== av) av.value = D.armor;
+    const av = $("armorVal"), armorCustom = !!int(S.armorBonus);
+    av.textContent = D.armor;
     av.classList.toggle("custom", armorCustom);
-    av.title = armorCustom ? `Встановлено вручну. Стандартно: ${D.baseArmor}` : "Броню можна змінити вручну";
+    av.title = `Броня: за правилами ${D.baseArmor} плюс надбавка з «Налаштування → Захист»`;
     const at = $("armorType"), typeCustom = S.armorType.trim() !== DEFAULT_ARMOR_TYPE;
     if (document.activeElement !== at) at.value = S.armorType;
     at.classList.toggle("custom", typeCustom);
@@ -1177,8 +1524,17 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     ab.setAttribute("aria-label", ab.title);
     const dmg = D.maxHP - S.hpCurrent;
     $("repairNote").innerHTML = dmg > 0
-      ? `Пошкоджено на <b>${dmg}</b> ОЗ · ремонт у техніка: <b>${Math.ceil(dmg / 5)}(к)</b> (1(к) за 5 ОЗ)` + (S.hpCurrent > 0 && S.hpCurrent <= Math.floor(D.maxHP / 2) ? `<br><b>Вантаж постраждав</b>: шкоди більше ніж на половину ОЗ` : "") + (S.hpCurrent === 0 ? `<br><b>ОЗ 0 — вантаж знищено</b>` : "")
+      ? `Пошкоджено на <b>${dmg}</b> ОЗ` + (hurtNow ? `<br><b>Вантаж постраждав</b>: шкоди більше ніж на половину ОЗ` : "") + (S.hpCurrent === 0 ? `<br><b>ОЗ 0 — вантаж знищено</b>` : "")
       : "Караван цілий";
+    // «Відремонтувати за N(к)»: 5 ОЗ за кришку з бюджету, на скільки вистачить (як у Foundry)
+    const caps = Math.max(0, int(S.budget));
+    const rp = buyPlan(dmg, caps, HP_PER_CAP), rpb = $("btnRepair");
+    rpb.textContent = dmg > 0 && rp.cost ? `Відремонтувати за ${rp.cost}(к)` : "Відремонтувати";
+    rpb.disabled = dmg <= 0 || caps <= 0;
+    rpb.title = dmg <= 0 ? "Караван цілий"
+      : caps <= 0 ? "У бюджеті каравану немає кришок"
+      : rp.units < dmg ? `Кришок вистачить на ${rp.units} з ${dmg} ОЗ: 1(к) за 5 ОЗ`
+      : `Відремонтувати ${dmg} ОЗ за ${rp.cost}(к) з бюджету: 1(к) за 5 ОЗ`;
 
     // Запас ходу
     renderPips($("movePips1"), 0, 10, D.maxMove, S.moveCurrent, "move");
@@ -1186,7 +1542,27 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     $("moveNow").textContent = `${S.moveCurrent} / ${D.maxMove}`;
     $("cellRule").textContent = S.tachka ? "3 клітини за день і одиницю" : "1 клітина за день і одиницю";
     const lack = D.maxMove - S.moveCurrent;
-    $("refill").textContent = lack > 0 ? `Поповнити: ${Math.ceil(lack / 3)}(к)` : "Повний запас";
+    $("refill").textContent = lack > 0 ? `Бракує ${lack}` : "Повний запас";
+    // «Поповнити за N(к)»: 3 одиниці за кришку з бюджету, на скільки вистачить (як у Foundry)
+    const fp = buyPlan(lack, caps, UNITS_PER_CAP), fpb = $("btnRefill");
+    fpb.textContent = lack > 0 && fp.cost ? `Поповнити за ${fp.cost}(к)` : "Поповнити";
+    fpb.disabled = lack <= 0 || caps <= 0;
+    fpb.title = lack <= 0 ? "Запас ходу повний"
+      : caps <= 0 ? "У бюджеті каравану немає кришок"
+      : fp.units < lack ? `Кришок вистачить на ${fp.units} з ${lack}: 1(к) за 3 одиниці`
+      : `Поповнити ${lack} од. за ${fp.cost}(к) з бюджету: 1(к) за 3 одиниці`;
+    // «Породисті браміни» / «Паливний регулятор»: вибір перед подорожжю і «Першопроходець» (½), як у Foundry
+    const brah = IMPS.find(i => i.id === "brahmins");
+    $("brahRow").hidden = !S.imp.brahmins;
+    renderTurretSet();
+    $("brahName").textContent = impName(brah);
+    const share = S.pathfinder === true ? "½" : "¼", byTime = S.brahminBonus === "time";
+    $("brahRange").textContent = `−${share} запасу`;
+    $("brahTime").textContent = `−${share} часу`;
+    $("brahRange").setAttribute("aria-checked", byTime ? "false" : "true");
+    $("brahTime").setAttribute("aria-checked", byTime ? "true" : "false");
+    $("pathfinder").classList.toggle("on", S.pathfinder === true);
+    $("pathfinder").setAttribute("aria-pressed", S.pathfinder === true ? "true" : "false");
 
     // Смуга
     const need = D.impCount < 2;
@@ -1216,6 +1592,7 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
         b.disabled = !!locked;
         b.setAttribute("aria-pressed", k < n ? "true" : "false");
       });
+      if (i.id === "turret" || i.id === "defib") impAct(i.id, row.querySelector(".imp-act"), n > 0);
       if (i.id === "chest") {
         const box = row.querySelector(".sup-pips");
         renderPips(box, 0, D.supCap, D.supCap, S.supplies, "sup");
@@ -1224,11 +1601,42 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     });
 
     renderCargoSummary(D);
+    renderSettings(D);
     renderLocks();
     renderImpsLock();
     renderFold();
     document.querySelectorAll("select.dd-native").forEach(syncSelect);
+    renderCompact(D);
     persist();
+    if (hurtMarked) toast("Караван отримав понад половину ОЗ шкоди — вантаж пошкоджено");
+  }
+  let hurtWas = null;
+
+  // «Налаштування»: надбавки й захист за типами шкоди (як вкладка «Налаштування» аркуша каравану у Foundry)
+  $("defGrid").innerHTML = CARAVAN_DEF_TYPES.map(([k, n]) => `<div class="set-row def-row">
+      <label class="set-name" for="defOv-${k}">${esc(n)}</label>
+      <select class="field" id="defOv-${k}" data-def="${k}"><option value="">за правилами</option>${CARAVAN_DEF_OPTIONS.map(([v, t]) => `<option value="${v}">${esc(t)}</option>`).join("")}</select>
+      <button type="button" class="icon-btn reset-btn" data-def-reset="${k}" title="Скинути до стандартного значення" aria-label="Скинути до стандартного значення" hidden>${RESET_SVG}</button>
+    </div>`).join("");
+  function renderSettings(D) {
+    const bonus = [["hpBonus", D.baseMaxHP], ["armorBonus", D.baseArmor], ["psiArmor", 0]];
+    bonus.forEach(([k, base]) => {
+      const inp = $(k), v = int(S[k]);
+      if (document.activeElement !== inp) inp.value = v ? String(v) : "";
+      if (k !== "psiArmor") inp.title = `Ціле число, може бути від'ємним; порожньо — без надбавки (за правилами ${base})`;
+      document.querySelector(`[data-ov-reset="${k}"]`).hidden = !v;
+    });
+    const set = bonus.filter(([k]) => int(S[k])).length;
+    $("setCount").textContent = set ? `задано: ${set}` : "";
+    const auto = caravanDefAuto({ tachka: S.tachka, lead: S.imp.lead > 0 });
+    CARAVAN_DEF_TYPES.forEach(([k]) => {
+      const sel = $("defOv-" + k);
+      sel.options[0].text = `за правилами: ${CARAVAN_DEF_LABEL[auto[k]]}`;
+      sel.value = S.defOv[k] || "";
+      document.querySelector(`[data-def-reset="${k}"]`).hidden = !S.defOv[k];
+    });
+    const n = defOvCount(S.defOv);
+    $("defCount").textContent = n ? `змінено: ${n}` : "";
   }
 
   function renderLocks() {
@@ -1285,7 +1693,8 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     $("impList").innerHTML = IMPS.map(i => {
       let btns = "";
       for (let k = 0; k < i.max; k++) btns += `<button type="button" class="rbtn" data-imp-btn="${i.id}" data-k="${k}" aria-label="${esc(i.name)}${i.max > 1 ? ", рівень " + (k + 1) : ""}"></button>`;
-      const extra = i.id === "chest" ? `<div class="sup-pips" role="group" aria-label="Припаси"></div>` : "";
+      const extra = (i.id === "chest" ? `<div class="sup-pips" role="group" aria-label="Припаси"></div>` : "")
+        + (i.id === "turret" || i.id === "defib" ? `<div class="imp-act" data-imp-act="${i.id}" hidden></div>` : "");
       const warn = i.requires ? `` : "";
       return `<div class="plate" data-imp="${i.id}">
         <div class="plate-title"><span class="plate-label">${esc(impName(i))}</span>${i.alt ? `<small>${esc(impSub(i))}</small>` : ""}</div>
@@ -1326,7 +1735,7 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
   function renderCargo() {
     const body = $("cargoBody");
     if (!S.cargo.length) {
-      body.innerHTML = `<tr><td colspan="7" class="empty-note">Порожньо. За замовчуванням у караван влазить добра на суму до 10 кришок.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="9" class="empty-note">Порожньо. За замовчуванням у караван влазить добра на суму до 10 кришок.</td></tr>`;
       return;
     }
     body.innerHTML = S.cargo.map((r, idx) => `<tr>
@@ -1334,6 +1743,7 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
       <td class="kind-cell"><select class="field" id="cg-kind-${idx}" data-cg="${idx}" data-f="kind" aria-label="Тип"><option value="cargo"${r.kind !== "pass" ? " selected" : ""}>Вантаж</option><option value="pass"${r.kind === "pass" ? " selected" : ""}>Пасажир</option></select></td>
       <td><input class="field num" id="cg-price-${idx}" data-cg="${idx}" data-f="price" type="number" min="0" step="1" value="${esc(r.price)}" aria-label="Ціна"></td>
       <td><input class="field num" id="cg-qty-${idx}" data-cg="${idx}" data-f="qty" type="number" min="0" step="1" value="${esc(r.qty)}" aria-label="Кількість"></td>
+      ${r.kind === "pass" ? `<td class="tick-cell"></td><td class="tick-cell"></td>` : `<td class="tick-cell"><input type="checkbox" class="lamp-tick" id="cg-far-${idx}" data-cg="${idx}" data-f="far"${r.far ? " checked" : ""} aria-label="Далека доставка" title="Далека доставка (понад 15 клітин): продаж ×2 замість ×1,5"></td><td class="tick-cell"><input type="checkbox" class="lamp-tick" id="cg-hurt-${idx}" data-cg="${idx}" data-f="hurt"${r.hurt ? " checked" : ""} aria-label="Пошкоджено" title="Вантаж пошкоджено: продаж ×1,25 (далека — ×1,5). Ставиться сам, коли караван отримує понад половину ОЗ шкоди"></td>`}
       <td class="sum" data-cg-sum="${idx}"></td>
       <td><textarea class="field autogrow" id="cg-note-${idx}" data-cg="${idx}" data-f="note" rows="1" placeholder="Куди, кому, умови" aria-label="Примітка">${esc(r.note)}</textarea></td>
       <td><button type="button" class="icon-btn" data-cg-del="${idx}" aria-label="Видалити рядок">${X_SVG}</button></td>
@@ -1342,27 +1752,113 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     body.querySelectorAll("textarea.autogrow").forEach(autogrow);
   }
 
-  // Продаж: +½ ціни (пошкоджений +¼), далека доставка додає ще ½ ціни купівлі; округлення вгору від загальної суми
+  // Продаж (рішення автора, 2026-11-14): звичайна доставка ×1,5, далека ×2; пошкоджений вантаж — ×1,25 і ×1,5;
+  // округлення вгору від загальної суми
   function salePrices(D, st = S) {
-    const extra = st.longHaul ? 0.5 : 0;
     const v = Math.max(0, D.cargoVal);
-    return { sale: Math.ceil(v * (1.5 + extra)), saleHurt: Math.ceil(v * (1.25 + extra)) };
+    return st.longHaul
+      ? { sale: Math.ceil(v * 2), saleHurt: Math.ceil(v * 1.5) }
+      : { sale: Math.ceil(v * 1.5), saleHurt: Math.ceil(v * 1.25) };
   }
+  // «Сума продажу» (як у Foundry): сума цін продажу рядків вантажу, кожен зі своєю далекою доставкою й пошкодженням; ОЗ 0 — 0
+  const cargoSale = (st = S) => st.hpCurrent === 0 ? 0 : st.cargo.filter(r => r.kind !== "pass").reduce((t, r) => t + rowSale(r), 0);
   function renderCargoSummary(D) {
-    const lh = $("longHaul");
-    lh.setAttribute("aria-pressed", S.longHaul ? "true" : "false");
-    lh.classList.toggle("on", S.longHaul);
     S.cargo.forEach((r, idx) => {
       const cell = document.querySelector(`[data-cg-sum="${idx}"]`);
-      if (cell) cell.textContent = int(r.price) * Math.max(0, int(r.qty, 1)) || "";
+      if (!cell) return;
+      // як у Foundry (A3): «Купити за N(к)», поки доданий вручну рядок не куплено, далі «Продати за N(к)» (пасажир — «Плата за
+      // проїзд N(к)»); нічого, поки рядок нічого не вартий або вантаж знищено (ОЗ 0)
+      const pass = r.kind === "pass", sum = rowSale(r);
+      const buy = !pass && r.unpaid && rowCost(r) > 0 ? rowCost(r) : 0;
+      const sell = S.hpCurrent === 0 || (!pass && r.unpaid) ? 0 : sum;
+      const deal = buy
+        ? `<button type="button" class="btn svc-btn cg-buy" data-cg-buy="${idx}" title="Купити: списати ${buy}(к) з бюджету (або взяти без списання)">Купити за ${buy}(к)</button>`
+        : sell ? `<button type="button" class="btn svc-btn cg-sell" data-cg-sell="${idx}" data-key="${esc(rowKey(r))}" title="${pass ? `Отримати плату за проїзд: ${sell}(к) у бюджет, рядок прибирається` : `Продати: ${sell}(к) у бюджет, рядок прибирається`}">${pass ? `Плата за проїзд ${sell}(к)` : `Продати за ${sell}(к)`}</button>` : "";
+      cell.innerHTML = `<span class="sum-n">${sum || ""}</span>${deal}`;
+      cell.classList.toggle("hurt", !!r.hurt && !pass);
+      cell.title = pass ? "Плата за проїзд" : "Ціна продажу рядка";
     });
-    const { sale, saleHurt } = salePrices(D);
-    $("cargoSummary").innerHTML = D.cargoVal || D.passengers
-      ? `Вантаж: <b>${D.cargoVal} / ${D.cargoCap}(к)</b>${D.cargoVal > D.cargoCap ? " — <b>перевантаження</b>" : ""} · продаж: <b>${sale}(к)</b> (пошкоджений <b>${saleHurt}(к)</b>)${D.passengers ? ` · пасажирів: <b>${D.passengers}</b>` : ""}`
+    // «Продати все»: увесь куплений вантаж (без пасажирів); немає, коли вантаж знищено
+    const all = S.hpCurrent === 0 ? 0 : salePlan(S, { all: true }).total;
+    $("cargoSellAll").hidden = !all;
+    $("cargoSellAll").title = all ? `Продати весь куплений вантаж за ${all}(к): кришки йдуть у бюджет, рядки прибираються (пасажири лишаються)` : "";
+    const cs = $("cargoSummary");
+    cs.title = S.hpCurrent === 0 ? "ОЗ 0 — вантаж знищено: продавати нічого" : "За скільки можна продати весь вантаж: сума рядків, кожен зі своєю далекою доставкою й пошкодженням";
+    cs.innerHTML = D.cargoVal || D.passengers
+      ? `Вантаж: <b>${D.cargoVal} / ${D.cargoCap}(к)</b>${D.cargoVal > D.cargoCap ? " — <b>перевантаження</b>" : ""} · сума продажу: <b>${cargoSale()}(к)</b>${D.passengers ? ` · пасажирів: <b>${D.passengers}</b>` : ""}`
       : `Місткість: <b>${D.cargoCap}(к)</b> вантажу`;
   }
 
+  /* ================= «Турель» і «Дефібрилятор» (рядок 3.2, як у Foundry) ================= */
+  // Налаштування турелі (S.turret = { dice, type }) і позначка дефібрилятора (S.defibUsed) живуть у S і в .json, але поза
+  // blankState / normalize: ті переносяться у Foundry (caravan-logic.mjs), а там це прапорці актора. Читати лише через turretOf.
+  // Типи шкоди — як DMG_TYPES у battle.mjs Foundry (тест turret-html.test.mjs у DEV).
+  const TURRET_TYPES = {
+    phys: "Фізична", laser: "Лазерна (ігнорує 1 броні)", plasma: "Плазмова (ігнорує 2 броні)", gauss: "Гаус (ігнорує 3 броні)",
+    electric: "Електрична (+1d6 роботам)", cryo: "Кріо", fire: "Вогонь", rad: "Радіація (ігнорує броню)",
+    poison: "Отрута (ігнорує броню)", psychic: "Психічна (ігнорує фізичну броню)"
+  };
+  const TURRET_DEFAULT = { dice: "2d6", type: "phys" };
+  function turretOf(st = S) {
+    const t = st.turret && typeof st.turret === "object" ? st.turret : {};
+    const dice = String(t.dice || "").trim().slice(0, 20) || TURRET_DEFAULT.dice;
+    const type = Object.prototype.hasOwnProperty.call(TURRET_TYPES, t.type) ? t.type : TURRET_DEFAULT.type;
+    return { dice, type };
+  }
+  const turretLabel = k => TURRET_TYPES[k].replace(/ \(.*/, "");
+  // для тексту й PDF — лише змінені (автор, 2026-11-19): «3d6, вогонь»
+  function turretText(st = S) {
+    const t = turretOf(st);
+    return t.dice === TURRET_DEFAULT.dice && t.type === TURRET_DEFAULT.type ? "" : `${t.dice}, ${turretLabel(t.type).toLowerCase()}`;
+  }
+  // «2d6», «3d6+2», «d8», «5»: кістки й модифікатор; інше — null
+  function turretRoll(dice) {
+    const s = String(dice).replace(/\s+/g, "").toLowerCase().replace(/к/g, "d");
+    if (/^\d+$/.test(s)) return { rolls: [], mod: int(s), total: int(s) };
+    const m = /^(\d*)d(\d+)([+-]\d+)?$/.exec(s);
+    if (!m || int(m[2]) < 1 || int(m[1] || "1") > 50) return null;
+    const rolls = Array.from({ length: int(m[1] || "1") }, () => d(int(m[2])));
+    const mod = int(m[3] || "0");
+    return { rolls, mod, total: Math.max(0, rolls.reduce((a, b) => a + b, 0) + mod) };
+  }
+  function impAct(id, box, taken) {
+    if (!box) return;
+    box.hidden = !taken;
+    if (!taken) { box.innerHTML = ""; return; }
+    if (id === "turret") {
+      const t = turretOf();
+      box.innerHTML = `<button type="button" class="btn svc-btn" data-turret-roll title="Кинути шкоду турелі">${DIE_SVG}${esc(t.dice)}</button><span class="imp-type" title="${esc(TURRET_TYPES[t.type])}">${esc(turretLabel(t.type))}</span>`;
+    } else {
+      box.innerHTML = S.defibUsed
+        ? `<span class="imp-used" title="Раз за сцену: у новій сцені зніміть позначку">Використано</span><button type="button" class="imp-free" data-defib="0" title="Зняти позначку «використано»: у новій сцені дефібрилятор знову доступний">↺ Зняти позначку</button>`
+        : `<span class="imp-lim">раз за сцену</span><button type="button" class="btn svc-btn" data-defib="1" title="Застосувати: персонаж з 0 ОЗ повертається в сцену з 1 ОЗ; позначка до кінця сцени. Одиницю Припасів зніміть самі.">Застосувати</button>`;
+    }
+  }
+  function renderTurretSet() {
+    $("turretSet").hidden = !S.imp.turret;
+    const t = turretOf(), dIn = $("turretDice"), sel = $("turretType");
+    if (document.activeElement !== dIn) dIn.value = S.turret && String(S.turret.dice || "").trim() ? t.dice : "";
+    sel.value = t.type;
+    syncSelect(sel);
+  }
+  $("turretType").innerHTML = Object.entries(TURRET_TYPES).map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join("");
+
   /* ================= Текстовий вивід ================= */
+  // Надбавки «Налаштування» (назви як у Foundry), лише задані
+  function bonusText(st = S) {
+    return [["hpBonus", "до максимуму ОЗ"], ["armorBonus", "до броні"], ["psiArmor", "пси-броня"]]
+      .filter(([k]) => int(st[k])).map(([k, n]) => n + " " + (k === "psiArmor" ? int(st[k]) : signed(int(st[k])))).join("; ");
+  }
+  // Захист понад звичайний (як позначки біля броні в Foundry: «радіація: ½», «отрути: імунітет»)
+  const DEF_SHORT = { phys: "фізична", energy: "енергетична", fire: "вогонь", rad: "радіація", poison: "отрути", psy: "психічна" };
+  function defText(st = S) {
+    const now = caravanDefences(caravanDefAuto({ tachka: st.tachka, lead: st.imp.lead > 0 }), st.defOv);
+    return CARAVAN_DEF_TYPES.filter(([k]) => now[k] !== "normal").map(([k]) => `${DEF_SHORT[k]}: ${now[k] === "half" ? "½" : "імунітет"}`).join("; ");
+  }
+  // Вибір «Породистих брамінів» / «Паливного регулятора» перед подорожжю (як напис у Foundry)
+  const brahText = (st = S) => `−${st.pathfinder === true ? "½" : "¼"} ${st.brahminBonus === "time" ? "часу" : "запасу ходу"}`;
+  // Позначки рядка вантажу: «далека», «пошк.» (пасажир — без них)
+  const rowTicks = r => r.kind === "pass" ? [] : [r.far ? "далека" : "", r.hurt ? "пошк." : ""].filter(Boolean);
   function toText(st = S) {
     const D = derived(st);
     const L = [];
@@ -1379,16 +1875,18 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     L.push("");
     L.push(`Очки здоров'я: ${st.hpCurrent} / ${D.maxHP}`);
     L.push("Броня: " + D.armor + " (" + (st.armorType.trim() || DEFAULT_ARMOR_TYPE) + ")");
+    if (bonusText(st)) L.push("Надбавки: " + bonusText(st));
+    if (defText(st)) L.push("Захист: " + defText(st));
     L.push(`Запас ходу: ${st.moveCurrent} / ${D.maxMove}`);
     if (D.supCap) L.push(`Припаси у скриньці: ${st.supplies} / ${D.supCap}`);
     L.push(`Вантаж: ${D.cargoVal} / ${D.cargoCap} кришок`);
-    if (st.longHaul) { const sp = salePrices(D, st); L.push(`Далека доставка (понад 15 клітин): продаж ${sp.sale}, пошкоджений ${sp.saleHurt} кришок`); }
+    if (st.cargo.some(r => r.kind !== "pass")) L.push(`Сума продажу: ${cargoSale(st)} кришок`);
     L.push("");
     L.push("ПОКРАЩЕННЯ");
     const taken = IMPS.filter(i => st.imp[i.id] > 0);
     const customs = st.customImps.filter(c => (c.name || "").trim() || (c.desc || "").trim());
     if (!taken.length && !customs.length) L.push("  —");
-    taken.forEach(i => L.push("  ☢ " + impName(i, st) + (st.imp[i.id] > 1 ? " ×" + st.imp[i.id] : "") + " — " + i.desc));
+    taken.forEach(i => L.push("  ☢ " + impName(i, st) + (st.imp[i.id] > 1 ? " ×" + st.imp[i.id] : "") + " — " + i.desc + (i.id === "brahmins" ? " [" + brahText(st) + "]" : "") + (i.id === "turret" && turretText(st) ? " [" + turretText(st) + "]" : "")));
     customs.forEach(c => L.push("  ☢ " + (c.name.trim() || "Власне покращення") + (c.desc.trim() ? " — " + c.desc.trim() : "") + " (власне)"));
     if (st.counters.length) {
       L.push("");
@@ -1402,6 +1900,8 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
       const bits = [r.kind === "pass" ? "пасажир" : "вантаж"];
       if (r.price !== "") bits.push("ціна " + r.price);
       if (r.qty !== "") bits.push("к-сть " + r.qty);
+      bits.push(...rowTicks(r));
+      if (r.kind !== "pass" && rowSale(r)) bits.push("сума " + rowSale(r));
       L.push("  • " + (r.name || "—") + " (" + bits.join(", ") + ")" + (r.note ? " — " + r.note : ""));
     });
     L.push("");
@@ -1433,30 +1933,27 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     if (a) { S.karma = a.value; $("karma").value = S.karma; }
     S.manual.karma = true;
     renderDerived();
+    karmaNote();
   });
   $("karma").addEventListener("input", e => { S.karma = int(e.target.value); S.manual.karma = e.target.value.trim() !== ""; S.karmaAspect = aspectFor(S.karma); $("karmaAspect").value = S.karmaAspect; renderDerived(); });
+  $("karma").addEventListener("change", () => karmaNote());
   $("budget").addEventListener("input", e => { S.budget = Math.max(0, int(e.target.value)); S.manual.budget = e.target.value.trim() !== ""; renderDerived(); });
-  $("hpMax").addEventListener("change", e => {
-    const p = derived(), raw = e.target.value.trim(), v = int(raw);
-    S.hpMaxOverride = raw === "" || v < 1 || v === p.baseMaxHP ? null : v;
-    clampAfter(p); e.target.blur(); renderDerived();
-    if (S.hpMaxOverride != null) toast(`Максимум ОЗ встановлено вручну: ${v}. Покращення його більше не змінюють, доки не повернете стандартне значення.`);
-  });
-  $("hpMax").addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
-  $("armorVal").addEventListener("change", e => {
-    const p = derived(), raw = e.target.value.trim(), v = Math.max(0, int(raw));
-    S.armorOverride = raw === "" || v === p.baseArmor ? null : v;
-    e.target.blur(); renderDerived();
-  });
-  $("armorVal").addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
+  // Надбавки «Налаштування» (межі як у Foundry: ОЗ −999…999, броня −99…99, пси-броня 0…99; порожньо — 0)
+  $("hpBonus").addEventListener("change", e => { const p = derived(); S.hpBonus = numIn(e.target.value, 0, -999, 999); clampAfter(p); renderDerived(); });
+  $("armorBonus").addEventListener("change", e => { S.armorBonus = numIn(e.target.value, 0, -99, 99); renderDerived(); });
+  $("psiArmor").addEventListener("change", e => { S.psiArmor = numIn(e.target.value, 0, 0, 99); renderDerived(); });
+  $("turretDice").addEventListener("change", e => { S.turret = { ...turretOf(), dice: e.target.value.trim().slice(0, 20) }; renderDerived(); });
+  $("turretDice").addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
+  $("turretType").addEventListener("change", e => { S.turret = { ...turretOf(), type: e.target.value }; renderDerived(); });
+  ["hpBonus", "armorBonus", "psiArmor"].forEach(k => $(k).addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); }));
   $("armorType").addEventListener("input", e => { S.armorType = e.target.value; renderDerived(); });
   $("armorType").addEventListener("blur", e => { if (!e.target.value.trim()) { S.armorType = DEFAULT_ARMOR_TYPE; renderDerived(); } });
   $("armorReset").addEventListener("click", () => {
-    S.armorOverride = null; S.armorType = DEFAULT_ARMOR_TYPE; renderDerived();
+    S.armorBonus = 0; S.armorType = DEFAULT_ARMOR_TYPE; renderDerived();
     toast(`Броню повернуто до стандартної: ${derived().armor}, ${DEFAULT_ARMOR_TYPE}`);
   });
   $("hpMaxReset").addEventListener("click", () => {
-    const p = derived(); S.hpMaxOverride = null; clampAfter(p); renderDerived();
+    const p = derived(); S.hpBonus = 0; clampAfter(p); renderDerived();
     toast(`Максимум ОЗ повернуто до стандартного: ${derived().maxHP}`);
   });
   $("hpCurrent").addEventListener("change", e => { S.hpCurrent = int(e.target.value); clampAfter(); renderDerived(); });
@@ -1478,11 +1975,41 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     const step = e.target.closest("[data-step]");
     if (step) {
       const key = step.dataset.step, dd = int(step.dataset.d);
-      if (key === "karma") { S.manual.karma = true; S.karma += dd; S.karmaAspect = aspectFor(S.karma); $("karma").value = S.karma; $("karmaAspect").value = S.karmaAspect; }
+      if (key === "karma") { S.manual.karma = true; S.karma += dd; S.karmaAspect = aspectFor(S.karma); $("karma").value = S.karma; $("karmaAspect").value = S.karmaAspect; karmaNote(); }
       if (key === "hpCurrent") { S.hpCurrent += dd; clampAfter(); }
       if (key === "budget") { S.budget = Math.max(0, S.budget + dd); S.manual.budget = true; $("budget").value = S.budget; }
+      if (key === "hpBonus") { const p = derived(); S.hpBonus = int(S.hpBonus) + dd; clampAfter(p); }
+      if (key === "armorBonus") S.armorBonus = int(S.armorBonus) + dd;
+      if (key === "psiArmor") S.psiArmor = Math.max(0, int(S.psiArmor) + dd);
       renderDerived(); return;
     }
+    // ↺ однієї надбавки й одного захисту — один натиск
+    const ovr = e.target.closest("[data-ov-reset]");
+    if (ovr) {
+      const k = ovr.dataset.ovReset;
+      if (["hpBonus", "armorBonus", "psiArmor"].includes(k)) { const p = derived(); S[k] = 0; clampAfter(p); renderDerived(); }
+      return;
+    }
+    const dfr = e.target.closest("[data-def-reset]");
+    if (dfr) { if (dfr.dataset.defReset in S.defOv) { S.defOv[dfr.dataset.defReset] = ""; renderDerived(); } return; }
+    // «Турель»: кидок шкоди (тост); «Дефібрилятор»: позначка «використано» до кінця сцени, знімається одним натиском
+    if (e.target.closest("[data-turret-roll]")) {
+      const t = turretOf(), r = turretRoll(t.dice);
+      if (!r) { toast(`Не вдалося розібрати кістки турелі: ${t.dice}`); return; }
+      const parts = r.rolls.join(" + ") + (r.mod ? (r.rolls.length ? (r.mod > 0 ? " + " : " − ") + Math.abs(r.mod) : String(r.mod)) : "");
+      toast(`Турель (${t.dice}): ${r.rolls.length > 1 || (r.rolls.length && r.mod) ? parts + " = " : ""}${r.total} шкоди. Тип: ${TURRET_TYPES[t.type]}.`);
+      return;
+    }
+    const dfb = e.target.closest("[data-defib]");
+    if (dfb) {
+      if (!S.imp.defib) return;
+      S.defibUsed = dfb.dataset.defib === "1";
+      renderDerived();
+      if (S.defibUsed) toast("Дефібрилятор: персонаж з 0 ОЗ повертається в сцену з 1 ОЗ. ОЗ змініть у його аркуші, одиницю Припасів зніміть самі.");
+      return;
+    }
+    const brb = e.target.closest("[data-brah]");
+    if (brb) { S.brahminBonus = brb.dataset.brah === "time" ? "time" : "range"; renderDerived(); return; }
     const pip = e.target.closest("[data-pip]");
     if (pip && !pip.disabled) {
       const k = int(pip.dataset.i), key = pip.dataset.pip === "sup" ? "supplies" : "moveCurrent";
@@ -1491,11 +2018,31 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     }
     const rb = e.target.closest("[data-imp-btn]");
     if (rb && !rb.disabled) {
-      const id = rb.dataset.impBtn, k = int(rb.dataset.k), p = derived();
-      S.imp[id] = S.imp[id] > k ? k : k + 1;
-      S.manual.imps = Object.values(S.imp).some(n => n > 0);
-      clampAfter(p); renderDerived(); return;
+      const id = rb.dataset.impBtn, k = int(rb.dataset.k);
+      const take = pay => {
+        const p = derived();
+        if (!payImp(impCost(S, p.impCount, id, k), pay)) return;
+        S.imp[id] = S.imp[id] > k ? k : k + 1;
+        S.manual.imps = Object.values(S.imp).some(n => n > 0);
+        clampAfter(p); renderDerived();
+      };
+      // покращення понад два стартові — 25(к): «Списати 25(к) з бюджету?» (як у Foundry, A13)
+      const cost = impCost(S, derived().impCount, id, k), imp = IMPS.find(x => x.id === id);
+      if (cost > 0) askSpend({ title: "Покращення каравану", what: imp ? `«${impName(imp)}»` : "", cost, have: S.budget }, ans => take(ans === "pay" ? "1" : "0"));
+      else take("0");
+      return;
     }
+    // «Купити за N(к)» / «Продати за N(к)» / «Плата за проїзд N(к)» рядка вантажу (як у Foundry, A3)
+    const cbuy = e.target.closest("[data-cg-buy]");
+    if (cbuy) {
+      const i = int(cbuy.dataset.cgBuy, -1), r = S.cargo[i];
+      if (!r || !r.unpaid) return;
+      const q = int(r.qty) || 1;
+      askSpend({ title: "Купити вантаж", what: `«${r.name || "без назви"}»${q > 1 ? ` ×${q}` : ""}`, cost: rowCost(r), have: S.budget, unit: Math.max(0, int(r.price)), qty: q }, ans => cargoBuy(i, ans === "pay" ? "1" : "0"));
+      return;
+    }
+    const csell = e.target.closest("[data-cg-sell]");
+    if (csell) { if (!csell.disabled) cargoSell({ i: csell.dataset.cgSell, key: csell.dataset.key }, csell); return; }
     const seg = e.target.closest("[data-seg]");
     if (seg) {
       const c = S.counters[int(seg.dataset.seg)], k = int(seg.dataset.k);
@@ -1549,8 +2096,14 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     const t = e.target;
     if (t.dataset.cntName !== undefined) { S.counters[int(t.dataset.cntName)].name = t.value; renderDerived(); }
     if (t.dataset.cg !== undefined) {
+      const row = S.cargo[int(t.dataset.cg)], f = t.dataset.f;
       if (t.tagName === "TEXTAREA") { if (/\n/.test(t.value)) t.value = t.value.replace(/\n/g, " "); autogrow(t); }
-      S.cargo[int(t.dataset.cg)][t.dataset.f] = t.value; renderDerived();
+      // «Далека» / «Пошк.»: позначки рядка (як у Foundry: є — true, немає — ключа немає)
+      if (f === "far" || f === "hurt") { if (t.checked) row[f] = true; else delete row[f]; }
+      else row[f] = t.value;
+      renderDerived();
+      // пасажир — без позначок «Далека» / «Пошк.»: рядок малюється наново
+      if (f === "kind") { renderCargo(); renderDerived(); const dd = $("cg-kind-" + t.dataset.cg + "-dd"); if (dd) dd.focus(); }
     }
     if (t.dataset.cimpF === "name" && /\n/.test(t.value)) t.value = t.value.replace(/\n/g, " ");
     if (t.dataset.cimpF !== undefined) { S.customImps[int(t.dataset.cimpI)][t.dataset.cimpF] = t.value; if (t.tagName === "TEXTAREA") autogrow(t); renderDerived(); }
@@ -1558,15 +2111,44 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
   document.addEventListener("change", e => {
     const t = e.target;
     if (t.dataset.cntSize !== undefined) { const c = S.counters[int(t.dataset.cntSize)]; c.size = int(t.value, 6); c.value = Math.min(c.value, c.size); renderCounters(); renderDerived(); }
+    // захист за типом: як у Foundry — «½ шкоди» / «імунітет»; решта — за правилами
+    if (t.dataset.def !== undefined && t.dataset.def in S.defOv) { S.defOv[t.dataset.def] = t.value === "half" || t.value === "immune" ? t.value : ""; renderDerived(); }
   });
 
-  $("longHaul").addEventListener("click", () => { S.longHaul = !S.longHaul; renderDerived(); });
+  $("pathfinder").addEventListener("click", () => { S.pathfinder = S.pathfinder !== true; renderDerived(); });
+  // «Поповнити за N(к)» / «Відремонтувати за N(к)»: з бюджету, на скільки вистачить (як дії refill / repair у Foundry)
+  $("btnRefill").addEventListener("click", () => {
+    const lack = derived().maxMove - S.moveCurrent;
+    if (lack <= 0) { toast("Запас ходу вже повний"); return; }
+    const r = buyPlan(lack, S.budget, UNITS_PER_CAP);
+    if (!r.units) { toast("У бюджеті немає кришок"); return; }
+    S.moveCurrent += r.units; S.budget -= r.cost; $("budget").value = S.budget;
+    renderDerived();
+    toast(`Запас ходу +${r.units} за ${r.cost}(к)${r.units < lack ? ": на більше кришок не вистачило" : ""}`);
+  });
+  $("btnRepair").addEventListener("click", () => {
+    const dmg = derived().maxHP - S.hpCurrent;
+    if (dmg <= 0) { toast("Караван цілий"); return; }
+    const r = buyPlan(dmg, S.budget, HP_PER_CAP);
+    if (!r.units) { toast("У бюджеті немає кришок"); return; }
+    S.hpCurrent += r.units; S.budget -= r.cost; $("budget").value = S.budget;
+    renderDerived();
+    toast(`Відремонтовано ${r.units} ОЗ за ${r.cost}(к)${r.units < dmg ? ": на більше кришок не вистачило" : ""}`);
+  });
+  // «+ Власне покращення» понад два стартові: «Списати 25(к) з бюджету?» (як у Foundry, A13)
   $("addCustomImp").addEventListener("click", () => {
-    S.customImps.push({ name: "", desc: "" }); renderImps(); renderDerived();
-    const i = $("cimp-name-" + (S.customImps.length - 1)); if (i) { i.focus(); i.scrollIntoView({ block: "center", behavior: "smooth" }); }
+    const add = pay => {
+      if (!payImp(impCost(S, derived().impCount, null, 0), pay)) return;
+      S.customImps.push({ name: "", desc: "" }); renderImps(); renderDerived();
+      const i = $("cimp-name-" + (S.customImps.length - 1)); if (i) { i.focus(); i.scrollIntoView({ block: "center", behavior: "smooth" }); }
+    };
+    const cost = impCost(S, derived().impCount, null, 0);
+    if (cost > 0) askSpend({ title: "Покращення каравану", what: "", cost, have: S.budget }, ans => add(ans === "pay" ? "1" : "0"));
+    else add("0");
   });
   $("addCounter").addEventListener("click", () => { S.counters.push({ name: "", size: 6, value: 0 }); renderCounters(); renderDerived(); const i = $("cnt-name-" + (S.counters.length - 1)); if (i) i.focus(); });
-  $("addCargo").addEventListener("click", () => { S.cargo.push({ name: "", kind: "cargo", price: "", qty: "1", note: "" }); renderCargo(); renderDerived(); const i = $("cg-name-" + (S.cargo.length - 1)); if (i) i.focus(); });
+  // як addCargo у Foundry (A3): рядок, доданий вручну, ще не куплено — «Купити за N(к)»
+  $("addCargo").addEventListener("click", () => { S.cargo.push({ name: "", kind: "cargo", price: "", qty: "1", note: "", unpaid: true }); renderCargo(); renderDerived(); const i = $("cg-name-" + (S.cargo.length - 1)); if (i) i.focus(); });
 
   /* ================= Кидки ================= */
   function rollKarma() {
@@ -1611,7 +2193,7 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
   });
   $("rollKarma").addEventListener("click", () => {
     if (isLocked("karma")) return;
-    const r = rollKarma(); $("karma").value = S.karma; $("karmaAspect").value = S.karmaAspect; renderDerived();
+    const r = rollKarma(); $("karma").value = S.karma; $("karmaAspect").value = S.karmaAspect; karmaQuiet(); renderDerived();
     toast(`Карма: d6 = ${r} → ${S.karmaAspect} (${signed(S.karma)})`);
   });
   $("rollBudget").addEventListener("click", () => {
@@ -1672,6 +2254,13 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     toast("Аркуш очищено", prev);
   });
   confirmTwice($("btnRandom"), $("btnRandomText"), "Випадковий караван", generateRandom);
+  // «Повернути все до стандартних значень»: без надбавок, захист за правилами (натиснути двічі)
+  confirmTwice($("defReset"), $("defResetText"), "Повернути все до стандартних значень", () => {
+    const prev = clone(S), p = derived();
+    S.hpBonus = 0; S.armorBonus = 0; S.psiArmor = 0; S.defOv = blankDefOv();
+    clampAfter(p); renderDerived();
+    toast("Усе повернуто до стандартних значень: без надбавок, захист за правилами", prev);
+  });
   // Швидкий старт: готовий караван «Останній Шанс»
   const QUICK_START = {"v": 1, "companyName": "Останній Шанс", "luck": 0, "karma": 0, "karmaAspect": "Прості волоцюги", "reputation": "Якщо треба швидко - це до нас", "budget": 7, "tachka": false, "hpCurrent": 25, "moveCurrent": 15, "supplies": 0, "imp": {"armor": 0, "structure": 0, "feed": 1, "turret": 0, "embrasures": 0, "nest": 0, "brahmins": 1, "chest": 0, "trunk": 0, "cabin": 0, "lead": 0, "bed": 0, "defib": 0}, "cargo": [], "counters": [], "story": {"meeting": "", "face": "Волті - людина, технік", "lastJob": "", "wentWrong": ""}, "notes": "", "longHaul": false, "hpMaxOverride": null, "armorOverride": null, "armorType": "фізична", "customImps": [], "manual": {"name": true, "karma": false, "budget": true, "meeting": false, "lastJob": false, "wentWrong": false, "imps": true, "rep": true}};
   confirmTwice($("btnQuick"), $("btnQuickText"), "Швидкий старт", () => {
@@ -1682,6 +2271,94 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
 
   /* ================= Сповіщення ================= */
   let toastTimer = null;
+  /* ================= Гроші й карма (як у Foundry: A3, A13, A14) ================= */
+  // «Списати N(к) з бюджету?» (spend-ask.mjs Foundry): «Так, списати» (вимкнена, коли бюджету бракує), «Ні, без списання»
+  // (узяти без списання: знахідка, подарунок, початок гри), × або Esc — нічого
+  let spendDone = null, spendFrom = null;
+  function askSpend({ title, what, cost, have, unit, qty }, done) {
+    const t = spendText({ what, cost, have: int(have), unit, qty });
+    $("spendTitle").textContent = title;
+    $("spendBody").innerHTML = t.html;
+    $("spendPay").disabled = t.short;
+    spendDone = done;
+    spendFrom = document.activeElement;
+    $("spendAsk").hidden = false;
+    $(t.short ? "spendFree" : "spendPay").focus();
+  }
+  function spendClose(ans) {
+    const done = spendDone;
+    spendDone = null;
+    $("spendAsk").hidden = true;
+    if (spendFrom && spendFrom.isConnected && spendFrom.focus) spendFrom.focus();
+    spendFrom = null;
+    if (done && ans) done(ans);
+  }
+  $("spendPay").addEventListener("click", () => { if (spendDone && !$("spendPay").disabled) spendClose("pay"); });
+  $("spendFree").addEventListener("click", () => { if (spendDone) spendClose("free"); });
+  $("spendClose").addEventListener("click", () => { if (spendDone) spendClose(null); });
+  document.addEventListener("keydown", e => { if (spendDone && e.key === "Escape") { e.preventDefault(); spendClose(null); } });
+  // ціна покращення з бюджету, коли pay "1" (payImp у caravan-controller.mjs); false — бюджету бракує, нічого не змінено
+  function payImp(cost, pay) {
+    if (String(pay) !== "1" || cost <= 0) return true;
+    if (cost > S.budget) { toast(`У бюджеті бракує кришок: треба ${cost}(к), є ${S.budget}(к)`); return false; }
+    S.budget -= cost;
+    S.manual.budget = true;
+    $("budget").value = S.budget;
+    toast(`Списано ${cost}(к) з бюджету`);
+    return true;
+  }
+  // «Купити за N(к)» (cg-buy): pay "1" — ціна × кількість з бюджету, "0" — куплено без списання
+  function cargoBuy(i, pay) {
+    const r = S.cargo[i];
+    if (!r || !r.unpaid) return;
+    if (pay === "1") {
+      const cost = rowCost(r);
+      if (cost > S.budget) { toast(`У бюджеті бракує кришок: треба ${cost}(к), є ${S.budget}(к)`); return; }
+      S.budget -= cost;
+      S.manual.budget = true;
+      $("budget").value = S.budget;
+      toast(`Списано ${cost}(к) з бюджету`);
+    }
+    delete r.unpaid;
+    renderCargo(); renderDerived();
+  }
+  // «Продати за N(к)» / «Плата за проїзд N(к)» рядка, «Продати все» (cg-sell): кришки в бюджет, рядки прибираються;
+  // «Скасувати» в повідомленні 7 с повертає рядки й бюджет. У Foundry замість повідомлення — картка в чаті
+  const saleToast = plan => `${plan.rows.length && plan.rows.every(r => r.pass) ? "Плата за проїзд" : "Продаж вантажу"}: +${plan.total}(к). Бюджет: ${plan.before} → ${plan.after}(к)`;
+  function cargoSell(data, btn) {
+    if (int(S.hpCurrent) === 0) { toast("ОЗ 0 — вантаж знищено: продавати нічого"); return; }
+    // рядок, для якого намальовано кнопку (data.key): зник чи зсунувся — на його місці нічого не продається
+    if (!data.all && data.key != null && (!S.cargo[int(data.i, -1)] || rowKey(S.cargo[int(data.i, -1)]) !== String(data.key))) return;
+    const plan = salePlan(S, data.all ? { all: true } : { i: int(data.i, -1) });
+    if (!plan.rows.length) { toast("Продавати нічого"); return; }
+    if (btn) btn.disabled = true;
+    const prev = clone(S);
+    const gone = new Set(plan.rows.map(r => r.i));
+    S.cargo = S.cargo.filter((_, i) => !gone.has(i));
+    plan.before = S.budget;
+    S.budget += plan.total;
+    S.manual.budget = true;
+    plan.after = S.budget;
+    $("budget").value = S.budget;
+    renderCargo(); renderDerived();
+    toast(saleToast(plan), prev);
+  }
+  $("cargoSellAll").addEventListener("click", () => cargoSell({ all: true }, null));
+  // Кожна зміна карми вручну (−/+, вписана, список аспектів) — повідомлення, як картка карми у Foundry; у стан не пишеться.
+  // Кидок d6, «Випадковий караван», «Очистити», «Швидкий старт», відкритий файл — без повідомлення (karmaQuiet)
+  let karmaSeen = null;
+  const karmaToast = (name, was, now, aspWas = "", aspNow = "") => {
+    const who = String(name || "").trim();
+    return `${who ? who + ": к" : "К"}арма ${signed(now - was)}, тепер ${signed(now)}`
+      + (aspWas !== aspNow && aspNow ? `. Кармічний аспект: ${aspWas ? aspWas + " → " : ""}${aspNow}` : "");
+  };
+  function karmaQuiet() { karmaSeen = { n: int(S.karma), asp: S.karmaAspect || "" }; }
+  function karmaNote() {
+    const was = karmaSeen;
+    karmaQuiet();
+    if (was && was.n !== karmaSeen.n) toast(karmaToast(S.companyName, was.n, karmaSeen.n, was.asp, karmaSeen.asp));
+  }
+
   function toast(msg, undo) {
     $("toastText").textContent = msg;
     undoState = undo || null;
@@ -1690,6 +2367,10 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => $("toast").classList.remove("show"), undo ? 7000 : 3500);
   }
+  // Будь-яка зміна поля скасовує «Скасувати», як dropUndo() у Foundry (caravan-sheet-v2.mjs): інакше відкат стер би нове
+  function dropUndo() { if (undoState) { undoState = null; $("toastUndo").hidden = true; } }
+  document.addEventListener("input", dropUndo, true);
+  document.addEventListener("change", dropUndo, true);
   $("toastUndo").addEventListener("click", () => {
     if (!undoState) return;
     S = normalize(undoState); undoState = null; renderAll();
@@ -1742,19 +2423,49 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
   }
   $("btnCopy").addEventListener("click", () => { $("moreMenu").open = false; copyText(); });
   $("btnTxt").addEventListener("click", () => { $("moreMenu").open = false; return saveFile(baseName() + ".txt", toText(), "text/plain;charset=utf-8"); });
-  $("btnJsonSave").addEventListener("click", () => { saveFile(baseName() + ".json", JSON.stringify(S, null, 2), "application/json"); });
+  // Файл .json: стан аркуша, а поруч старі ключі для старішого аркуша — абсолютні максимум ОЗ і броня (null — без надбавки) і
+  // «Далека доставка», коли хоч один рядок вантажу далекий (як caravanHtmlState у Foundry). Читає їх normalize()
+  function fileState(st = S) {
+    const D = derived(st);
+    return Object.assign(clone(st), {
+      hpMaxOverride: int(st.hpBonus) ? D.maxHP : null, armorOverride: int(st.armorBonus) ? D.armor : null,
+      longHaul: st.cargo.some(r => r.kind !== "pass" && r.far)
+    });
+  }
+  $("btnJsonSave").addEventListener("click", () => { saveFile(baseName() + ".json", JSON.stringify(fileState(), null, 2), "application/json"); });
+  /* Перевірка файлу перед відкриттям: аркуш пише числа, числа текстом («12») або "" / null для «не задано» */
+  function caravanFileShapeOk(o) {
+    const num = v => (typeof v === "number" && Number.isFinite(v)) || (typeof v === "string" && /^\s*-?\d+(\.\d+)?\s*$/.test(v));
+    const optNum = v => v === undefined || v === null || v === "" || num(v);
+    const imp = o.imp === undefined || (o.imp && typeof o.imp === "object" && !Array.isArray(o.imp) && Object.values(o.imp).every(optNum));
+    return imp && ["luck", "karma", "budget", "hpCurrent", "moveCurrent", "supplies", "hpMaxOverride", "armorOverride", "hpBonus", "armorBonus", "psiArmor"].every(k => optNum(o[k]))
+      && (o.defOv === undefined || o.defOv === null || (typeof o.defOv === "object" && !Array.isArray(o.defOv)))
+      && ["cargo", "counters", "customImps"].every(k => o[k] === undefined || Array.isArray(o[k]))
+      && (o.cargo || []).every(x => x && typeof x === "object") && (o.counters || []).every(x => x && typeof x === "object");
+  }
   $("jsonFile").addEventListener("change", e => {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
     const r = new FileReader();
     r.onload = () => {
-      try {
-        const prev = clone(S);
-        S = normalize(JSON.parse(String(r.result)));
-        clampAfter(); renderAll();
-        toast("Аркуш відкрито: " + f.name, prev);
-      } catch (err) { toast("Файл не схожий на аркуш каравану. Оберіть .json, збережений цим генератором."); }
       e.target.value = "";
+      const notCaravan = "Файл не схожий на аркуш каравану. Оберіть .json, збережений цим генератором.";
+      let o;
+      try { o = JSON.parse(String(r.result)); } catch (err) { toast(notCaravan); return; }
+      // аркуш каравану впізнаємо за назвою компанії, як і Foundry
+      if (!o || typeof o !== "object" || Array.isArray(o) || !("companyName" in o)) { toast(notCaravan); return; }
+      // «насухо» (як у Foundry, rules/file-check.mjs): числа — числа, списки — списки; якщо показ падає — повертаємо, як було
+      const prev = clone(S);
+      try {
+        if (!caravanFileShapeOk(o)) throw new Error("shape");
+        S = normalize(o);
+        clampAfter(); renderAll();
+      } catch (err) {
+        S = prev; try { clampAfter(); renderAll(); } catch (_) {}
+        toast("Файл пошкоджений або збережений не електронним аркушем «Пустельників». Його не відкрито, нічого не змінено.");
+        return;
+      }
+      toast("Аркуш відкрито: " + f.name, prev);
     };
     r.readAsText(f);
   });
@@ -1948,7 +2659,8 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
       // Вантажі та пасажири
       PF_CARGO.forEach((cols, k) => {
         const r = S.cargo[k] || { name: "", price: "", qty: "", note: "" };
-        const note = r.kind === "pass" ? ("Пасажир" + (r.note ? ". " + r.note : "")) : r.note;
+        const ticks = rowTicks(r).map(t => t[0].toUpperCase() + t.slice(1));
+        const note = r.kind === "pass" ? ("Пасажир" + (r.note ? ". " + r.note : "")) : [...ticks, r.note].filter(Boolean).join(" · ");
         setLine(cols[0], r.name, 9, "Вантажі та пасажири", `Рядок ${k + 1}, назва`);
         setT(cols[1], r.price, 9);
         setT(cols[2], r.qty, 9);
@@ -1958,11 +2670,21 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
         const bits = [r.kind === "pass" ? "пасажир" : "вантаж"];
         if (r.price !== "") bits.push("ціна " + r.price);
         if (r.qty !== "") bits.push("кількість " + r.qty);
+        bits.push(...rowTicks(r));
         addApp("Вантажі та пасажири", `Рядок ${PF_CARGO.length + j + 1}`, (r.name || "—") + " (" + bits.join(", ") + ")" + (r.note ? ". " + r.note : ""));
       });
 
       // Історія каравану та інші примітки
-      setMulti(PF.history, historyParts(D), 10.5, "\n\n", "Історія каравану та інші примітки", "Продовження — у Додатку.");
+      // поруч із фактами історії (historyParts спільна з Foundry): надбавки, захист, сума продажу, вибір брамінів
+      const hist = historyParts(D), more = [];
+      if (bonusText()) more.push("Надбавки: " + bonusText());
+      if (defText()) more.push("Захист: " + defText());
+      if (S.cargo.some(r => r.kind !== "pass")) more.push("Сума продажу: " + cargoSale() + " кришок");
+      if (S.imp.brahmins) more.push(impName(IMPS.find(i => i.id === "brahmins")) + ": " + brahText());
+      if (S.imp.turret && turretText()) more.push("Турель: " + turretText());
+      const at = hist.findIndex(x => /^(Тачка|Браміни): /.test(x));
+      if (more.length) hist.splice(at < 0 ? hist.length : at + 1, 0, more.join(". ") + ".");
+      setMulti(PF.history, hist, 10.5, "\n\n", "Історія каравану та інші примітки", "Продовження — у Додатку.");
 
       form.updateFieldAppearances(font);
 
@@ -2061,6 +2783,7 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
 
   /* ================= Інструкція ================= */
   $("guideClose").innerHTML = X_SVG;
+  $("spendClose").innerHTML = X_SVG;
   function setGuide(open, focusBtn) {
     const g = $("guide"), b = $("helpBtn");
     g.hidden = !open; b.setAttribute("aria-expanded", String(open));
@@ -2114,6 +2837,85 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
   }
   window.addEventListener("resize", fitToolbar);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitToolbar);
+
+  /* ================= Компактний аркуш (рядок 5.1, 2026-11-25; макет А — як компактний аркуш каравану Foundry) =================
+     Перемикач «Повний / Компактний» біля назви. Вибір живе лише в цій змінній і в сховищі пристрою (один ключ на вид аркуша;
+     не в S, не в .json, не в тексті чи PDF); аркуш відкривається повним, доки не перемкнуть. Розмітка кличе ті самі
+     обробники (data-step, data-pip, data-brah, data-defib, data-turret-roll; «Відремонтувати» й «Поповнити» — натиском
+     кнопок повного аркуша) і показує те, що renderDerived уже порахував: своєї арифметики тут немає. «Вантажі та пасажири» —
+     той самий блок повного аркуша */
+  const CMP_KEY = "pustelnyky-compact-caravan";
+  let compact = false;
+  try { compact = localStorage.getItem(CMP_KEY) === "1"; } catch (e) {}
+  const cmpSeg = () => `<span class="cmp-seg" role="group" aria-label="Вигляд аркуша"><button type="button" data-cmp-view="0" class="${compact ? "" : "on"}" aria-pressed="${!compact}" title="Повний аркуш: створення й налаштування каравану">Повний</button><button type="button" data-cmp-view="1" class="${compact ? "on" : ""}" aria-pressed="${compact}" title="Компактний аркуш: лише потрібне в дорозі">Компактний</button></span>`;
+  // іконки (Tabler outline, MIT): серце, щит, монети, маршрут, ключ, заправка, шестерні
+  const CMP_IC = {
+    hp: '<path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"/>',
+    armor: '<path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"/>',
+    budget: '<path d="M9 14c0 1.657 2.686 3 6 3s6 -1.343 6 -3s-2.686 -3 -6 -3s-6 1.343 -6 3z"/><path d="M9 14v4c0 1.656 2.686 3 6 3s6 -1.344 6 -3v-4"/><path d="M3 6c0 1.072 1.144 2.062 3 2.598s4.144 .536 6 0c1.856 -.536 3 -1.526 3 -2.598c0 -1.072 -1.144 -2.062 -3 -2.598s-4.144 -.536 -6 0c-1.856 .536 -3 1.526 -3 2.598z"/><path d="M3 6v10c0 .888 .772 1.45 2 2"/><path d="M3 11c0 .888 .772 1.45 2 2"/>',
+    move: '<path d="M3 19a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M19 7a2 2 0 1 0 0 -4a2 2 0 0 0 0 4z"/><path d="M11 19h5.5a3.5 3.5 0 0 0 0 -7h-8a3.5 3.5 0 0 1 0 -7h4.5"/>',
+    repair: '<path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5"/>',
+    refill: '<path d="M14 11h1a2 2 0 0 1 2 2v3a1.5 1.5 0 0 0 3 0v-7l-3 -3"/><path d="M4 20v-14a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v14"/><path d="M3 20l12 0"/><path d="M18 7v1a1 1 0 0 0 1 1h1"/><path d="M4 11l10 0"/>',
+    imps: '<path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>'
+  };
+  const cmpIc = k => `<svg class="cmp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CMP_IC[k]}</svg>`;
+  // «Відремонтувати» / «Поповнити»: натиск кнопки повного аркуша (її підпис, підказку й доступність уже виставив renderDerived)
+  const cmpSvc = (id, ic) => { const b = $(id); return `<button type="button" class="cmp-svc" data-cmp-svc="${id}" title="${esc(b.title)}" aria-label="${esc(b.textContent)}"${b.disabled ? " disabled" : ""}>${cmpIc(ic)}</button>`; };
+  const cmpStep = (key, d, lab) => `<button type="button" data-step="${key}" data-d="${d}" aria-label="${lab}">${d < 0 ? "−" : "+"}</button>`;
+  const cmpPips = (kind, max, cur, lab) => { let h = ""; for (let k = 0; k < max; k++) h += `<button type="button" class="pip${k < cur ? " on" : ""}" data-pip="${kind}" data-i="${k}" aria-label="${lab}: ${k + 1}"></button>`; return h; };
+  // покращення з дією — картками (як перки), решта — тихими чипами (як у Foundry); ліміти — з Foundry, описи — з цього аркуша
+  const CMP_LIM = { brahmins: "перед подорожжю" };
+  function renderCompact(D) {
+    document.querySelector(".app").classList.toggle("cmp-on", compact);
+    $("nameSeg").innerHTML = cmpSeg();
+    const box = $("cmpView");
+    box.hidden = !compact;
+    if (!compact) { box.innerHTML = ""; return; }
+    const hp = S.hpCurrent, max = D.maxHP, pct = max ? Math.max(0, Math.min(100, Math.round(hp / max * 100))) : 0;
+    const veh = $(S.tachka ? "vehTachka" : "vehBrahmin");
+    const name = String(S.companyName || "").trim();
+    const taken = IMPS.filter(i => S.imp[i.id] > 0);
+    const cards = taken.filter(i => ["turret", "defib", "brahmins", "chest"].includes(i.id)).map(i => {
+      const n = S.imp[i.id];
+      let act = "";
+      if (i.id === "turret" || i.id === "defib") { const t = document.createElement("div"); impAct(i.id, t, true); act = t.innerHTML; }
+      if (i.id === "brahmins") { const byTime = S.brahminBonus === "time"; act = `<span class="cmp-seg2"><button type="button" data-brah="range" class="${byTime ? "" : "on"}" aria-pressed="${!byTime}" title="${esc($("brahRange").title)}">${esc($("brahRange").textContent)}</button><button type="button" data-brah="time" class="${byTime ? "on" : ""}" aria-pressed="${byTime}" title="${esc($("brahTime").title)}">${esc($("brahTime").textContent)}</button></span>`; }
+      if (i.id === "chest") act = `<span class="cmp-pips" role="group" aria-label="Припаси">${cmpPips("sup", D.supCap, S.supplies, "Припаси")}</span>`;
+      return `<div class="cmp-card${i.id === "defib" && S.defibUsed ? " used" : ""}"><div class="cmp-card-top"><span class="cmp-card-n">${esc(impName(i))}${i.max > 1 ? ` <small>×${n}</small>` : ""}</span>${CMP_LIM[i.id] ? `<span class="imp-lim">${CMP_LIM[i.id]}</span>` : ""}<span class="cmp-card-act imp-act">${act}</span></div><p class="cmp-card-t">${esc(i.desc)}</p></div>`;
+    }).join("");
+    const quiet = taken.filter(i => !["turret", "defib", "brahmins", "chest"].includes(i.id)).map(i => `<span class="cmp-chip" title="${esc(i.desc)}">${esc(impName(i))}${i.max > 1 && S.imp[i.id] > 1 ? ` ×${S.imp[i.id]}` : ""}</span>`)
+      .concat(S.customImps.map(c => `<span class="cmp-chip" title="${esc(c.desc)}">${esc(String(c.name || "").trim() || "Власне покращення")}</span>`)).join("");
+    box.innerHTML = `<header class="cmp-head"><span class="cmp-port" aria-hidden="true">${veh.querySelector("svg").outerHTML}</span>`
+      + `<div class="cmp-who"><b>${esc(name || "Караван без назви")}</b><small>${S.tachka ? "Тачка" : "Браміни"} · Удача партії ${signed(S.luck)}</small></div>${cmpSeg()}</header>`
+      + `<div class="cmp-asps"><span class="cmp-asp karma"><b>Карма</b><span class="stepper">${cmpStep("karma", -1, "Зменшити карму")}<span class="cmp-num">${S.karma}</span>${cmpStep("karma", 1, "Збільшити карму")}</span>${S.karmaAspect ? `<span class="cmp-ka">${esc(S.karmaAspect)}</span>` : ""}</span>`
+      + (String(S.reputation || "").trim() ? `<span class="cmp-asp rep"><b>Репутація</b><span>${esc(S.reputation.trim())}</span></span>` : "") + `</div>`
+      + `<section class="screen cmp-quick" id="cmpQuick" aria-label="Швидкий доступ"><div class="cmp-grid">`
+      + `<div class="cmp-q${hp <= 0 ? " bad" : ""}" title="Очки здоров'я каравану: ${hp} з ${max}"><span class="cmp-qi">${cmpIc("hp")}</span>${cmpSvc("btnRepair", "repair")}<div class="cmp-ctl stepper">${cmpStep("hpCurrent", -1, "Мінус 1 ОЗ")}<span class="cmp-bar${hp <= 0 ? " out" : pct <= 33 ? " low" : pct <= 66 ? " mid" : ""}"><i style="width:${pct}%"></i><b>${hp}/${max}</b></span>${cmpStep("hpCurrent", 1, "Плюс 1 ОЗ")}</div></div>`
+      + `<div class="cmp-q" title="Броня каравану: ${D.armor}"><span class="cmp-qi">${cmpIc("armor")}</span><div class="cmp-ctl mid"><b class="cmp-big">${D.armor}</b><span class="cmp-tag">${esc(S.armorType)}</span></div></div>`
+      + `<div class="cmp-q" title="Бюджет кришок: ${S.budget}(к)"><span class="cmp-qi">${cmpIc("budget")}</span><div class="cmp-ctl stepper">${cmpStep("budget", -1, "Мінус 1 кришка")}<span class="cmp-num${String(S.budget).length > 2 ? " long" : ""}">${S.budget}</span>${cmpStep("budget", 1, "Плюс 1 кришка")}</div></div>`
+      + `<div class="cmp-q wide"><div class="cmp-mvhd" title="${esc($("refill").textContent)} · ${esc($("cellRule").textContent)}">${cmpIc("move")}<b>Запас ходу ${esc($("moveNow").textContent)}</b></div>${cmpSvc("btnRefill", "refill")}<div class="cmp-pips" role="group" aria-label="Запас ходу">${cmpPips("move", D.maxMove, S.moveCurrent, "Запас ходу")}</div></div>`
+      + `</div></section>`
+      + `<section class="cmp-blk"><h3>${cmpIc("imps")}Покращення <small>${D.impCount}</small></h3>${cards}${quiet ? `<div class="cmp-chips">${quiet}</div>` : ""}${cards || quiet ? "" : `<p class="cmp-empty">Покращень ще не взято: оберіть їх у повному аркуші.</p>`}</section>`;
+    cmpSticky();
+  }
+  // «Швидкий доступ» тримається вгорі екрана, поки займає не більше 60 % висоти вікна (як у Foundry)
+  function cmpSticky() { const q = $("cmpQuick"); if (q && compact) q.classList.toggle("sticky", q.offsetHeight <= window.innerHeight * 0.6); }
+  window.addEventListener("resize", cmpSticky);
+  // «Повний / Компактний» і кнопки послуг компактного аркуша
+  document.addEventListener("click", e => {
+    const v = e.target.closest("[data-cmp-view]");
+    if (v) {
+      const on = v.dataset.cmpView === "1";
+      if (on === compact) return;
+      compact = on;
+      try { if (on) localStorage.setItem(CMP_KEY, "1"); else localStorage.removeItem(CMP_KEY); } catch (er) {}
+      renderCompact(derived());
+      const nb = document.querySelector(`.${on ? "cmp-head" : "name-panel"} [data-cmp-view="${v.dataset.cmpView}"]`); if (nb) nb.focus();
+      return;
+    }
+    const s = e.target.closest("[data-cmp-svc]");
+    if (s && !s.disabled && $(s.dataset.cmpSvc)) $(s.dataset.cmpSvc).click();
+  });
 
   /* ================= Старт ================= */
   let loaded = null;
