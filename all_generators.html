@@ -9810,6 +9810,7 @@ function hpState(value, max) {
     if(btn && TR.units.some(x=>!x.pc) && !armed(btn, 'tvexport', 'Замінити ворогів?')) return false
     const b = travelBattle(spec); if(!b){ trToast('Не вдалося зібрати цю битву'); return false }
     renderBattle(b.factionKey, b.pickedCase, b.allocations)   // та сама битва з'являється й на вкладці «Битви»
+    rollReward()   // винагорода — нова, для складності цієї битви (інакше лишалася б від попередньої; автор, 2026-11-27)
     BT_SCENE.place = spec.place || ''; BT_SCENE.hazard = ''; btSceneShow('place'); btSceneShow('hazard')
     trImport()
     // особисті імена з опису битви (Горкі й Моркі, Вождь людожерів…)
@@ -10010,6 +10011,7 @@ function caseBattle(DB, ORDER, kind, needs, { deadly = false, rnd = Math.random 
     const dsel = document.getElementById('bt-difficulty'); if(dsel) dsel.value = diff
     setKinds([kind])
     renderBattle(b.factionKey, b.pickedCase, b.allocations)   // місце й небезпека битви лишаються, як були на «Битвах»
+    rollReward()   // а винагорода — нова, для складності справи (інакше лишалася б від попередньої битви; автор, 2026-11-27)
     if(window.PustExpandCard) window.PustExpandCard('bt-result-card')
     const tb = document.getElementById('t-battle'); if(tb) tb.click()
     trToast(`Битву зі справи перенесено на вкладку «Битви»: ${kindName(kind)}, ${cs.f.enemyPower}.`)
