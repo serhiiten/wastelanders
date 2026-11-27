@@ -7,6 +7,7 @@ import { T } from './lib/texts.mjs'
 import { icon } from './lib/icons.mjs'
 import { LOG_KEY, logGet, logClear, parseRoll, rollWhat, verdictName, detailNodes, redoText, diceDetail, edmgNote } from './lib/rolls.mjs'
 import { safeStorage } from './lib/storage.mjs'
+import { ctrColor } from './lib/counters-data.mjs'
 
 const $ = id => document.getElementById(id)
 const storage = safeStorage()
@@ -46,15 +47,19 @@ function card(raw) {
   }
   const by = typeof raw.by === 'string' ? raw.by.slice(0, 60) : ''
   const dice = e.kind === 'dice' || e.kind === 'gen'   // «Кістки» й генератори: персонажа немає, ім'я — гравця з Owlbear
+  const anon = dice || e.kind === 'ctr'                 // лічильник (сесія Б) — теж від імені Доглядача в Owlbear
   // «таємно» лише в журналі самого Доглядача: тло такий запис ніколи не кладе (кидок не розсилався)
   if (dice && raw.secret === true && raw.me === true) what.append(' ', el('span', 'vd sec', T.logSecret))
   const c = el('article', 'roll ' + v,
     e.kind === 'gen' ? el('span', 'num', icon('gen')) : el('span', 'num', String(e.total)),
-    el('div', 'top', el('b', '', (dice ? by : e.who) || '?'), !dice && by ? el('span', '', by) : null),
+    el('div', 'top', el('b', '', (anon ? by : e.who) || '?'), !anon && by ? el('span', '', by) : null),
     el('time', '', when(raw.t)),
     what,
     e.kind === 'edmg' ? el('div', 'en', edmgNote(e)) : null,
+    e.kind === 'ctr' && e.desc ? el('div', 'en ctr-d', e.desc) : null,
     e.re ? el('div', 're', redoText(e.re)) : null)
+  // лічильник: число на тлі від червоного (0) до зеленого (максимум), як у віконці лічильників
+  if (e.kind === 'ctr') { const n = c.querySelector('.num'); n.style.background = ctrColor(e.to, e.s); n.classList.add('ctr-n') }
   if (e.kind === 'gen') {
     // «Показати всім» (етап 4б, Л1): заголовок у рядку, текст — у розгортці, лише як текст
     if (e.text) c.append(el('details', '', el('summary', '', T.logText), el('pre', 'gen', e.text)))

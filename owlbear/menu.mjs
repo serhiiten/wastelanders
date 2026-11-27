@@ -1,10 +1,10 @@
 // Пустельники в Owlbear Rodeo: меню кнопки розширення (popover): «Мій аркуш» (Доглядачу «Аркуш персонажа»),
 // «Зробити перевірку» (вузьке вікно одразу на панелі перевірки, автор 2026-11-27), «Журнал кидків» (етап 2) і «Караван» (етап 3).
 import OBR from './sdk.js'
-import { pickToken, tokenList, openSheet, openLog, openCaravan, openEnemies, openGenerators, baseOf, session, autoOpenLog } from './lib/pick.mjs'
+import { pickToken, tokenList, openSheet, openLog, openCaravan, openEnemies, openGenerators, openQuick, openCounters, openHelp, closeHelp, baseOf, session, autoOpenLog } from './lib/pick.mjs'
 import { DICE, rollAndSend, diceLabel } from './lib/rolls.mjs'
 import { safeStorage } from './lib/storage.mjs'
-import { T } from './lib/texts.mjs'
+import { T, helpFor } from './lib/texts.mjs'
 import { icon } from './lib/icons.mjs'
 
 const BASE = baseOf(location.pathname)
@@ -182,4 +182,34 @@ OBR.onReady(async () => {
   $('gen').replaceChildren(icon('gen'), T.menuGen)
   $('gen').title = T.menuGenHint
   $('gen').onclick = () => openGenerators(OBR, BASE).then(() => OBR.action.close()).catch(fail)
+  // «Швидкий старт» — обом ролям; «Лічильники» — лише Доглядачу (сесія Б, автор 2026-11-27)
+  $('quick').replaceChildren(icon('book'), T.menuQuick)
+  $('quick').title = T.menuQuickHint
+  $('quick').onclick = () => openQuick(OBR, BASE).then(() => OBR.action.close()).catch(fail)
+  $('counters').replaceChildren(icon('counter'), T.menuCounters)
+  $('counters').title = T.menuCountersHint
+  $('counters').onclick = () => openCounters(OBR, BASE, { form: true }).then(() => OBR.action.close()).catch(fail)
+  for (const id of ['enemies', 'gen', 'counters']) $(id).closest('.it').hidden = !gm
+  // довідка «?» (вигляд А): кружечок біля кожної кнопки вкладки «Аркуші», крім «Кісток»; вікно праворуч від меню
+  let shown = ''
+  for (const b of document.querySelectorAll('.qh')) {
+    const k = b.dataset.h, h = helpFor(k, gm)
+    b.textContent = '?'
+    const label = T.helpBtn(h ? h.title : k)
+    b.title = label; b.setAttribute('aria-label', label); b.setAttribute('aria-pressed', 'false')
+    b.onclick = async () => {
+      const again = shown === k
+      for (const x of document.querySelectorAll('.qh')) x.setAttribute('aria-pressed', 'false')
+      shown = again ? '' : k
+      try { await (again ? closeHelp(OBR) : openHelp(OBR, BASE, k)) } catch (e) { console.error(e) }
+      if (!again) b.setAttribute('aria-pressed', 'true')
+    }
+  }
+  addEventListener('pagehide', () => { closeHelp(OBR).catch(() => {}) })   // меню закрилось — довідка теж
+  // меню росте під нові рядки, але не вище за екран (Owlbear сам ставить вікно меню)
+  try {
+    const vh = await OBR.viewport.getHeight()
+    const want = Math.ceil(document.body.scrollHeight) + 8
+    if (want > 480) await OBR.action.setHeight(Math.min(want, vh > 0 ? vh - 120 : want))
+  } catch { /* лишається 480 з прокруткою */ }
 })

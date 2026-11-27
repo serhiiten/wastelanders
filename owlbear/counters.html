@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Лічильники</title>
+<link rel="stylesheet" href="ui.css">
+<style>
+  /* Лічильники (сесія Б, автор 2026-11-27, вигляд Б «Рядки»): віконце 330 px праворуч від панелі «Players».
+     Макети: https://claude.ai/artifact/XbKKnFi3N3DzVyxWUQcRQR */
+  html,body{background:var(--bg)}
+  body{font-size:13px}
+  #head{display:flex;align-items:center;gap:6px;padding:3px 6px 3px 10px;border-bottom:1px solid var(--line);min-height:28px}
+  #head .t{flex:1;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);display:flex;gap:6px;align-items:center}
+  #head .t .ic{width:14px;height:14px;color:var(--rust)}
+  .ib{background:transparent;border:1px solid transparent;width:24px;min-height:22px;padding:0;display:grid;place-items:center;font-size:15px;font-weight:700;line-height:1;border-radius:5px;flex:none}
+  .ib:hover{background:var(--btn-h)}
+  .ib:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--focus-out);outline-offset:1px}
+  #rows{display:flex;flex-direction:column;gap:4px;padding:5px 6px;max-height:110px;overflow-y:auto}
+  #rows:empty{display:none}
+  .row{display:flex;align-items:center;gap:6px;background:var(--btn);border:1px solid var(--line);border-radius:6px;padding:2px 4px 2px 3px;min-height:30px;flex:none}
+  .row .chip{flex:none;min-width:50px;padding:0 4px;text-align:center;border-radius:5px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);font:700 15px/24px "Ubuntu Mono","PT Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+  .row .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+  .row .ib{border-color:var(--line);background:var(--field);width:22px;min-height:22px;font-size:14px}
+  .row .ib.sure{background:var(--err-bg);border-color:var(--err);width:auto;padding:0 6px;font-size:12px}
+  .row.open{border-color:var(--rust)}
+  #empty{padding:8px 10px;color:var(--mut)}
+  .panel{border-top:1px solid var(--line);padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+  .panel h2{margin:0;font-size:12px}
+  .ticks{display:flex;flex-direction:column;gap:5px;max-height:300px;overflow-y:auto;padding-right:2px}
+  .tick{display:grid;grid-template-columns:26px 1fr;gap:6px;align-items:start}
+  .tick b{display:grid;place-items:center;height:26px;border-radius:5px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);font:700 13px/1 "Ubuntu Mono",ui-monospace,monospace}
+  .tick .f{position:relative}
+  .tick textarea{width:100%;font:inherit;font-size:12.5px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:5px;padding:3px 6px 14px;min-height:30px;resize:vertical;display:block}
+  .tick.cur textarea{border-color:var(--rust)}
+  .tick .n{position:absolute;right:16px;bottom:2px;font-size:10.5px;color:var(--mut);pointer-events:none}
+  label.l{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin:2px 0 0}
+  .in{font:inherit;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:5px;padding:3px 7px;min-height:28px;width:100%}
+  .seg{display:flex;flex-wrap:wrap;gap:4px}
+  .seg button{padding:2px 8px;min-height:26px;font-weight:700;text-align:center}
+  .seg button[aria-pressed=true]{background:var(--rust-fill);border-color:var(--rust-fill);color:var(--on-rust)}
+  .line{display:flex;gap:8px;align-items:center}
+  .line .in{width:72px;text-align:center}
+  .acts{display:flex;gap:6px;margin-top:2px}
+  .acts button{flex:1;text-align:center;font-weight:700}
+  .mut{margin:0}
+  .warn{color:var(--warn)}
+  #msg{margin:0 6px 6px;padding:5px 8px;border-radius:6px;background:var(--warn-bg);border:1px solid var(--warn);font-size:12.5px}
+  #msg.err{background:var(--err-bg);border-color:var(--err)}
+  #bad{padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+</style>
+</head>
+<body>
+<div id="head"><span class="t"><span id="h-icon"></span><span id="title"></span></span><button type="button" class="ib" id="add" hidden></button></div>
+<div id="bad" hidden></div>
+<div id="rows" role="list"></div>
+<p id="empty" hidden></p>
+<div id="panel"></div>
+<p id="msg" role="status" hidden></p>
+<script type="module" src="counters.mjs"></script>
+</body>
+</html>

@@ -24,6 +24,9 @@ export const ICON = {
   card: sv('<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="3.2"/><path d="M12 5.5v1.5M12 13v1.5M7.5 10H9M15 10h1.5M8 18h8"/>'),
   gen: sv('<rect x="3" y="4" width="18" height="13" rx="2"/><path d="m7 9 2.5 2L7 13M11.5 13H15M9 20h6M12 17v3"/>'),
   log: sv('<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>'),
+  // сесія Б (автор, 2026-11-27): «Швидкий старт» — розгорнута книжка, «Лічильники» — шкала з покажчиком
+  book: sv('<path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5z"/><path d="M12 6.5v13"/>'),
+  counter: sv('<path d="M4 16a8 8 0 0 1 16 0"/><path d="M12 16l4-5"/><circle cx="12" cy="16" r="1.3"/><path d="M4 20h16"/>'),
 }
 
 /** Значок як DOM-вузол (span з SVG), cls — додатковий клас. */

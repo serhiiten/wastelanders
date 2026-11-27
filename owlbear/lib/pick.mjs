@@ -23,8 +23,12 @@ export const ID = {
   ctxCarOff: NS + '/ctx-car-off',    // «Зняти караван»
   gen: NS + '/generators',       // «Генератори» (етап 4б): лише вузьке вікно, за замовчуванням біля лівого краю
   genB: NS + '/generators-b',
+  quick: NS + '/quickstart',     // «Швидкий старт» (сесія Б, автор 2026-11-27): вузьке вікно біля лівого краю, два місця
+  quickB: NS + '/quickstart-b',
+  help: NS + '/help',            // довідка «?» біля кнопок меню (сесія Б)
+  counters: NS + '/counters',    // віконце лічильників над мапою (сесія Б), відкриває тло кожного клієнта
 }
-export const SIZE = { modal: { width: 900, height: 900 }, narrow: { width: 460, height: 760 }, assign: { width: 320, height: 420 }, log: { width: 460, height: 280 } }
+export const SIZE = { modal: { width: 900, height: 900 }, narrow: { width: 460, height: 760 }, assign: { width: 320, height: 420 }, log: { width: 460, height: 280 }, help: { width: 300, height: 340 } }
 
 // ворожий токен (етап 4) і караван-токен (автор, 2026-11-27, B) — не персонаж: їх немає в «Мій аркуш» і в списку Доглядача
 const isToken = it => it && it.layer === 'CHARACTER' && !hasEnemy(it.metadata) && !isCaravanToken(it.metadata)
@@ -86,7 +90,7 @@ export const SAFE = { top: 80, left: 280, right: 80, bottom: 128 }
  * Рамка вузького вікна в межах екрана поза зонами SAFE: x, y — бажаний лівий верхній кут, vp = {width, height} в'юпорта
  * (0 — невідомо). Висота менша за 760, якщо екран низький (1366×768 → 560). → поля popover з height.
  */
-export function narrowBox(x, y, vp, log = null, w = SIZE.narrow.width) {
+export function narrowBox(x, y, vp, log = null, w = SIZE.narrow.width, ctr = ctrSlot()) {
   const height = vp.height > 0 ? Math.max(320, Math.min(SIZE.narrow.height, vp.height - SAFE.top - SAFE.bottom)) : SIZE.narrow.height
   const maxX = vp.width > 0 ? vp.width - SAFE.right - w : x
   const maxY = vp.height > 0 ? vp.height - SAFE.bottom - height : y
@@ -98,7 +102,29 @@ export function narrowBox(x, y, vp, log = null, w = SIZE.narrow.width) {
     marginThreshold: 16,
     height,
   }
-  return log ? underLog(box, w, log) : box
+  const b = ctr ? belowCtr(box, w, ctr, vp) : box
+  return log ? underLog(b, w, log) : b
+}
+
+// ---- віконце лічильників (сесія Б, автор 2026-11-27) ----
+// Стале місце праворуч від панелі «Players» (x 16–266, верх 56; виміряно 2026-11-27 на 2007×1083), 330 px завширшки,
+// висота — на заголовок і три рядки. Поки в кімнаті є хоч один лічильник, вузьке вікно, що перетинає це місце по x,
+// починається на GAP нижче (автор, відповідь 1). Місце стале, а не живий край вікна: розгорнута форма Доглядача росте
+// вниз і не зсуває інші вікна (вердикт радника; той самий принцип, що «місце журналу завжди вільне»).
+export const CTR_BOX = { left: 280, top: 56, width: 330, height: 140 }
+export const CTR_ON = 'pust-obr-ctr-on'   // sessionStorage: «у кімнаті є лічильники» (пише тло, background.mjs)
+/** Місце лічильників, якщо вони є в цій вкладці, інакше null. */
+export function ctrSlot(ss = session()) {
+  try { return ss.getItem(CTR_ON) ? CTR_BOX : null } catch { return null }
+}
+export const ctrSet = (on, ss = session()) => { try { if (on) ss.setItem(CTR_ON, '1'); else ss.removeItem(CTR_ON) } catch { /* ок */ } }
+/** Вікно box (ширина w) нижче за місце лічильників ctr, якщо перетинає його по x і починається вище за його низ + GAP. */
+function belowCtr(box, w, ctr, vp) {
+  const p = box.anchorPosition
+  const bottom = ctr.top + ctr.height + GAP
+  if (!p || !crosses(p, w, ctr) || p.top >= bottom) return box
+  const height = vp.height > 0 ? Math.max(MIN_H, Math.min(box.height, vp.height - SAFE.bottom - bottom)) : box.height
+  return { ...box, anchorPosition: { ...p, top: bottom }, height }
 }
 
 // ---- розклад трьох вікон, варіант Б «Під аркушем персонажа» (автор, 2026-11-27) ----
@@ -152,7 +178,7 @@ export const winsClear = ss => { try { ss.removeItem(WINS); ss.removeItem(LOG_UN
 /** Запис реєстру з полів popover: де стоїть вікно, яку висоту мало б без журналу (full), розмір екрана (vw, vh)
  * і бік, до якого вікно пристало (side: 'left' | 'right'; '' — стоїть біля токена): за ним вікно переставляється,
  * коли розмір вікна браузера змінився (followResize). */
-const recOf = (box, w, full, vh, vw = 0, side = '') => box.anchorPosition ? { left: box.anchorPosition.left, top: box.anchorPosition.top, width: w, height: box.height, full, vh, vw, side } : null
+const recOf = (box, w, full, vh, vw = 0, side = '') => box.anchorPosition ? { left: box.anchorPosition.left, top: box.anchorPosition.top, width: w, height: box.height, full, vh, vw, side, ctr: ctrSlot() ? 1 : 0 } : null
 // Owlbear може закрити наші вікна сам (живий захід 2026-11-27: після зміни розміру вікна браузера), не кажучи нам, тож
 // запис реєстру — ще не доказ: журнал щосекунди пише LOG_ALIVE, і відкритим вважається лише той, що озивався за ALIVE_MS
 // (або щойно відкритий і ще вантажиться).
@@ -189,8 +215,8 @@ export function anchorFor(bounds, vp, gap = 12, log = null) {
 }
 
 /** «До лівого / правого краю екрана» (автор 2026-11-26, варіант В: SDK не рухає відкрите вікно). vp = {width, height}. */
-export function dockAnchor(side, vp, log = null, w = SIZE.narrow.width) {
-  return narrowBox(side === 'right' ? vp.width - SAFE.right - w : SAFE.left, SAFE.top, vp, log, w)
+export function dockAnchor(side, vp, log = null, w = SIZE.narrow.width, ctr = ctrSlot()) {
+  return narrowBox(side === 'right' ? vp.width - SAFE.right - w : SAFE.left, SAFE.top, vp, log, w, ctr)
 }
 
 /**
@@ -483,6 +509,67 @@ export async function openGenerators(OBR, base, { from = '', slot = '', dock = '
   if (from === 'narrow') await quiet(OBR.popover.close(genId(slot)))
 }
 
+// ---- «Швидкий старт» (сесія Б, автор 2026-11-27, вигляд А): вузьке вікно 460 px біля лівого краю, як караван ----
+export const quickUrl = (base, slot = '') => `${base}quickstart.html${slot === 'b' ? '?slot=b' : ''}`
+const quickId = slot => slot === 'b' ? ID.quickB : ID.quick
+/** Відкрити «Швидкий старт»; from = 'narrow', якщо кличе саме це вікно (його закриваємо останнім), slot — його місце. */
+export async function openQuick(OBR, base, { from = '', slot = '', dock = 'left', ss = session() } = {}) {
+  const quiet = p => Promise.resolve(p).catch(() => {})
+  const to = from === 'narrow' ? (slot === 'b' ? '' : 'b') : ''
+  if (from !== 'narrow') { await quiet(OBR.popover.close(ID.quickB)); await quiet(OBR.popover.close(ID.quick)) }
+  const { at, rec } = await dockAt(OBR, dock)
+  winSet(ss, ID.quick, null); winSet(ss, ID.quickB, null); winSet(ss, quickId(to), rec)
+  await OBR.popover.open({ id: quickId(to), url: quickUrl(base, to), ...SIZE.narrow, disableClickAway: true, ...at })
+  if (from === 'narrow') await quiet(OBR.popover.close(quickId(slot)))
+}
+
+// ---- віконце лічильників (сесія Б): відкриває тло кожного клієнта (background.mjs), Доглядачу — ще й меню ----
+// Сторінка щосекунди пише CTR_ALIVE: Owlbear сам закриває наші вікна (після зміни розміру вікна браузера), тож тло
+// перевідкриває віконце, що не озивалося ALIVE_MS (вердикт радника, блокер 9). Відкрите живе вікно вдруге не відкривається:
+// перезавантаження сторінки стерло б форму Доглядача.
+export const CTR_ALIVE = 'pust-obr-ctr-alive'
+export const ctrAlive = (ss = session(), now = Date.now()) => { try { ss.setItem(CTR_ALIVE, String(now)) } catch { /* ок */ } }
+export const ctrGone = (ss = session()) => { try { ss.removeItem(CTR_ALIVE) } catch { /* ок */ } }
+export function ctrOpen(ss = session(), now = Date.now()) {
+  let t = 0
+  try { t = +ss.getItem(CTR_ALIVE) || 0 } catch { /* ок */ }
+  return now - t < ALIVE_MS
+}
+export const countersUrl = (base, form = false) => `${base}counters.html${form ? '?new=1' : ''}`
+/** Поля popover віконця лічильників: стале місце CTR_BOX (праворуч від «Players»). */
+export const ctrPopover = height => ({
+  width: CTR_BOX.width, height: height || CTR_BOX.height,
+  anchorReference: 'POSITION', anchorPosition: { left: CTR_BOX.left, top: CTR_BOX.top },
+  anchorOrigin: { horizontal: 'LEFT', vertical: 'TOP' }, transformOrigin: { horizontal: 'LEFT', vertical: 'TOP' },
+  marginThreshold: 16, disableClickAway: true,
+})
+/** Відкрити віконце лічильників; form — одразу з формою «Новий лічильник» (меню Доглядача). Живе вікно з form — лише сказати йому. */
+export async function openCounters(OBR, base, { form = false, ss = session(), now = Date.now() } = {}) {
+  if (ctrOpen(ss, now)) {
+    if (form) { try { ss.setItem(CTR_FORM, String(now)) } catch { /* ок */ } }
+    return false
+  }
+  try { ss.setItem(CTR_ALIVE, String(now)) } catch { /* ок */ }   // до першого await: два виклики не відкривають двічі
+  await OBR.popover.open({ id: ID.counters, url: countersUrl(base, form), ...ctrPopover() })
+  return true
+}
+export const CTR_FORM = 'pust-obr-ctr-form'   // меню просить відкрите віконце показати форму «Новий лічильник»
+
+// ---- довідка «?» (сесія Б, автор 2026-11-27, вигляд А): окреме вікно праворуч від меню розширення, меню не затуляє ----
+// Меню Owlbear ставить саме (action popover 320 px під кнопкою розширення вгорі ліворуч); HELP_AT — праворуч від нього
+// з проміжком GAP (уточнено наживо, docs/plans/2026-11-27-owlbear-counters-plan.md).
+export const HELP_AT = { left: 352, top: 64 }
+export const helpUrl = (base, k) => `${base}help.html?k=${encodeURIComponent(k)}`
+export async function openHelp(OBR, base, k) {
+  await Promise.resolve(OBR.popover.close(ID.help)).catch(() => {})   // одна довідка за раз
+  await OBR.popover.open({
+    id: ID.help, url: helpUrl(base, k), ...SIZE.help, disableClickAway: true,
+    anchorReference: 'POSITION', anchorPosition: { ...HELP_AT },
+    anchorOrigin: { horizontal: 'LEFT', vertical: 'TOP' }, transformOrigin: { horizontal: 'LEFT', vertical: 'TOP' }, marginThreshold: 16,
+  })
+}
+export const closeHelp = OBR => Promise.resolve(OBR.popover.close(ID.help)).catch(() => {})
+
 // ---- зміна розміру вікна браузера (автор, 2026-11-27) ----
 // Owlbear не повідомляє розширенню, що вікно браузера змінило розмір, а SDK 3.1.0 не рухає відкрите вікно; сам Owlbear
 // лише підтягує popover до краю екрана (16 px), тож вузьке вікно після звуження могло закрити колонку інструментів.
@@ -495,14 +582,17 @@ export const RESIZE_EVERY = 500
  * {kind:'height', height, rec} — лише змінити висоту; {kind:'move', side, token} — перевідкрити (side — бік краю;
  * token — вікно стояло біля токена, тож і далі біля нього, якщо сторінка це вміє).
  */
-export function resizePlan(rec, vp, w = (rec && rec.width) || SIZE.narrow.width) {
+export function resizePlan(rec, vp, w = (rec && rec.width) || SIZE.narrow.width, ctr = ctrSlot()) {
   if (!rec || !Number.isFinite(rec.left) || !Number.isFinite(rec.top) || !(vp.width > 0) || !(vp.height > 0)) return null
-  if (rec.vw === vp.width && rec.vh === vp.height) return null
+  // той самий екран і ті самі лічильники (з'явилися чи зникли — вікно біля лівого краю стає під них або назад угору)
+  if (rec.vw === vp.width && rec.vh === vp.height && !!rec.ctr === !!ctr) return null
   const side = rec.side === 'left' || rec.side === 'right' ? rec.side : ''
-  const box = side ? dockAnchor(side, vp, logSlot(vp), w) : narrowBox(rec.left, rec.top, vp, logSlot(vp), w)
+  // вікно біля токена, поставлене під лічильники, після їхнього зникнення повертається на свій верх (SAFE.top і вище — як було)
+  const top0 = !ctr && rec.ctr && rec.top === CTR_BOX.top + CTR_BOX.height + GAP ? SAFE.top : rec.top
+  const box = side ? dockAnchor(side, vp, logSlot(vp), w, ctr) : narrowBox(rec.left, top0, vp, logSlot(vp), w, ctr)
   const p = box.anchorPosition
   // біля правого краю вікно вже стоїть, де треба: Owlbear притиснув його до краю сам (popAt); лишились висота й ширина
-  if (side === 'right' || (p.left === rec.left && p.top === rec.top)) return { kind: 'height', height: box.height, width: w, rec: { ...rec, left: p.left, top: p.top, width: w, height: box.height, full: box.height, vw: vp.width, vh: vp.height } }
+  if (side === 'right' || (p.left === rec.left && p.top === rec.top)) return { kind: 'height', height: box.height, width: w, rec: { ...rec, left: p.left, top: p.top, width: w, height: box.height, full: box.height, vw: vp.width, vh: vp.height, ctr: ctr ? 1 : 0 } }
   const was = rec.vw > 0 ? rec.vw : vp.width
   return { kind: 'move', side: side || (rec.left + (rec.width || SIZE.narrow.width) / 2 > was / 2 ? 'right' : 'left'), token: !side }
 }
@@ -511,7 +601,7 @@ export function resizePlan(rec, vp, w = (rec && rec.width) || SIZE.narrow.width)
  * Опитувати розмір екрана кожні every мс; onStable(vp) — коли розмір двічі поспіль однаковий і ще не оброблений
  * (тягнути край вікна браузера — не привід перевідкривати вікно на кожному кроці). → функція «зупинити».
  */
-export function watchResize(OBR, onStable, { every = RESIZE_EVERY, setI = setInterval, clearI = clearInterval } = {}) {
+export function watchResize(OBR, onStable, { every = RESIZE_EVERY, setI = setInterval, clearI = clearInterval, extra = () => '' } = {}) {
   let prev = '', done = '', busy = false
   const t = setI(async () => {
     if (busy) return
@@ -520,7 +610,7 @@ export function watchResize(OBR, onStable, { every = RESIZE_EVERY, setI = setInt
       if (!OBR.viewport) return   // фейк dev-сервера без viewport: не сипати помилками щопівсекунди
       const vp = await viewportSize(OBR)
       if (!(vp.width > 0) || !(vp.height > 0)) return
-      const key = vp.width + 'x' + vp.height
+      const key = vp.width + 'x' + vp.height + extra()   // extra: лічильники з'явилися чи зникли (followResize)
       if (key === prev && key !== done) { done = key; await onStable(vp) }
       prev = key
     } catch (e) { console.error(e) } finally { busy = false }
@@ -535,14 +625,14 @@ export function watchResize(OBR, onStable, { every = RESIZE_EVERY, setI = setInt
 export function followResize(OBR, id, onMove, { ss = session(), ...opts } = {}) {
   return watchResize(OBR, async vp => {
     const rec = winsGet(ss)[id]
-    const plan = resizePlan(rec, vp, rec && widthFor(ss, id, rec.side, vp.width))
+    const plan = resizePlan(rec, vp, rec && widthFor(ss, id, rec.side, vp.width), ctrSlot(ss))
     if (!plan) return
     if (plan.kind === 'height') {
       winSet(ss, id, plan.rec)
       if (plan.width !== rec.width) await Promise.resolve(OBR.popover.setWidth(id, plan.width)).catch(() => {})
       await Promise.resolve(OBR.popover.setHeight(id, plan.height)).catch(() => {})
     } else await onMove(plan)
-  }, opts)
+  }, { extra: () => ctrSlot(ss) ? ':ctr' : '', ...opts })
 }
 
 /** Тло: журнал кидків (його сторінка не може перевідкрити сама себе — з закриттям зупиняється її скрипт). */

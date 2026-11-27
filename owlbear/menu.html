@@ -23,6 +23,12 @@
 #d-roll{width:100%;margin-top:12px;min-height:40px;font-weight:700;text-align:center;justify-content:center}
 #d-hint{margin:6px 0 0}
 #d-last{margin-top:8px;padding-top:6px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums;min-height:20px}
+/* довідка «?» біля кожної кнопки вкладки «Аркуші» (сесія Б, автор 2026-11-27, вигляд А «Кружечок поруч») */
+.it{display:flex;gap:6px;align-items:center}
+.it[hidden]{display:none}
+.it>button:first-child{flex:1;min-width:0}
+.qh{flex:none;width:26px;height:26px;min-height:26px;padding:0;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--mut);background:var(--field);text-align:center}
+.qh[aria-pressed=true]{background:var(--rust-fill);border-color:var(--rust-fill);color:var(--on-rust)}
 </style>
 </head>
 <body>
@@ -30,9 +36,17 @@
 <div class="body">
 <div class="tabs" role="tablist"><button type="button" role="tab" id="t-sheets" aria-controls="p-sheets"></button><button type="button" role="tab" id="t-dice" aria-controls="p-dice"></button></div>
 <div id="p-sheets" role="tabpanel" aria-labelledby="t-sheets">
-<button type="button" id="go" class="main"></button>
+<div class="it"><button type="button" id="go" class="main"></button><button type="button" class="qh" data-h="go"></button></div>
 <p class="mut" id="hint"></p>
-<div class="more"><button type="button" id="roll" class="row-btn"></button><button type="button" id="log" class="row-btn"></button><button type="button" id="caravan" class="row-btn"></button><button type="button" id="enemies" class="row-btn" hidden></button><button type="button" id="gen" class="row-btn" hidden></button></div>
+<div class="more">
+<div class="it"><button type="button" id="roll" class="row-btn"></button><button type="button" class="qh" data-h="roll"></button></div>
+<div class="it"><button type="button" id="log" class="row-btn"></button><button type="button" class="qh" data-h="log"></button></div>
+<div class="it"><button type="button" id="caravan" class="row-btn"></button><button type="button" class="qh" data-h="caravan"></button></div>
+<div class="it"><button type="button" id="quick" class="row-btn"></button><button type="button" class="qh" data-h="quick"></button></div>
+<div class="it" hidden><button type="button" id="counters" class="row-btn"></button><button type="button" class="qh" data-h="counters"></button></div>
+<div class="it" hidden><button type="button" id="enemies" class="row-btn"></button><button type="button" class="qh" data-h="enemies"></button></div>
+<div class="it" hidden><button type="button" id="gen" class="row-btn"></button><button type="button" class="qh" data-h="gen"></button></div>
+</div>
 <div id="out" aria-live="polite"></div>
 </div>
 <div id="p-dice" role="tabpanel" aria-labelledby="t-dice" hidden>

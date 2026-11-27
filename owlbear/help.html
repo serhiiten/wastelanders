@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Довідка</title>
+<link rel="stylesheet" href="ui.css">
+<style>
+  /* Довідка «?» (сесія Б, автор 2026-11-27, вигляд А «Кружечок поруч»): вікно 300 px праворуч від меню розширення. */
+  html,body{height:100%}
+  body{display:flex;flex-direction:column;overflow:hidden;font-size:14px}
+  #bar{display:flex;align-items:center;gap:6px;padding:6px 6px 6px 12px;border-bottom:1px solid var(--line);flex:none}
+  #bar h1{flex:1;min-width:0;font-size:16px;margin:0}
+  #bar button{background:transparent;width:28px;min-height:26px;padding:0;display:grid;place-items:center}
+  #bar button .ic{width:16px;height:16px}
+  #body{flex:1;overflow:auto;padding:4px 12px 12px;min-height:0}
+  #body h2{margin:12px 0 2px}
+  #body p{margin:0 0 4px;line-height:1.45}
+</style>
+</head>
+<body>
+<div id="bar"><h1 id="title"></h1><button type="button" id="close"></button></div>
+<div id="body"></div>
+<script type="module" src="help.mjs"></script>
+</body>
+</html>

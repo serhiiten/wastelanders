@@ -12,7 +12,7 @@ export const LOG_KEY = 'pust-obr-log'
 export const LOG_MAX = 50
 export const MSG_MAX = 4000   // байтів в одному повідомленні (ліміт broadcast — 64 kB)
 export const VERDICTS = ['Невдача', 'Частковий успіх', 'Успіх', 'Критичний успіх']   // cg_src.html, VERDICTS
-const KINDS = ['check', 'fate', 'dmg', 'dice', 'edmg', 'gen']
+export const KINDS = ['check', 'fate', 'dmg', 'dice', 'edmg', 'gen', 'ctr']
 // Шкода ворога (етап 4, автор 2026-11-27: усім, завжди; лише від Доглядача — вердикт радника): ключ типу — як у картці
 // ворога Foundry (ext/foundry/battle.mjs, DMG_TYPES), назви — тут, щоб тло не вантажило battle.mjs; тест на рівність.
 export const ETYPES = {
@@ -24,7 +24,9 @@ export const EDICE = { count: 20, sMin: 2, sMax: 100, mod: 99 }
 // Панель «Кістки» (автор, 2026-11-27, варіант К3): кількість кожної кістки, модифікатор ±N. Кістки — як у вікі: d6, 1d10.
 export const DICE = { sides: [6, 8, 10], nMin: 2, nMax: 100, count: 20, groups: 4, mod: 99 }
 export const ERR_MS = 6000     // червоне сповіщення Owlbear само не зникає: закриваємо його самі (автор, 2026-11-27)
-const LIM = { title: 120, text: 3500, who: 60, label: 120, typeName: 60, type: 20, name: 80, dstr: 40, gx: 2000, id: 16, by: 60, note: 200 }
+const LIM = { title: 120, text: 3500, who: 60, label: 120, typeName: 60, type: 20, name: 80, dstr: 40, gx: 2000, id: 16, by: 60, note: 200, ctrName: 40, ctrDesc: 120 }
+// лічильник Доглядача (сесія Б, автор 2026-11-27): назва до 40, поділок 1–100, опис поділки до 120 кодових точок
+const cp = (v, n) => typeof v === 'string' ? [...v].slice(0, n).join('') : ''
 
 const str = (v, n) => typeof v === 'string' ? v.slice(0, n) : ''
 const int = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi ? v : null
@@ -40,6 +42,7 @@ export function buildRoll(kind, d, { who, id }) {
   if (kind === 'dice') { const g = diceGroups(d.g), mod = int(d.mod, -DICE.mod, DICE.mod); if (!g || mod === null) return null; Object.assign(m, { g, mod, total: diceSum(g, mod) }); return m }
   if (kind === 'edmg') { const x = enemyDice(d); if (!x) return null; Object.assign(m, x, { name: str(d.name, LIM.name), note: str(d.note, LIM.note) }); return m }
   // «Показати всім» генераторів (етап 4б, Л1): заголовок і простий текст, без числа
+  if (kind === 'ctr') { const x = ctrOf(d); if (!x) return null; Object.assign(m, x, { total: x.to }); return m }
   if (kind === 'gen') { Object.assign(m, { total: 0, title: str(d.title, LIM.title), text: str(d.text, LIM.text) }); if (!m.title) return null; while (bytes(m) > MSG_MAX) m.text = m.text.slice(0, Math.floor(m.text.length * 0.8)); return m }
   if (kind !== 'fate') m.gx = str(d.gx, LIM.gx)
   while (m.gx && bytes(m) > MSG_MAX) m.gx = m.gx.slice(0, Math.floor(m.gx.length * 0.8))
@@ -69,6 +72,11 @@ export function parseRoll(m) {
     if (!x || x.total !== total) return null   // підсумок рахуємо самі
     Object.assign(e, x, { name: str(m.name, LIM.name), note: str(m.note, LIM.note) })
     return e
+  } else if (m.kind === 'ctr') {
+    const x = ctrOf(m)
+    if (!x || x.to !== total) return null
+    Object.assign(e, x)
+    return e
   } else if (m.kind === 'gen') {
     const title = str(m.title, LIM.title)
     if (!title || total !== 0) return null
@@ -83,6 +91,16 @@ export function parseRoll(m) {
   }
   if (m.kind !== 'fate' && typeof m.gx === 'string' && m.gx) e.gx = str(m.gx, LIM.gx)
   return e
+}
+
+/** Зміна лічильника: {name, from, to, s, desc} у межах або null (from ≠ to; опис — до 120 кодових точок). */
+export function ctrOf(d) {
+  if (!d || typeof d !== 'object') return null
+  const s = int(d.s, 1, 100), name = cp(d.name, LIM.ctrName)
+  if (s === null || !name) return null
+  const from = int(d.from, 0, s), to = int(d.to, 0, s)
+  if (from === null || to === null || from === to) return null
+  return { name, from, to, s, desc: cp(d.desc, LIM.ctrDesc) }
 }
 
 /** Групи кісток [[грані, [значення…]], …]: 1–4 групи, у кожній 1–20 кісток, грані 2–100, значення 1…грані. Інше — null. */
@@ -199,6 +217,7 @@ export function rollWhat(e) {
   if (e.kind === 'fate') return `Кістка Долі: ${e.die}${e.mod ? signed(e.mod) : ''} (${fateMode(e)})`
   if (e.kind === 'dice') return 'Кістки: ' + diceLabel(e.g, e.mod)
   if (e.kind === 'gen') return e.title
+  if (e.kind === 'ctr') return `Лічильник «${e.name}»: ${e.from} → ${e.to} з ${e.s}`
   if (e.kind === 'edmg') return `Шкода: ${[e.name, edmgOf(e)].filter(Boolean).join(', ')}`
   return `${e.rerolled ? 'Шкода перекинута' : 'Шкода'}: ${[e.name, e.dstr].filter(Boolean).join(', ')}`
 }
@@ -207,6 +226,7 @@ export const verdictName = e => e.kind === 'check' ? VERDICTS[e.verdict] : ''
 /** Простий текст сповіщення, як рядок журналу трекера (cg.js): «Волті (Оксана): атака, СПР + Стрільба: 9 — Успіх». */
 export function rollText(e, by) {
   if (e.kind === 'gen') return `${by || e.who || 'Доглядач'}: ${e.title}`
+  if (e.kind === 'ctr') return `Лічильник «${e.name}»: ${e.from} → ${e.to} з ${e.s}${e.desc ? '. ' + e.desc.replace(/\s+/g, ' ') : ''}`
   if (e.kind === 'dice') return `${by || e.who || 'Без імені'}: кістки ${diceLabel(e.g, e.mod)} = ${e.total}`
   if (e.kind === 'edmg') return `${e.who || 'Ворог'}: шкода (${[e.name, edmgOf(e)].filter(Boolean).join(', ')}): ${e.total}`
   const who = (e.who || 'Без імені') + (by ? ` (${by})` : '')
@@ -328,7 +348,7 @@ export async function receiveRolls(OBR, storage, { unknown, now = () => Date.now
     let by = playerOf(conn, players, mine)
     if (!by && conn !== mine.connectionId) { await who(); by = playerOf(conn, players, mine) }   // щойно зайшов
     const me = !!conn && conn === mine.connectionId
-    if ((e.kind === 'edmg' || e.kind === 'gen') && roleOf(conn, players, mine) !== 'GM') return   // шкоду ворога й генератори шле лише Доглядач
+    if ((e.kind === 'edmg' || e.kind === 'gen' || e.kind === 'ctr') && roleOf(conn, players, mine) !== 'GM') return   // шкоду ворога, генератори й лічильники шле лише Доглядач
     if (e.kind === 'check' && (e.rt || e.aspect)) {
       const prev = e.rt ? logGet(storage).find(x => x.id !== e.id && x.kind === 'check' && x.rt === e.rt && x.who === e.who && x.by === (by || unknown)) : null
       const re = redoOf(e, prev)

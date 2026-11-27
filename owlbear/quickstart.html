@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Швидкий старт</title>
+<link rel="stylesheet" href="ui.css">
+<style>
+  /* «Швидкий старт» (сесія Б, автор 2026-11-27, вигляд А «Суцільний текст і зміст угорі»): вузьке вікно 460 px біля лівого краю.
+     Макети: https://claude.ai/artifact/XbKKnFi3N3DzVyxWUQcRQR */
+  :root{--card:#24201b}
+  :root.light{--card:#e6dec7}
+  html,body{height:100%}
+  body{display:flex;flex-direction:column;overflow:hidden}
+  #bar{display:flex;gap:6px;align-items:center;padding:4px 8px 4px 10px;border-bottom:1px solid var(--line);flex:none}
+  #bar .ttl{flex:1;min-width:0;display:flex;gap:8px;align-items:center;font-size:14px;font-weight:700;letter-spacing:.03em;white-space:nowrap;overflow:hidden}
+  #bar .ttl .ic{width:16px;height:16px;color:var(--rust)}
+  #bar button{background:transparent;width:28px;min-height:26px;padding:0;display:grid;place-items:center}
+  #bar button .ic{width:16px;height:16px}
+  #nav{flex:none;padding:8px 10px;border-bottom:1px solid var(--line)}
+  #toc{width:100%;font:inherit;font-size:14px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:4px 6px;min-height:32px}
+  #text{flex:1;overflow:auto;padding:4px 16px 40vh;min-height:0;font-size:15px;line-height:1.5}
+  #text .jr{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);border-top:1px solid var(--line);padding-top:12px;margin:24px 0 0}
+  #text .jr:first-child{border-top:0;margin-top:8px;padding-top:0}
+  #text h2.pg{font-size:19px;line-height:1.25;text-transform:none;letter-spacing:0;color:var(--rust-text);margin:18px 0 8px;scroll-margin-top:8px}
+  #text h3{font-size:16px;margin:16px 0 6px}
+  #text h4{font-size:15px;margin:12px 0 4px}
+  #text p{margin:0 0 10px}
+  #text ul,#text ol{margin:0 0 10px;padding-left:22px}
+  #text li{margin:0 0 4px}
+  #text blockquote{margin:10px 0;padding:8px 12px;border-left:3px solid var(--line);background:var(--card);border-radius:0 6px 6px 0}
+  #text blockquote.warning{border-left-color:var(--rust)}
+  #text blockquote p:last-child{margin-bottom:0}
+  #text table{border-collapse:collapse;width:100%;font-size:13.5px;margin:0 0 12px;display:block;overflow-x:auto}
+  #text th,#text td{border:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+  #text th{background:var(--card)}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  #text a{color:var(--rust-text)}
+  #text a:focus-visible{outline:2px solid var(--focus-out);outline-offset:1px}
+</style>
+</head>
+<body>
+<div id="bar"><span class="ttl"><span id="b-icon"></span><span id="b-title"></span></span><button type="button" id="b-left"></button><button type="button" id="b-right"></button><button type="button" id="b-close"></button></div>
+<div id="nav"><label for="toc" class="sr" id="toc-l"></label><select id="toc"></select></div>
+<div id="text" tabindex="-1"></div>
+<script type="module" src="quickstart.mjs"></script>
+</body>
+</html>

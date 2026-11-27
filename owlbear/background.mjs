@@ -11,6 +11,7 @@ import { K_ENEMY, K_CARTOK, LAYER_FILTER } from './lib/enemy-bar.mjs'
 import { startBars, makeCaravan, removeCaravan } from './lib/enemy-bars.mjs'
 import { K } from './lib/store.mjs'
 import { safeStorage } from './lib/storage.mjs'
+import { followCounters } from './lib/counters-win.mjs'
 
 const BASE = baseOf(location.pathname)
 // ворожий токен (етап 4, блокер радника 4) і караван-токен (B): без «Аркуш персонажа» і «Призначити гравцеві…», і для Доглядача теж
@@ -94,4 +95,6 @@ OBR.onReady(async () => {
     notify: notifyFor(ss),
     after: () => autoOpenLog(OBR, BASE, { ss }),
   }).catch(e => console.error(e))
+  // лічильники (сесія Б, автор 2026-11-27): віконце над мапою в усіх, поки є хоч один лічильник
+  followCounters(OBR, BASE, { gm, ss })
 })
