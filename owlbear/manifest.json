@@ -2,7 +2,7 @@
   "name": "Пустельники",
   "version": "0.1.0",
   "manifest_version": 1,
-  "description": "Аркуш персонажа «Пустельників» на токені.",
+  "description": "Аркуші персонажів і каравану на токенах, картки ворогів, генератори Доглядача й спільний журнал кидків для «Пустельників».",
   "author": "Сергій Тен",
   "icon": "/wastelanders/owlbear/icon.svg",
   "background_url": "/wastelanders/owlbear/background.html",
