@@ -22,7 +22,9 @@
   .row .chip{flex:none;min-width:50px;padding:0 4px;text-align:center;border-radius:5px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);font:700 15px/24px "Ubuntu Mono","PT Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
   .row .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
   .row .ib{border-color:var(--line);background:var(--field);width:22px;min-height:22px;font-size:14px}
-  .row .ib.sure{background:var(--err-bg);border-color:var(--err);width:auto;padding:0 6px;font-size:12px}
+  /* «Точно видалити?» — у рядку замість назви, кнопка того самого розміру: другий клік не влучає в сусідню (живий захід) */
+  .row .ib.sure{background:var(--err-bg);border-color:var(--err)}
+  .row .nm.sure{color:var(--err)}
   .row.open{border-color:var(--rust)}
   #empty{padding:8px 10px;color:var(--mut)}
   .panel{border-top:1px solid var(--line);padding:8px 10px;display:flex;flex-direction:column;gap:6px}

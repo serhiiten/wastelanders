@@ -62,12 +62,12 @@ function row(c) {
   const name = c.n
   const chip = el('span', { cls: 'chip', text: `${c.v}/${c.s}` })
   chip.style.background = ctrColor(c.v, c.s)
-  const r = el('div', { cls: 'row' + (open === c.i ? ' open' : ''), role: 'listitem', title: name }, chip, el('span', { cls: 'nm', text: name }))
+  const r = el('div', { cls: 'row' + (open === c.i ? ' open' : ''), role: 'listitem', title: name }, chip, el('span', { cls: 'nm' + (sureDel === c.i ? ' sure' : ''), text: sureDel === c.i ? T.ctrDelSure : name }))
   if (gm) {
     r.append(ib('−', T.ctrLess(name), () => step(c.i, -1)), ib('+', T.ctrMore(name), () => step(c.i, 1)))
     if (!c.c) r.append(ib(open === c.i ? '⌃' : '⌄', open === c.i ? T.ctrFold(name) : T.ctrOpen(name), () => { open = open === c.i ? '' : c.i; draft = null; form = null; render(true) }))
     // видалення стирає вписане — двічі (docs/ui-rules.md §3): перший клік питає, другий видаляє; 4 с без кліку — назад
-    const del = ib(sureDel === c.i ? T.ctrDelSure : '✕', T.ctrDel(name), () => {
+    const del = ib('✕', sureDel === c.i ? T.ctrDelSure : T.ctrDel(name), () => {
       if (sureDel !== c.i) { sureDel = c.i; clearTimeout(sureT); sureT = setTimeout(() => { sureDel = ''; render() }, 4000); return render() }
       sureDel = ''; const was = open === c.i; if (was) { open = ''; draft = null } host.act({ t: 'del', i: c.i }); render(was)
     }, 'ib' + (sureDel === c.i ? ' sure' : ''))
