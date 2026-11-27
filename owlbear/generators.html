@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Генератори</title>
+<link rel="stylesheet" href="ui.css">
+<style>
+  /* «Генератори» (етап 4б), вікно А: вузьке вікно 460 px біля лівого краю; макети https://claude.ai/artifact/BMXV1V8NDVhziXBrNXiknU */
+  :root{--card:#24201b; --c-boss:#a3261a; --c-regular:#9a4a20; --c-elite:#8f5f08; --c-statists:#5a5e5b}
+  :root.light{--card:#e6dec7}
+  html,body{height:100%}
+  body{display:flex;flex-direction:column;overflow:hidden}
+  #bar{display:flex;gap:6px;align-items:center;padding:4px 8px 4px 10px;border-bottom:1px solid var(--line);flex:none}
+  #bar .ttl{flex:1;min-width:0;display:flex;gap:8px;align-items:center;font-size:14px;font-weight:700;letter-spacing:.03em;white-space:nowrap;overflow:hidden}
+  #bar .ttl .ic{width:16px;height:16px;color:var(--rust)}
+  #bar button{background:transparent;width:28px;min-height:26px;padding:0;display:grid;place-items:center}
+  #bar button .ic{width:16px;height:16px}
+  #tabs{display:flex;border-bottom:1px solid var(--line);flex:none}
+  #tabs button{flex:1;background:transparent;border:0;border-bottom:2px solid transparent;border-radius:0;text-align:center;color:var(--mut);padding:6px 2px;min-height:36px}
+  #tabs button[aria-selected=true]{color:var(--fg);border-bottom-color:var(--rust);font-weight:700}
+  /* смуга повідомлення поверх низу вікна, а не над вмістом: поява й зникнення не зсувають результат (ревізор 4б) */
+  body{position:relative}
+  #strip{position:absolute;left:10px;right:10px;bottom:10px;z-index:5;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+  #strip>.msg{pointer-events:auto;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+  #main{flex:1;overflow:auto;padding:10px 12px 18px;display:flex;flex-direction:column;gap:10px;min-height:0}
+  #main>*{flex:none}
+  .l{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin:0}
+  .seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{flex:1;border:0;border-right:1px solid var(--line);border-radius:0;text-align:center;padding:4px;min-height:30px;background:var(--btn)}
+  .seg button:last-child{border-right:0}
+  .seg button[aria-pressed=true]{background:var(--rust-fill);color:var(--on-rust)}
+  .seg button:disabled{opacity:.5;cursor:default}
+  button.main,button.go{text-align:center;font-weight:700}
+  select{font:inherit;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:4px 6px;min-height:32px;min-width:0}
+  .res{border:1px solid var(--line);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--card)}
+  .rh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .rh b{flex:1;min-width:120px}
+  .share{border-color:var(--rust)}
+  .chip{font-size:12px;color:var(--mut);border:1px solid var(--line);border-radius:10px;padding:1px 8px;white-space:nowrap}
+  .f{display:flex;flex-direction:column;gap:2px;border-bottom:1px dashed var(--line);padding-bottom:6px}
+  .f:last-child{border-bottom:0;padding-bottom:0}
+  .fh{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+  .sub{font-size:13px;font-weight:700;color:var(--rust-text);margin-top:4px}
+  .rr{background:transparent;width:26px;min-height:24px;padding:0;display:grid;place-items:center;flex:none}
+  .rr .ic{width:14px;height:14px}
+  .f small{color:var(--mut)}
+  .kinds{display:flex;flex-wrap:wrap;gap:5px}
+  .kinds button{font-size:13px;border-radius:12px;padding:2px 10px;min-height:26px}
+  .kinds button[aria-pressed=true]{border-color:var(--rust-fill);background:var(--rust-fill);color:var(--on-rust)}
+  .trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .trio>div{border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-size:13px;min-width:0;overflow-wrap:anywhere}
+  .trio .fh{font-size:11px;flex-wrap:wrap}
+  .trio .fh>span{overflow-wrap:normal}   /* «Винагорода» на 381 px (пара з «Ворогами») — цілим словом, ↻ під ним */
+  .bucket{display:flex;flex-direction:column;gap:5px}
+  .en{display:flex;align-items:center;gap:8px;width:100%;border-left:4px solid var(--c-regular);padding:5px 8px;min-height:34px}
+  .en.statists{border-left-color:var(--c-statists)} .en.elite{border-left-color:var(--c-elite)} .en.boss{border-left-color:var(--c-boss)}
+  .en b{flex:1;min-width:0;font-weight:600;overflow-wrap:anywhere}
+  .en .st,.en .n{font-family:"Ubuntu Mono",ui-monospace,monospace;font-size:13px;white-space:nowrap}
+  .en .st{color:var(--mut)}
+  .en small{display:block;color:var(--mut);font-size:12px;font-weight:400}
+  .en:disabled{cursor:default;opacity:.8}
+  .enrow{display:flex;gap:6px;align-items:stretch}
+  .enrow .en{flex:1;min-width:0}
+  .enrow .tok{flex:none;width:36px;padding:0;display:grid;place-items:center;text-align:center}
+  .enrow .tok .ic{width:18px;height:18px;color:var(--rust)}
+  .enrow .tok.gap{visibility:hidden}
+  .tv{display:flex;flex-direction:column;gap:8px;font-size:14px}
+  .tv .result-section{border-top:1px dashed var(--line);padding-top:6px}
+  .tv .result-section:first-child{border-top:0;padding-top:0}
+  .tv .result-title{font-weight:700;color:var(--rust-text);display:flex;align-items:center;gap:8px;justify-content:space-between}
+  .tv p{margin:0 0 6px}
+  .tv button.die{font-family:"Ubuntu Mono",ui-monospace,monospace;padding:0 7px;min-height:24px;text-align:center}
+  .tv .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
+  .tv .acts .mut{flex-basis:100%}
+  .tbl{display:flex;flex-direction:column;gap:6px}
+  .tbl .sels{display:flex;gap:6px}
+  .tbl .sels select{flex:1}
+  .tbl .out{white-space:pre-wrap;overflow-wrap:anywhere}
+  .tbl .btns{display:flex;gap:6px}
+  .tbl .btns .go{flex:1}
+</style>
+</head>
+<body>
+<div id="bar"><span class="ttl"><span id="b-icon"></span><span id="b-title"></span></span><button type="button" id="b-left"></button><button type="button" id="b-right"></button><button type="button" id="b-close"></button></div>
+<div id="tabs" role="tablist"></div>
+<div id="strip" aria-live="polite"></div>
+<div id="main" role="tabpanel"></div>
+<script type="module" src="generators.mjs"></script>
+</body>
+</html>

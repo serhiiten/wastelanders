@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Пустельники</title>
+<link rel="stylesheet" href="ui.css">
+<style>#go{display:flex;gap:10px;align-items:center;width:100%;padding:10px 12px;font-size:16px;font-weight:700;min-height:42px;border-radius:8px}#go .ic{width:20px;height:20px}#hint{margin-top:8px}#out{margin-top:12px}.more{display:flex;flex-direction:column;gap:6px;margin-top:10px}.more .row-btn{border-color:var(--line);font-weight:700}.more .row-btn .ic{color:var(--rust)}#out h2{margin-top:4px}
+/* вкладки «Аркуші» / «Кістки» (автор, 2026-11-27, варіант К3) */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-4px 0 12px}
+.tabs button{background:transparent;border:0;border-bottom:2px solid transparent;border-radius:0;padding:4px 12px;min-height:32px;color:var(--mut);font-weight:700}
+.tabs button[aria-selected=true]{color:var(--fg);border-bottom-color:var(--rust)}
+.dice{display:grid;grid-template-columns:1fr 32px 52px 32px;gap:6px 6px;align-items:center}
+.dice label,#secret-row{font-size:15px;color:var(--fg);text-transform:none;letter-spacing:0;margin:0}
+.dice label{font-weight:700;display:flex;align-items:center;gap:4px;min-width:0}
+.dice button{padding:0;min-height:32px;font-size:18px;line-height:1;display:grid;place-items:center}
+#secret-row{font-size:14px}
+.dice input{font:inherit;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:6px;min-height:32px;width:100%;text-align:center;font-variant-numeric:tabular-nums;padding:0 4px}
+.dice input.sides{width:56px}
+.dice .modl{font-weight:400}
+#secret-row{display:flex;gap:8px;align-items:center;margin-top:12px;min-height:24px}
+#secret-row input{width:18px;height:18px;accent-color:var(--rust);margin:0}
+#d-roll{width:100%;margin-top:12px;min-height:40px;font-weight:700;text-align:center;justify-content:center}
+#d-hint{margin:6px 0 0}
+#d-last{margin-top:8px;padding-top:6px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums;min-height:20px}
+</style>
+</head>
+<body>
+<div class="head"><span id="h-icon"></span><h1 id="title"></h1></div>
+<div class="body">
+<div class="tabs" role="tablist"><button type="button" role="tab" id="t-sheets" aria-controls="p-sheets"></button><button type="button" role="tab" id="t-dice" aria-controls="p-dice"></button></div>
+<div id="p-sheets" role="tabpanel" aria-labelledby="t-sheets">
+<button type="button" id="go" class="main"></button>
+<p class="mut" id="hint"></p>
+<div class="more"><button type="button" id="roll" class="row-btn"></button><button type="button" id="log" class="row-btn"></button><button type="button" id="caravan" class="row-btn"></button><button type="button" id="enemies" class="row-btn" hidden></button><button type="button" id="gen" class="row-btn" hidden></button></div>
+<div id="out" aria-live="polite"></div>
+</div>
+<div id="p-dice" role="tabpanel" aria-labelledby="t-dice" hidden>
+<div class="dice" id="dice"></div>
+<label id="secret-row" hidden><input type="checkbox" id="d-secret"><span id="d-secret-t"></span></label>
+<button type="button" id="d-roll" class="main"></button>
+<p class="mut" id="d-hint"></p>
+<div class="mut" id="d-last" aria-live="polite"></div>
+</div>
+</div>
+<script type="module" src="menu.mjs"></script>
+</body>
+</html>

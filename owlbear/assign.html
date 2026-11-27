@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Призначити гравцеві…</title>
+<link rel="stylesheet" href="ui.css">
+<style>.head h1{font-size:15px}form{display:flex;gap:6px;margin:0}form input{flex:1;min-width:0}#h-players{margin-top:10px}.foot{margin:12px 0 8px;padding-top:10px;border-top:1px solid var(--line)}#err{margin-top:8px}</style>
+</head>
+<body>
+<div class="head"><span id="h-icon"></span><h1 id="title"></h1></div>
+<div class="body">
+<p class="mut" id="now"></p>
+<h2 id="h-players"></h2>
+<div class="list" id="players"></div>
+<label for="name" id="l-name"></label>
+<form id="by-name"><input type="text" id="name" autocomplete="off"><button type="submit" id="b-name" class="main"></button></form>
+<div class="foot"><button type="button" id="nobody" class="ghost"></button></div>
+<p class="mut" id="hint"></p>
+<p class="msg err" id="err" role="alert" hidden></p>
+</div>
+<script type="module" src="assign.mjs"></script>
+</body>
+</html>
