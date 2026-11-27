@@ -4,12 +4,12 @@
   "manifest_version": 1,
   "description": "Аркуш персонажа «Пустельників» на токені.",
   "author": "Сергій Тен",
-  "icon": "icon.svg",
-  "background_url": "background.html",
+  "icon": "/wastelanders/owlbear/icon.svg",
+  "background_url": "/wastelanders/owlbear/background.html",
   "action": {
     "title": "Пустельники",
-    "icon": "icon.svg",
-    "popover": "menu.html",
+    "icon": "/wastelanders/owlbear/icon.svg",
+    "popover": "/wastelanders/owlbear/menu.html",
     "width": 320,
     "height": 480
   }
