@@ -696,6 +696,9 @@ html[data-theme="dark"] .cmp-who small { color: #b9b3a8; }
 .app.cmp-on .cargo .kind-cell, .app.cmp-on .cargo .tick-cell { width: auto; }
 .app.cmp-on .cargo .num { width: 44px; }
 .app.cmp-on .cargo td.sum .svc-btn { white-space: normal; padding-left: 6px; padding-right: 6px; line-height: 1.15; }
+/* × рядка вантажу прилипає праворуч у компактному (автор, 2026-11-27): у вузькому вікні (Owlbear 460 px) таблиця прокручується, а × видно завжди;
+   тло непрозоре (колір екрана), тінь ліворуч показує, що під ним прокручується решта рядка */
+.app.cmp-on .cargo th:last-child, .app.cmp-on .cargo td:last-child:not([colspan]) { position: sticky; right: 0; z-index: 1; background-color: var(--screen); box-shadow: -6px 0 6px -6px rgba(0,0,0,.45); }
 @media (max-width: 420px) { .cmp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cmp-pips .pip { width: 24px; height: 24px; } }   /* лампи запасу ходу й скриньки — 24 px, як −/+ */
 </style>
 </head>
