@@ -43,6 +43,12 @@ ALERT_ICON = {"TIP": "☝", "WARNING": "⚠️", "NOTE": "☢"}   # a Notion emo
 LONG_PAGE = 1500                        # a page with a tool longer than this (characters) gets its button at the bottom too:
                                         # 1500 characters ≈ one screen of text at 1366×768; beyond it the top button
                                         # needs scrolling back (author, 2026-11-28)
+TOOLS = {"all_generators.html": ("terminal", "Термінал Доглядача"),       # the tools that open in the wiki's frame
+         "character_generator.html": ("character", "Аркуш персонажа"),   # (package B, author 2026-11-28); the names are
+         "caravan_generator.html": ("caravan", "Аркуш каравану")}        # the tabs' texts
+INTRO = ("home", "de-hraty.md")         # the intro «Де грати» on the home page (package B): not a wiki page
+MORE_TEXT = "Докладніше"                 # mockup Г3 «Таблички», chosen by the author 2026-11-28
+COPY_TEXT = "Копіювати"                  # index.html's copy button
 COVER_W = 1400                         # the cover is 2752 px / 2.1 MB in the source; 1400 px covers a 1366 px
                                        # screen (author, 2026-11-28)
 
@@ -234,14 +240,15 @@ class Site:
 
     # ----- pieces of the layout -----
 
-    def head(self, title, rel, extra=""):
+    def head(self, title, rel, extra="", canonical=None):
+        canon = f'<link rel="canonical" href="{esc(SITE_URL + "rules/" + canonical)}">\n' if canonical is not None else ""
         return f"""<!doctype html>
 <html lang="uk">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>
-<script>try{{ if(localStorage.getItem('pustelnyky-theme')==='dark') document.documentElement.dataset.theme='dark'; }}catch(e){{}}</script>
+{canon}<script>document.documentElement.classList.add('js');try{{ if(localStorage.getItem('pustelnyky-theme')==='dark') document.documentElement.dataset.theme='dark'; }}catch(e){{}}</script>
 <link rel="icon" type="image/svg+xml" href="{rel}../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -266,9 +273,9 @@ class Site:
     def tabs(self, rel):
         return f"""<nav class="tabs" aria-label="Пустельники" data-pagefind-ignore>
   <a class="tab" aria-current="page" href="{rel}"><span class="ico">{ICON['file']}</span>Правила</a>
-  <a class="tab" href="{rel}../all_generators.html"><span class="ico">{ICON['radiation']}</span>Термінал Доглядача</a>
-  <a class="tab" href="{rel}../character_generator.html"><span class="ico">{ICON['person']}</span>Аркуш персонажа</a>
-  <a class="tab" href="{rel}../caravan_generator.html"><span class="ico">{ICON['truck']}</span>Аркуш каравану</a>
+  <a class="tab" href="{rel}../all_generators.html" data-tool="terminal"><span class="ico">{ICON['radiation']}</span>Термінал Доглядача</a>
+  <a class="tab" href="{rel}../character_generator.html" data-tool="character"><span class="ico">{ICON['person']}</span>Аркуш персонажа</a>
+  <a class="tab" href="{rel}../caravan_generator.html" data-tool="caravan"><span class="ico">{ICON['truck']}</span>Аркуш каравану</a>
 </nav>
 """
 
@@ -302,7 +309,8 @@ class Site:
         if not page.tool:
             return ""
         text = SHEET_TEXT if page.tool.split("#")[0] in SHEETS else TOOL_TEXT
-        return f'<a class="toolbtn" href="{rel}../{esc(page.tool)}" data-pagefind-ignore><b>{text}</b></a>'
+        return (f'<a class="toolbtn" href="{rel}../{esc(page.tool)}" data-tool="{TOOLS[page.tool.split("#")[0]][0]}" '
+                f'data-pagefind-ignore><b>{text}</b></a>')
 
     # ----- pages -----
 
@@ -324,7 +332,7 @@ class Site:
         pn += (f'<a class="pn-next" href="{rel}{next_}/"><small>Наступна →</small>{esc(self.wiki.pages[next_].title)}</a>' if next_ else "<span></span>")
         pn += "</nav>"
         tool = self.tool_button(page, rel)
-        return (self.head(f"{page.title} — Пустельники", rel)
+        return (self.head(f"{page.title} — Пустельники", rel, canonical=slug + "/")
                 + f'<body class="pg-rule">\n{self.header(rel)}<main class="frame">\n{self.tabs(rel)}<div class="layout">\n'
                 + f'<details class="side screen" open data-pagefind-ignore><summary>☰ Зміст розділу</summary><nav aria-label="Зміст">{self.side(rel, s["slug"], slug)}</nav></details>\n'
                 + f'<article class="paper sheet">\n<header class="sheet-head" data-pagefind-ignore><span class="crumb"><a href="{rel}">{esc(g)}</a> › <a href="{rel}#{s["slug"]}">{esc(s["title"])}</a></span><span>{pos} / {len(s["pages"])}</span></header>\n'
@@ -352,19 +360,26 @@ class Site:
         lead = self.rewrite_links(add_heading_ids(md_to_html(intro)), rel, f"pages/{home.slug}.md")
         tail = self.rewrite_links(add_heading_ids(md_to_html(rest)), rel, f"pages/{home.slug}.md")
         tail = fold_history(tail, f"pages/{home.slug}.md")
+        intro, intro_ids = self.intro_html()
         menu = []
         for b in self.wiki.contents.get("buttons", []):
             if b.get("menu") is False:      # kept in the source, not in the site's menu (author, 2026-11-28)
                 continue
-            link = b["link"]                # TODO package B (3): Owlbear / Foundry VTT open their fold of the intro
+            link = b["link"]
             ext = ""
-            if link.endswith(".md"):
+            if link.startswith("#"):        # a plate of the intro «Де грати» (package B, author 2026-11-28)
+                if link[1:] not in intro_ids:
+                    raise BuildError(f"contents.yml, кнопка «{b['text']}»: у вступі {'/'.join(INTRO)} немає «{link}»")
+                href = link
+            elif link.endswith(".md"):
                 href = link[:-3] + "/"
             elif re.match(r"https?://", link):
                 href, ext = link, ' target="_blank" rel="noopener"'
             else:
                 href = "../" + link
             mark = '<span class="mi-ext" aria-hidden="true">↗</span>' if ext else ""
+            tool = TOOLS.get(link.split("#")[0])
+            ext += f' data-tool="{tool[0]}"' if tool and not ext else ""
             menu.append(f'<li><a class="mi" href="{esc(href)}"{ext}><span class="lamp" aria-hidden="true"></span><span class="mi-t">{esc(b.get("label", b["text"]))}</span>{mark}</a></li>')
         cards = []
         for g in self.wiki.contents["groups"]:
@@ -373,14 +388,65 @@ class Site:
                 pages = "".join(f'<li><a href="{p}/">{esc(self.wiki.pages[p].title)}</a></li>' for p in s["pages"])
                 secs.append(f'<section class="sec" id="{s["slug"]}"><h3>{esc(s["title"])}</h3><ul>{pages}</ul></section>')
             cards.append(f'<section class="group"><h2 class="group-h">{esc(g["title"])}</h2>{"".join(secs)}</section>')
-        return (self.head("Пустельники — правила гри", rel)
+        return (self.head("Пустельники — правила гри", rel, canonical="")
                 + f'<body class="pg-home">\n{self.header(rel)}<main class="frame">\n{self.tabs(rel)}'
                 + f'<div class="hero"><div class="hero-art"><div class="hero-lead screen-text" data-pagefind-body>{lead}</div></div>'
                 + f'<div class="hero-side"><nav class="panel" aria-label="Швидкий старт" data-pagefind-ignore><ul>{"".join(menu)}</ul></nav></div></div>\n'
+                + intro + "\n"
                 + f'<div class="groups">{"".join(cards)}</div>\n'
                 + f'<article class="paper sheet home-tail"><div class="text">{tail}</div>'
                 + f'<p class="edit" data-pagefind-ignore><a href="{EDIT_URL.format(home.slug)}" target="_blank" rel="noopener">{EDIT_TEXT}</a></p></article>\n'
                 + "</main>\n" + self.foot(rel))
+
+    def intro_html(self):
+        """The intro «Де грати» (wiki/home/de-hraty.md, the texts of the old index.html): a title and a lead, three plates
+        (layout of mockup Г3 «Таблички» in the look of Г2 «Екран», author 2026-11-28) whose «Докладніше» opens a panel
+        under them, and a closing block. Returns (html, the plates' ids)."""
+        where = "/".join(INTRO)
+        path = os.path.join(self.wiki.dir, *INTRO)
+        if not os.path.exists(path):
+            raise BuildError(f"{where}: немає файлу вступу")
+        with open(path, encoding="utf-8") as fh:
+            text = re.sub(r"\A\s*<!--.*?-->\s*", "", fh.read(), flags=re.S)
+        m = re.match(r"# (.+)\n", text)
+        if not m:
+            raise BuildError(f"{where}: перший рядок — «# заголовок»")
+        title, text = m.group(1).strip(), text[m.end():]
+        parts = re.split(r"^## (.+?) \{#([a-z0-9-]+)\}[ \t]*$", text, flags=re.M)
+        secs = [(parts[i].strip(), parts[i + 1], parts[i + 2].strip()) for i in range(1, len(parts), 3)]
+        if len(secs) != 4 or re.search(r"^## ", parts[0], re.M):
+            raise BuildError(f"{where}: має бути чотири розділи «## Назва {{#id}}» (три таблички й завершальний блок), є {len(secs)}")
+        ids = [x[1] for x in secs]
+        for need in ("owlbear", "foundry"):
+            if need not in ids:
+                raise BuildError(f"{where}: немає розділу з id «{need}» (на нього ведуть кнопки меню й старі адреси index.html#{need})")
+        hid = wikisrc.slugify(title)
+        clash = (set(ids) | {hid}) & (set(self.secs) | set(self.wiki.pages))
+        if clash or len(set(ids)) != 4:
+            raise BuildError(f"{where}: id розділів вступу збігаються з розділами вікі чи між собою: {', '.join(sorted(clash)) or ids}")
+
+        def conv(md):
+            return self.rewrite_links(intro_md(md, where), "", where)
+        plates, panels = [], []
+        for n, (name, pid, body) in enumerate(secs[:3], 1):
+            cm = re.match(r"((?:`[^`]+`[ \t]*)+)\n", body)
+            if not cm:
+                raise BuildError(f"{where}, «{name}»: під заголовком — рядок цінників у `лапках`")
+            chips = re.findall(r"`([^`]+)`", cm.group(1))
+            first, _, rest = body[cm.end():].strip().partition("\n\n")
+            chip_html = "".join(f'<span class="price {("free" if c == "Безкоштовно" else "paid") if i == 0 else "tag"}">{esc(c)}</span>'
+                                for i, c in enumerate(chips))
+            plates.append(f'<section class="plate screen n{n}" id="{pid}" aria-labelledby="{pid}-h"><h3 id="{pid}-h">{esc(name)}</h3>'
+                          f'<p class="chips">{chip_html}</p><p class="plate-p">{conv(first)[3:-4]}</p>'
+                          f'<button type="button" class="plate-more" aria-expanded="false" aria-controls="{pid}-more">{MORE_TEXT}</button></section>')
+            panels.append(f'<div class="plate-panel n{n}" id="{pid}-more" role="region" aria-labelledby="{pid}-h">{conv(rest)}</div>')
+        name, pid, body = secs[3]
+        eco = f'<div class="eco" id="{pid}"><h3>{esc(name)}</h3>{conv(body)}</div>'
+        lead = conv(parts[0].strip())
+        out = (f'<article class="paper sheet intro" aria-labelledby="{hid}" data-pagefind-body>'
+               f'<div class="intro-head"><h2 id="{hid}">{esc(title)}</h2>{lead}</div>'
+               f'<div class="plates">{"".join(plates)}{"".join(panels)}</div>{eco}</article>')
+        return out, ids[:3]
 
     def not_found_html(self):
         # Pages serves /404.html for every missing address, so its links are absolute
@@ -433,6 +499,41 @@ class Site:
         im = Image.open(os.path.join(src, "cover.png")).convert("RGB")
         im = im.resize((COVER_W, round(COVER_W * im.size[1] / im.size[0])), Image.LANCZOS)
         im.save(os.path.join(dst, "cover.jpg"), "JPEG", quality=72, optimize=True, progressive=True)
+
+
+def intro_md(md, where):
+    """Markdown of the intro → HTML: «### Як встановити» → a nested fold; «#### Назва» + list → a grid of features;
+    a list after «<!-- інструменти -->» → cards of the tools; a code span holding only an address → a copy box;
+    a line break inside a list item is kept."""
+    md, tools = (md.split("<!-- інструменти -->", 1) + [""])[:2]
+    cards = []
+    for line in tools.strip().splitlines():
+        m = re.fullmatch(r"- \[([^\]]+)\]\(([^)]+)\): (.+)", line.strip())
+        if not m:
+            raise BuildError(f"{where}: рядок інструмента «{line.strip()[:60]}» не «- [Назва](адреса): опис»")
+        tool = TOOLS.get(m.group(2).rsplit("/", 1)[-1].split("#")[0])
+        cards.append(f'<li><a class="tool" href="{esc(m.group(2))}"' + (f' data-tool="{tool[0]}"' if tool else "")
+                     + f'><span class="name">{esc(m.group(1))}</span><span class="desc">{esc(m.group(3))}</span></a></li>')
+    parts = re.split(r"^### (.+)$", md, flags=re.M)
+
+    def one(chunk):
+        h = md_to_html(chunk.strip())
+        h = re.sub(r"(<li>[^<]*?)\n\s+(?=[^\s<])", r"\1<br>", h)
+        h = re.sub(r"\s*(?:<p>)?<code>(https?://[^<\s]+)</code>(?:</p>)?",
+                   lambda m: f'<div class="copy"><span class="url">{m.group(1)}</span><button type="button" class="copy-btn">{COPY_TEXT}</button></div>', h)
+        feats = re.findall(r"<h4>(?:(?!</h4>).)*</h4>\s*<ul>(?:(?!</ul>).)*</ul>", h, re.S)
+        if feats:
+            run = re.search(r"(?:\s*<h4>(?:(?!</h4>).)*</h4>\s*<ul>(?:(?!</ul>).)*</ul>){2,}", h, re.S)
+            if run:
+                grp = re.findall(r"<h4>(?:(?!</h4>).)*</h4>\s*<ul>(?:(?!</ul>).)*</ul>", run.group(0), re.S)
+                h = h[:run.start()] + '<div class="feats">' + "".join(f"<div>{f}</div>" for f in grp) + "</div>" + h[run.end():]
+        return h
+    out = one(parts[0])
+    if cards:
+        out += '<ul class="toolcards">' + "".join(cards) + "</ul>"
+    for i in range(1, len(parts), 2):
+        out += f'<details class="sub"><summary>{esc(parts[i].strip())}</summary>{one(parts[i + 1])}</details>'
+    return out
 
 
 HISTORY = "Історія змін"

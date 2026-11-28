@@ -105,6 +105,8 @@ tools = {s: p.tool for s, p in wiki.pages.items() if p.tool}
 ok(len(tools) == 9, f"3.3 nine pages with a tool (got {len(tools)})")
 for slug, page in wiki.pages.items():
     btns = re.findall(r'<a class="toolbtn" href="([^"]+)"([^>]*)><b>([^<]+)</b></a>', pages.get(slug, ""))
+    for _, attrs, _ in btns:
+        ok(f'data-tool="{build.TOOLS[page.tool.split("#")[0]][0]}"' in attrs, f"Б.2 {slug}: the tool button opens in the frame")
     if not page.tool:
         ok(not btns, f"3.3 {slug}: no tool button")
         continue
@@ -214,18 +216,20 @@ ok(len(menu) == len(btns) == 7, f"3.12 seven menu buttons (got {len(menu)})")
 ok([b.get("label", b["text"]) for b in btns][4:] == ["Термінал Доглядача", "Доповнення Owlbear", "Модуль Foundry VTT"],
    "A7 the last three buttons: Термінал Доглядача, Доповнення Owlbear, Модуль Foundry VTT")
 ok("ГЕНЕРАТОРИ НАТХНЕННЯ" not in home.split('<nav class="panel"')[1].split("</nav>")[0].upper(), "A7 «Генератори натхнення» is not in the menu")
-ok([b["link"] for b in btns][4:] == ["all_generators.html", "index.html#owlbear", "index.html#foundry"], "A7 the buttons' links")
-site_index = read(os.path.join(REPO, "index.html"))
-ok('id="owlbear"' in site_index and 'id="foundry"' in site_index, "A7 index.html has the #owlbear and #foundry cards")
+ok([b["link"] for b in btns][4:] == ["all_generators.html", "#owlbear", "#foundry"], "A7 + Б.1 the buttons' links: Owlbear / Foundry VTT → their plate")
+ok("index.html#" not in home.split('<nav class="panel"')[1].split("</nav>")[0], "Б.1 no menu button leads to index.html#")
 for (href, attrs, text), b in zip(menu, btns):
     ok(html.unescape(text) == b.get("label", b["text"]), f"3.12 button text «{text}» = «{b.get('label', b['text'])}»")
     link = b["link"]
-    if link.endswith(".md"):
+    if link.startswith("#"):
+        ok(href == link and re.search(r'<section class="plate screen n\d" id="' + link[1:] + '"', home), f"Б.1 «{b['text']}» → its plate {href}")
+    elif link.endswith(".md"):
         ok(href == link[:-3] + "/", f"3.12 «{b['text']}» → {href}")
     elif link.startswith("http"):
         ok(href == link and "_blank" in attrs, f"3.12 «{b['text']}» → {href}, new tab")
     else:
         ok(href == "../" + link and "_blank" not in attrs, f"3.12 «{b['text']}» → {href}, same tab")
+        ok(f'data-tool="{build.TOOLS[link.split("#")[0]][0]}"' in attrs, f"Б.2 «{b['text']}» opens in the wiki's frame")
         ok(os.path.exists(os.path.join(REPO, link.split("#")[0])), f"3.12 {link} exists")
 # ---------- package A, 1: a section in the left menu opens its first page ----------
 for slug, h in pages.items():
@@ -241,6 +245,64 @@ ok(re.search(r'<details class="fold" id="istoriia-zmin"><summary><h2>Істор�
 ok(home.rstrip().count("</details>") >= 1 and "Версія 2.0" in home.split('id="istoriia-zmin"')[1].split("</details>")[0],
    "A4 the history is inside the fold")
 ok(not re.search(r"images/(pochaty|stvoryty|telegram|heneratory)", home), "3.12 the picture buttons are not on the page")
+
+# ---------- package B ----------
+# Б.1: the intro «Де грати» between the cover with the menu and the rules' groups; plates closed; texts = the old index.html
+hero_end, intro_at, groups_at = home.index('<div class="hero">'), home.find('<article class="paper sheet intro"'), home.index('<div class="groups">')
+ok(hero_end < intro_at < groups_at, "Б.1 the intro sits between the cover with the menu and the groups")
+intro = home[intro_at:groups_at]
+ok(re.findall(r'<section class="plate screen n\d" id="([a-z]+)"', intro) == ["browser", "owlbear", "foundry"], "Б.1 three plates: У браузері, Owlbear Rodeo, Foundry VTT")
+ok(intro.count('aria-expanded="false"') == 3 and ' on"' not in intro and "class=\"plate-panel n" in intro, "Б.1 the plates' panels are closed")
+ok("data-pagefind-body" in intro.split(">")[0], "Б.1 the intro is in the search")
+ok(intro.count('<button type="button" class="copy-btn">Копіювати</button>') == 2, "Б.1 two addresses to copy")
+for t in ("Owlbear", "Foundry"):
+    ok(f"<summary>Як встановити</summary>" in intro, f"Б.1 «Як встановити» is a fold ({t})")
+ok("Інструменти для гравців і Доглядача" not in home, "Б.1 the paragraph «Інструменти для гравців і Доглядача…» is gone (author)")
+FIX = os.path.join(HERE, "fixtures", "index-2026-11-28.html")    # the old index.html, before it became the redirect
+
+
+def plain(h):
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", h))).strip()
+
+
+old = read(FIX)
+old_play = old[old.index('<section class="play"'):old.index("</section>", old.index('<section class="play"'))]
+old_tools = old[old.index('<ul>\n    <li><a class="tool"'):old.index("</ul>", old.index('<ul>\n    <li><a class="tool"'))]
+new_text = plain(intro)
+pieces = [x for blk in (old_play, old_tools) for x in re.split(r"<[^>]+>", blk)]
+pieces = [plain(x) for x in pieces if plain(x) and plain(x) not in ("Скопійовано",)]
+missing = [x for x in pieces if x not in new_text]
+ok(not missing, f"Б.1 every text of the old index.html is in the intro word for word, missing: {missing[:3]}")
+# Б.5: the site root leads to the wiki, the old index.html#owlbear / #foundry to their plate
+root = read(os.path.join(REPO, "index.html"))
+ok("location.replace('rules/' + location.hash)" in root and '<meta http-equiv="refresh" content="0; url=rules/">' in root
+   and '<a href="rules/">' in root, "Б.5 index.html redirects to rules/ (with the hash; without JS too)")
+ok(f'<link rel="canonical" href="{build.SITE_URL}rules/">' in root, "Б.5 the redirect names rules/ as canonical")
+ok(f'<link rel="canonical" href="{build.SITE_URL}rules/">' in home and all(f'<link rel="canonical" href="{build.SITE_URL}rules/{s}/">' in h for s, h in pages.items()),
+   "Б.10 every page names its own address as canonical (also with ?tool=)")
+# Б.2: the tabs open the tools in the frame
+ok(all(h.count(' data-tool="') >= 3 for h in pages.values()), "Б.2 the three tool tabs carry data-tool")
+
+
+def no_foundry(w):
+    p = os.path.join(w, "home", "de-hraty.md")
+    t = read(p).replace("{#foundry}", "{#vtt}")
+    with open(p, "w", encoding="utf-8", newline="") as fh:
+        fh.write(t)
+
+
+def three_secs(w):
+    p = os.path.join(w, "home", "de-hraty.md")
+    t = read(p)
+    t = t[:t.index("## Одна Пустка на всіх")]
+    with open(p, "w", encoding="utf-8", newline="") as fh:
+        fh.write(t)
+
+
+e = broken(no_foundry)
+ok("home/de-hraty.md" in e and "foundry" in e, f"Б.1 an intro without #foundry stops the build: «{e[:160]}»")
+e = broken(three_secs)
+ok("home/de-hraty.md" in e and "чотири" in e, f"Б.1 an intro without four parts stops the build: «{e[:160]}»")
 
 # ---------- 3.13: callouts with their icon; nothing of Notion's left ----------
 for slug, p in wiki.pages.items():
@@ -272,7 +334,7 @@ for name, h in pages.items():
             ok(frag in ids.get(tgt, set()), f"link {name}: #{frag} on {tgt or 'home'}")
 for href in re.findall(r'(?:href|src)="(img/[^"]+)"', home) + [m for h in pages.values() for m in re.findall(r'src="\.\./(img/[^"]+)"', h)]:
     ok(os.path.exists(os.path.join(rules, href)), f"image {href}")
-ok(not any('href="' + build.SITE_URL in h for h in everything.values()), "links to the tools are relative (same tab)")
+ok(not any('<a href="' + build.SITE_URL in h or re.search(r'<a [^>]*href="' + re.escape(build.SITE_URL), h) for h in everything.values()), "links to the tools are relative (same tab)")
 
 # ---------- the Terminal's shared look (header, tabs, paper) stays the same as in the Terminal ----------
 TPL = os.path.join(REPO, "..", "pustelnyky_src (1)", "pustelnyky_src", "template.html")

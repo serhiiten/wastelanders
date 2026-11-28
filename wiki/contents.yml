@@ -195,11 +195,11 @@ buttons:
   - text: "ПОЧАТИ ПОДОРОЖ"
     label: "Доповнення Owlbear"   # author, 2026-11-28 (package A, 7)
     image: pochaty-podorozh.png
-    link: index.html#owlbear      # TODO package B (3): open the Owlbear fold of the intro on the wiki home instead
+    link: "#owlbear"              # its plate of the intro «Де грати» on the wiki home (package B, author 2026-11-28)
   - text: "СТВОРИТИ БИТВУ"
     label: "Модуль Foundry VTT"   # author, 2026-11-28 (package A, 7)
     image: stvoryty-bytvu.png
-    link: index.html#foundry      # TODO package B (3): open the Foundry VTT fold of the intro on the wiki home instead
+    link: "#foundry"              # its plate of the intro «Де грати» on the wiki home (package B, author 2026-11-28)
   - text: "генератори натхнення"
     image: heneratory-natkhnennia.png
     link: all_generators.html#tables

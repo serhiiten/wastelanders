@@ -1,6 +1,7 @@
 """Every built page in a real browser (plan 2026-11-28, rows 3.2, 3.6, 3.8): nothing runs off sideways, text ≥ 12 px,
 click targets ≥ 24×24 (links inside running text excepted, as in WCAG 2.5.8; both limits: docs/ui-rules.md, V6, author 2026-11-21), a visible keyboard focus, Tab reaches the
-tabs, the search and the contents; no console errors.
+tabs, the search and the contents; no console errors. Package B (plan §6): the tools in the wiki's frame and the shell
+(`frame_scenarios`, `open_each`), `?embed=1` in each tool (`embed_checks`); `PUST_ONLY_FRAME=1` runs only these.
 
     python site/build.py && python site/serve.py &        (or the `wiki-site` launch configuration)
     F:/Claude/pustelnyky-venv/Scripts/python.exe site/tests/check_pages.py [http://localhost:8800]
@@ -53,21 +54,30 @@ def scenarios(page, fails):
     def settle():
         page.wait_for_load_state("networkidle")
 
-    # 3.3: every tool button opens its tool in this tab; «Назад» returns to the rule
+    # 3.3 + Б.2: every tool button opens its tool in the frame of this page; «Назад» returns to the rule
+    names = {"all_generators.html": ("terminal", "Термінал Доглядача"), "character_generator.html": ("character", "Аркуш персонажа"),
+             "caravan_generator.html": ("caravan", "Аркуш каравану")}
     for slug, p in sorted(wiki.pages.items()):
         if not p.tool:
             continue
         page.goto(BASE + slug + "/"); settle()
         page.click(".toolbtn")
-        settle()
-        n += 3
-        if page.url != site_root + p.tool:
-            fails.append(f"3.3 {slug}: кнопка відкрила {page.url}, а не {p.tool}")
+        tool, title = names[p.tool.split("#")[0]]
+        page.wait_for_selector(f"iframe.tool-frame.on[data-tool={tool}]", state="visible")
+        n += 4
+        if page.url != BASE + slug + "/?tool=" + tool:
+            fails.append(f"Б.2 {slug}: кнопка дала адресу {page.url}")
         if len(page.context.pages) != 1:
-            fails.append(f"3.3 {slug}: інструмент відкрився не в цій самій вкладці")
+            fails.append(f"Б.2 {slug}: інструмент відкрився не в цій самій вкладці")
+        got = page.evaluate("""() => [document.querySelector('.brand-sub').textContent, document.title,
+            getComputedStyle(document.querySelector('main')).visibility, document.querySelector('iframe.on').getAttribute('src'),
+            document.activeElement && document.activeElement.tagName]""")
+        want_src = site_root + p.tool.split("#")[0] + "?embed=1" + ("#" + p.tool.split("#")[1] if "#" in p.tool else "")
+        if got[0] != title or not got[1].startswith(title) or got[2] != "hidden" or got[3] != want_src or got[4] != "IFRAME":
+            fails.append(f"Б.2 {slug}: підпис / заголовок / тіло / адреса рамки / фокус: {got}")
         page.go_back(); settle()
-        if page.url != BASE + slug + "/":
-            fails.append(f"3.3 {slug}: «Назад» привів на {page.url}")
+        if page.url != BASE + slug + "/" or page.evaluate("document.documentElement.classList.contains('tool-open')"):
+            fails.append(f"3.3 {slug}: «Назад» привів на {page.url} і не закрив рамку")
     # 3.12 + package A, 7: the 7 menu buttons («Генератори натхнення» hidden, author 2026-11-28)
     btns = [b for b in wiki.contents["buttons"] if b.get("menu") is not False]
     page.goto(BASE); settle()
@@ -87,16 +97,41 @@ def scenarios(page, fails):
                 fails.append(f"3.12 «{b['text']}»: зовнішнє посилання не в новій вкладці")
             continue
         a.click(); settle()
-        want = BASE + b["link"][:-3] + "/" if b["link"].endswith(".md") else site_root + b["link"]
+        if b["link"].endswith(".md"):
+            want = BASE + b["link"][:-3] + "/"
+        elif b["link"].startswith("#"):
+            want = BASE + b["link"]
+        else:
+            want = BASE + "?tool=" + names[b["link"]][0]
         n += 1
-        got = page.url if "#" in want else page.url.split("#")[0]   # the Terminal adds its open tab to the address itself
-        if got != want:
+        if page.url != want:
             fails.append(f"3.12 «{b['text']}»: відкрилось {page.url}, а не {want}")
-        if "#" in b["link"]:   # A7: Owlbear / Foundry VTT land on their card of index.html, at the top of the window
+        if b["link"].startswith("#"):   # Б.1: Owlbear / Foundry VTT open their plate's panel, the plate at the top of the window
             n += 1
-            top = page.evaluate("(() => { const e = document.getElementById(location.hash.slice(1)); return e ? e.getBoundingClientRect().top : null; })()")
-            if top is None or not (-5 <= top <= 200):   # ≤ 200 px: the same rule as the anchors (3.11)
-                fails.append(f"A7 «{b.get('label', b['text'])}»: картки {b['link']} немає вгорі вікна (top {top})")
+            r = page.evaluate("""(() => { const e = document.getElementById(location.hash.slice(1)), p = document.getElementById(location.hash.slice(1) + '-more');
+                return e ? [e.getBoundingClientRect().top, getComputedStyle(p).display !== 'none', e.querySelector('.plate-more').getAttribute('aria-expanded')] : null; })()""")
+            if not r or not (-5 <= r[0] <= 200) or not r[1] or r[2] != "true":   # ≤ 200 px: the same rule as the anchors (3.11)
+                fails.append(f"Б.1 «{b.get('label', b['text'])}»: табличка {b['link']} не вгорі вікна чи не розгорнута ({r})")
+        else:
+            page.goto(BASE); settle()
+    # Б.5: the site root and the old addresses lead to the wiki
+    for old, want in (("", BASE), ("index.html", BASE), ("index.html#owlbear", BASE + "#owlbear"), ("index.html#foundry", BASE + "#foundry")):
+        page.goto(site_root + old); page.wait_for_url(want); settle()
+        n += 1
+        if old.endswith(("owlbear", "foundry")) and page.evaluate(f"getComputedStyle(document.getElementById('{want.split('#')[1]}-more')).display") == "none":
+            fails.append(f"Б.5 {old}: табличка не розгорнута")
+    # Б.1: plates closed; «Докладніше» opens one panel at a time; «Копіювати» copies the address
+    page.goto(BASE); settle()
+    page.context.grant_permissions(["clipboard-read", "clipboard-write"])
+    n += 3
+    if page.locator(".plate-panel.on").count():
+        fails.append("Б.1 панель таблички відкрита на старті")
+    page.click("#browser .plate-more"); page.click("#owlbear .plate-more")
+    if page.locator(".plate-panel.on").count() != 1 or not page.locator("#owlbear-more").is_visible():
+        fails.append("Б.1 «Докладніше» не відкрило рівно одну панель")
+    page.click("#owlbear-more summary"); page.click("#owlbear-more .copy-btn")
+    if page.evaluate("navigator.clipboard.readText()") != "https://serhiiten.github.io/wastelanders/owlbear/manifest.json":
+        fails.append("Б.1 «Копіювати» не скопіювало адресу доповнення")
     # package A, 1: a section in the left menu opens its first page
     page.goto(BASE + "robymo-perevirky/"); settle()
     for _, s in list(wiki.sections())[::4]:
@@ -138,6 +173,7 @@ def scenarios(page, fails):
     n += 1
     if page.get_attribute(".pagefind-ui__search-input", "placeholder") != "Пошук":
         fails.append("3.4 поле пошуку без «Пошук»")
+    n += frame_scenarios(page, fails, site_root)
     # 3.10: the Terminal's theme button changes the wiki and back
     for want in ("dark", "light"):
         page.goto(site_root + "all_generators.html"); settle()
@@ -176,6 +212,210 @@ def scenarios(page, fails):
     return n
 
 
+def frame_scenarios(page, fails, site_root):
+    """Package B: the tools in the wiki's frame (rows Б.2, Б.3, Б.4, Б.6, Б.10)."""
+    n = 0
+
+    def settle():
+        page.wait_for_load_state("networkidle")
+
+    def frame(tool):
+        return page.frame_locator(f"iframe[data-tool={tool}]")
+
+    def wait_tool(tool):
+        page.wait_for_selector(f"iframe.tool-frame.on[data-tool={tool}]", state="visible")
+        page.wait_for_function(f"() => {{ const f = document.querySelector('iframe[data-tool={tool}]'); return f && f.contentDocument && f.contentDocument.readyState === 'complete' && f.contentDocument.querySelector('#emb-rules, #rules-btn, #btnRules'); }}", timeout=60000)
+
+    page.context.clear_cookies()
+    page.goto(BASE); settle()
+    page.evaluate("localStorage.clear()")
+    # Б.3: nothing of a tool is loaded before its click
+    reqs = []
+    page.on("request", lambda r: reqs.append(r.url))
+    page.goto(BASE + "robymo-perevirky/"); settle()
+    n += 1
+    if any(x in u for u in reqs for x in ("all_generators.html", "character_generator.html", "caravan_generator.html")) or page.locator("iframe").count():
+        fails.append("Б.3 інструмент вантажиться до кліку")
+    # Б.2: Ctrl+click opens the standalone tool in a new tab
+    with page.context.expect_page() as pop:
+        page.click("a.tab[data-tool=caravan]", modifiers=["Control"])
+    other = pop.value; other.wait_for_load_state()
+    n += 1
+    if other.url != site_root + "caravan_generator.html" or page.locator("iframe").count():
+        fails.append(f"Б.2 Ctrl+клік: {other.url}, рамок на сторінці {page.locator('iframe').count()}")
+    other.close()
+    # Б.4: a battle, a filled sheet and the tracker live through «Правила» → other pages → the tool again
+    page.click("a.tab[data-tool=terminal]"); wait_tool("terminal")
+    t = frame("terminal")
+    t.locator("#t-battle").click()
+    t.get_by_role("button", name="Згенерувати битву").first.click()
+    page.wait_for_timeout(400)
+    battle = t.locator("#tab-battle").inner_text()
+    page.evaluate("document.querySelector('iframe[data-tool=terminal]').contentWindow.__boot = 1")
+    t.locator("#emb-rules").click(); page.wait_for_url(BASE + "robymo-perevirky/")
+    page.click("a.tab[data-tool=character]"); wait_tool("character")
+    frame("character").locator("#f-name").first.fill("Тест Рамки")
+    frame("character").locator("#rules-btn").click(); page.wait_for_url(BASE + "robymo-perevirky/")
+    page.click("a.pn-next"); page.wait_for_url(BASE + "standartni-dii/")
+    page.fill(".pagefind-ui__search-input", "Наслідки")
+    page.wait_for_selector(".pagefind-ui__result-link", timeout=10000); page.wait_for_timeout(500)
+    page.locator(".pagefind-ui__result-link").first.click(); page.wait_for_url("**/naslidky/**")
+    page.locator("a.side-p", has_text="Робимо перевірки").first.click() if page.locator("a.side-p", has_text="Робимо перевірки").count() else page.click("a.pn-prev")
+    settle()
+    page.click("a.tab[data-tool=terminal]"); wait_tool("terminal")
+    n += 3
+    again = frame("terminal").locator("#tab-battle").inner_text()
+    if again != battle or page.evaluate("document.querySelector('iframe[data-tool=terminal]').contentWindow.__boot") != 1:
+        fails.append("Б.4 після «Правила» і трьох сторінок битва не та або Термінал перезавантажився")
+    if page.locator("iframe").count() != 2:
+        fails.append(f"Б.3 рамок {page.locator('iframe').count()}, а не 2 (Термінал і аркуш)")
+    name = frame("character").locator("#f-name").first.input_value()
+    if name != "Тест Рамки":
+        fails.append(f"Б.4 аркуш персонажа втратив ім'я: «{name}»")
+    # Б.4 history: tool → «Правила» → 2 pages → tool (via «▶ Відкрити…» with another Terminal tab) → «Назад» ×4
+    frame("terminal").locator("#emb-rules").click(); page.wait_for_function("() => !location.search")
+    start = page.url
+    page.goto(BASE + "pravyla-bytv/"); settle()                     # a real load: the history of this test starts here
+    steps = [page.url]
+    page.click("a.tab[data-tool=terminal]"); wait_tool("terminal"); steps.append(page.url)
+    frame("terminal").locator("#emb-rules").click(); page.wait_for_url(steps[0])
+    for _ in range(2):
+        prev = page.url
+        page.click("a.pn-next"); page.wait_for_function("u => location.href !== u", arg=prev); steps.append(page.url)
+    btn = page.locator(".toolbtn")
+    if btn.count():
+        btn.first.click()
+    else:
+        page.click("a.tab[data-tool=terminal]")
+    wait_tool("terminal"); steps.append(page.url)
+    page.wait_for_timeout(300)
+    back = []
+    for _ in range(4):
+        page.go_back(); page.wait_for_timeout(700); back.append(page.url)
+    n += 1
+    want = [steps[3], steps[2], steps[0], start]
+    if back != want:
+        fails.append(f"Б.4 «Назад» ×4: {back}, а мали бути {want}")
+    page.goto(BASE + "pravyla-bytv/"); settle()
+    # Б.6: the theme of the shared header reaches the shown and the hidden tool; a tool's own change reaches the wiki
+    page.click("a.tab[data-tool=terminal]"); wait_tool("terminal")
+    frame("terminal").locator("#emb-rules").click(); page.wait_for_url(BASE + "pravyla-bytv/")
+    page.click("a.tab[data-tool=character]"); wait_tool("character")
+    page.click("#theme-btn"); page.wait_for_timeout(400)
+    th = page.evaluate("""() => [document.documentElement.dataset.theme || 'light'].concat([...document.querySelectorAll('iframe')].map(f => f.contentDocument.documentElement.dataset.theme || 'light'))""")
+    n += 2
+    if len(set(th)) != 1 or th[0] != "dark":
+        fails.append(f"Б.6 тема з шапки: вікі й рамки {th}")
+    other = page.context.new_page()               # the theme switched in a standalone tool (another tab) reaches the wiki and both frames
+    other.goto(site_root + "all_generators.html"); other.wait_for_load_state("load")
+    other.click("#theme-btn"); other.close()
+    page.wait_for_timeout(400)
+    th = page.evaluate("""() => [document.documentElement.dataset.theme || 'light'].concat([...document.querySelectorAll('iframe')].map(f => f.contentDocument.documentElement.dataset.theme || 'light'))""")
+    if len(set(th)) != 1 or th[0] != "light":
+        fails.append(f"Б.6 тема з інструмента: вікі й рамки {th}")
+    # Б.4: reload with ?tool= opens the frame again; the sheet comes back from its storage
+    page.reload(); wait_tool("character")
+    n += 1
+    if frame("character").locator("#f-name").first.input_value() != "Тест Рамки":
+        fails.append("Б.4 після оновлення сторінки аркуш не відновився")
+    # Б.10: after the shell's swap main, title, body class and every href equal a direct load
+    SNAP = """() => { const m = document.querySelector('main'); return [m.outerHTML.replace(/ inert=""| tabindex="-1"/g, '').replace(/ class="fade-in"| fade-in/g, '').replace(/<details class="side screen"( open)?/, '<details class="side screen"'), document.title, document.body.className,
+        [...document.querySelectorAll('header a[href], main a[href]')].map(a => a.getAttribute('href')).join(' ')]; }"""
+    for target in ("", "naslidky/", "robymo-perevirky/#" + "", "no-such-page/"):
+        page.goto(BASE + "pravyla-bytv/"); settle()
+        page.click("a.tab[data-tool=caravan]"); wait_tool("caravan")
+        frame("caravan").locator("#btnRules").click(); settle()
+        page.evaluate(f"(() => {{ const a = document.createElement('a'); a.href = '{BASE + target}'; a.textContent = 'x'; document.querySelector('main .text, main').appendChild(a); a.click(); }})()")
+        page.wait_for_timeout(1200); settle()
+        n += 1
+        if target == "no-such-page/":
+            if page.locator("iframe").count():
+                fails.append("Б.10 неіснуюча адреса: мав бути звичайний перехід (рамки лишилися)")
+            continue
+        swapped = page.evaluate(SNAP)
+        focus = page.evaluate("document.activeElement.tagName")
+        if page.locator("iframe").count() != 1:
+            fails.append(f"Б.10 {target or 'головна'}: оболонка не втримала рамку")
+        page.goto(BASE + target); settle()
+        direct = page.evaluate(SNAP)
+        if swapped != direct:
+            diff = [i for i in range(4) if swapped[i] != direct[i]]
+            if 0 in diff:
+                import difflib
+                d = [x for x in difflib.unified_diff(direct[0].split("><"), swapped[0].split("><"), lineterm="", n=0) if x[:1] in "+-"][:6]
+                diff.append(d)
+            fails.append(f"Б.10 {target or 'головна'}: після підміни не так, як при прямому завантаженні (поля {diff})")
+        if focus not in ("H1", "H2"):
+            fails.append(f"Б.10 {target or 'головна'}: фокус на {focus}, а не на заголовку")
+    page.evaluate("localStorage.clear()")
+    return n
+
+
+def open_each(page, fails, w):
+    """Б.2 at every width: a click on each tool tab shows it in the frame under the header, the frame fills the window below it."""
+    n = 0
+    page.goto(BASE + "robymo-perevirky/"); page.wait_for_load_state("networkidle")
+    for tool in ("terminal", "character", "caravan"):
+        page.click(f"a.tab[data-tool={tool}]")
+        page.wait_for_selector(f"iframe.tool-frame.on[data-tool={tool}]", state="visible")
+        r = page.evaluate("""() => { const f = document.querySelector('iframe.on').getBoundingClientRect(), h = document.querySelector('header.rustbar.top').getBoundingClientRect();
+            return [Math.round(f.top - h.bottom), Math.round(innerHeight - f.bottom), Math.round(f.width - innerWidth), document.documentElement.scrollWidth - innerWidth]; }""")
+        n += 1
+        if any(abs(x) > 1 for x in r):
+            fails.append(f"Б.2 {w}px {tool}: рамка не під шапкою на всю решту вікна (зазор угорі, внизу, ширина, вилазить) {r}")
+        if os.environ.get("PUST_SHOTS"):
+            page.wait_for_timeout(1500)
+            page.screenshot(path=os.path.join(os.environ["PUST_SHOTS"], f"b2-{tool}-{w}.png"))
+        page.go_back(); page.wait_for_function("() => !document.documentElement.classList.contains('tool-open')")
+    return n
+
+
+def embed_checks(page, fails, w):
+    """Б.7 / Б.8: ?embed=1 in a frame hides the header, footer and theme; «Правила» in place; without a frame nothing changes."""
+    site_root = BASE[:-len("rules/")]
+    n = 0
+    for file, hidden, rules, first in (("all_generators.html", ["header.rustbar.top", "footer.rustbar.bottom"], "#emb-rules", ".emb-strip > :first-child"),
+                                       ("character_generator.html", ["header.top .logo", "#theme-btn", ".credit"], "#rules-btn", "header.top .tools > :first-child"),
+                                       ("caravan_generator.html", [".topbar .brand", "#themeBtn", "p.foot"], "#btnRules", ".topbar .actions > :first-child")):
+        page.goto(BASE); page.wait_for_load_state("networkidle")
+        page.evaluate(f"(() => {{ const f = document.createElement('iframe'); f.id = 'tst'; f.src = '{site_root}{file}?embed=1'; f.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:99;border:0'; document.body.appendChild(f); }})()")
+        page.wait_for_function(f"() => {{ const d = document.getElementById('tst').contentDocument; return d && d.readyState === 'complete' && d.querySelector('{rules}'); }}", timeout=60000)
+        fr = page.frame_locator("#tst")
+        r = page.evaluate(f"""() => {{ const d = document.getElementById('tst').contentDocument, v = s => {{ const e = d.querySelector(s); return !!e && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden'; }};
+            const b = d.querySelector('{rules}').getBoundingClientRect();
+            return [{', '.join(f"v('{h}')" for h in hidden)}].concat([d.querySelector('{first}') === d.querySelector('{rules}'), b.width >= 24 && b.height >= 24,
+                     d.documentElement.scrollWidth - d.documentElement.clientWidth]); }}""")
+        n += 3
+        if any(r[:len(hidden)]):
+            fails.append(f"Б.7 {w}px {file}: видно сховане {[h for h, x in zip(hidden, r) if x]}")
+        if not r[len(hidden)] or not r[len(hidden) + 1]:
+            fails.append(f"Б.7 {w}px {file}: «Правила» не першим у ряді або менше 24×24")
+        if r[-1] > 0:
+            fails.append(f"Б.7 {w}px {file}: ширше за вікно на {r[-1]} px")
+        if file == "all_generators.html":      # the moved header buttons work from the strip
+            fr.locator("#hd-file").click()
+            n += 1
+            if not fr.locator("#hd-filemenu").is_visible():
+                fails.append(f"Б.7 {w}px: «Зберегти / завантажити гру» не відкрило меню")
+            fr.locator("#hd-moves").click()
+            if not fr.locator("#gm-moves").is_visible():
+                fails.append(f"Б.7 {w}px: «Ходи» не відкрили картку")
+            if os.environ.get("PUST_SHOTS"):
+                fr.locator("#hd-file").click()
+                page.screenshot(path=os.path.join(os.environ["PUST_SHOTS"], f"b7-terminal-menu-{w}.png"))
+        if file == "caravan_generator.html":
+            fr.locator("#helpBtn").click()
+            n += 1
+            if not fr.locator("#guide").is_visible():
+                fails.append(f"Б.7 {w}px: «?» каравану не відкрив довідку з нового місця")
+        # Б.8: the same address outside a frame stays the standalone page
+        page.goto(site_root + file + "?embed=1"); page.wait_for_load_state("load")
+        n += 1
+        if page.evaluate(f"document.documentElement.classList.contains('embed') || !!document.querySelector('{rules}')"):
+            fails.append(f"Б.8 {file}?embed=1 без рамки увімкнув режим вбудовування")
+    return n
+
+
 def main():
     slugs = [""] + sorted(d for d in os.listdir(RULES) if os.path.isfile(os.path.join(RULES, d, "index.html")))
     fails, checks = [], 0
@@ -188,6 +428,11 @@ def main():
             page.on("console", lambda m: errors.append(m.text) if m.type == "error" and "status of 404" not in m.text else None)
             page.on("response", lambda r: errors.append(f"{r.status} {r.url}") if r.status >= 400 and "no-such-page" not in r.url else None)
             page.on("pageerror", lambda e: errors.append(str(e)))
+            quick = os.environ.get("PUST_ONLY_FRAME")     # debugging only the frame: python check_pages.py with PUST_ONLY_FRAME=1
+            if quick:
+                checks += (frame_scenarios(page, fails, BASE[:-len("rules/")]) if w == 1366 else 0) + embed_checks(page, fails, w) + open_each(page, fails, w)
+                ctx.close()
+                continue
             for slug in slugs + ["no-such-page/"]:
                 url = BASE + (slug + "/" if slug and not slug.endswith("/") else slug)
                 resp = page.goto(url)
@@ -227,6 +472,7 @@ def main():
                 fails.append(f"{w}px: у фокусі без видимої рамки: {seen}")
             if w == 1366:
                 checks += scenarios(page, fails)
+            checks += embed_checks(page, fails, w) + open_each(page, fails, w)
             checks += 1
             if errors:
                 fails.append(f"{w}px: помилки консолі: " + "; ".join(sorted(set(errors))[:5]))

@@ -42,11 +42,11 @@ for p in wiki.pages.values():
     for line in p.body.split("\n"):
         ok(not NAV_TEXT.match(line), f"{p.slug}: navigation line «{line.strip()}»")
 # the home page's buttons (row 2.6): as the live Notion had them on 2026-11-28; three links changed by the author
-# the same day (package A, 7)
+# the same day (package A, 7); Owlbear / Foundry VTT lead to their plate of the intro since package B (author 2026-11-28)
 BUTTONS = [("ПОЧАТИ ГРУ", "pro-hru.md"), ("тг", "https://t.me/wastelanderstrpg"),
            ("СТВОРИТИ ПЕРСОНАЖА", "character_generator.html"), ("СТВОРИТИ КАРАВАН", "caravan_generator.html"),
-           ("СТВОРИТИ СПРАВУ", "all_generators.html"), ("ПОЧАТИ ПОДОРОЖ", "index.html#owlbear"),
-           ("СТВОРИТИ БИТВУ", "index.html#foundry"), ("генератори натхнення", "all_generators.html#tables")]
+           ("СТВОРИТИ СПРАВУ", "all_generators.html"), ("ПОЧАТИ ПОДОРОЖ", "#owlbear"),
+           ("СТВОРИТИ БИТВУ", "#foundry"), ("генератори натхнення", "all_generators.html#tables")]
 ok([(b["text"], b["link"]) for b in wiki.contents["buttons"]] == BUTTONS, "home buttons and their links")
 # the anchors (row 2.7): 35, each heading found on its target page (wiki.problems() checks the latter)
 ok(len(wiki.anchors()) == 35, f"35 Notion anchors kept (got {len(wiki.anchors())})")

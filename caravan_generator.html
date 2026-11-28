@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Пустельники — електронний аркуш каравану</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<script>try{ if(localStorage.getItem("pustelnyky-theme")==="dark") document.documentElement.dataset.theme="dark"; }catch(e){}</script>
+<script>try{ if(localStorage.getItem("pustelnyky-theme")==="dark") document.documentElement.dataset.theme="dark"; }catch(e){}
+/* режим вбудовування у вікі правил — лише за власною адресою (?embed=1) і лише у фреймі */
+try{ if(/(?:^|&)embed=1(?:&|$)/.test(location.search.slice(1)) && window.parent !== window) document.documentElement.classList.add("embed"); }catch(e){}</script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E %3Crect x='2' y='2' width='60' height='60' rx='10' fill='%2364625c' stroke='%232b2a27' stroke-width='3'/%3E %3Cg fill='%23d8d4ca'%3E%3Ccircle cx='9' cy='9' r='2.5'/%3E%3Ccircle cx='55' cy='9' r='2.5'/%3E%3Ccircle cx='9' cy='55' r='2.5'/%3E%3Ccircle cx='55' cy='55' r='2.5'/%3E%3C/g%3E %3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23e9e6dd' stroke-width='6'/%3E %3Cg stroke='%23e9e6dd' stroke-width='4' stroke-linecap='round'%3E %3Cpath d='M32 14v36M14 32h36M19.3 19.3l25.4 25.4M44.7 19.3L19.3 44.7'/%3E %3C/g%3E %3Ccircle cx='32' cy='32' r='6' fill='%23dc4520' stroke='%232b2a27' stroke-width='2'/%3E %3C/svg%3E">
 <style>
 /* Layout: аркуш каравану як металева панель на піщаному тлі — два «аркуші» (покращення / вантажі й історія), панель дій зверху */
@@ -580,6 +582,7 @@ html[data-theme="dark"] .block-head .sub, html[data-theme="dark"] .foot { color:
 .spend-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .spend-btns .svc-btn { flex: 1 1 140px; min-height: 34px; }
 .set-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+#setCols[hidden], #secSettings.folded #defReset { display: none; }
 @media (max-width: 900px) { .app .set-cols { grid-template-columns: 1fr; } }
 .set-box { display: grid; gap: 8px; align-content: start; height: 100%; }
 .set-box .legend small { margin-left: 8px; font-size: 11px; letter-spacing: .04em; text-transform: none; }
@@ -700,6 +703,9 @@ html[data-theme="dark"] .cmp-who small { color: #b9b3a8; }
    тло непрозоре (колір екрана), тінь ліворуч показує, що під ним прокручується решта рядка */
 .app.cmp-on .cargo th:last-child, .app.cmp-on .cargo td:last-child:not([colspan]) { position: sticky; right: 0; z-index: 1; background-color: var(--screen); box-shadow: -6px 0 6px -6px rgba(0,0,0,.45); }
 @media (max-width: 420px) { .cmp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cmp-pips .pip { width: 24px; height: 24px; } }   /* лампи запасу ходу й скриньки — 24 px, як −/+ */
+/* аркуш у рамці вікі правил (?embed=1, пакет Б, автор 2026-11-28): назву, тему й підпис веде вікі; «?» — у кінці ряду кнопок */
+html.embed .topbar .brand, html.embed .corner-btns, html.embed p.foot { display: none; }
+html.embed .actions #helpBtn { min-width: 36px; justify-content: center; }
 </style>
 </head>
 <body>
@@ -917,13 +923,42 @@ html[data-theme="dark"] .cmp-who small { color: #b9b3a8; }
       </div>
     </section>
 
-    <!-- Налаштування: надбавки й захист -->
+    <!-- Історія -->
+    <section class="block" id="secStory">
+      <div class="block-head"><h2>Історія каравану та інші примітки</h2></div>
+      <div class="panel">
+        <div class="paper">
+          <div class="q">
+            <div class="q-head"><label for="storyMeeting">Як ви познайомилися?</label><button type="button" class="die sm" data-lock="meeting" data-roll="meeting" aria-label="Кинути: як ви познайомилися"></button></div>
+            <textarea id="storyMeeting" class="lined" rows="2"></textarea>
+          </div>
+          <div class="q">
+            <div class="q-head"><label for="storyFace">Хто з вас — обличчя компанії?</label></div>
+            <textarea id="storyFace" class="lined" rows="1" placeholder="Персонаж, який веде бюджет і аркуш каравану та представляє компанію"></textarea>
+          </div>
+          <div class="q">
+            <div class="q-head"><label for="storyLastJob">Яку останню справу ви провернули разом?</label><button type="button" class="die sm" data-lock="lastJob" data-roll="lastJob" aria-label="Кинути: остання справа"></button></div>
+            <textarea id="storyLastJob" class="lined" rows="2"></textarea>
+          </div>
+          <div class="q">
+            <div class="q-head"><label for="storyWentWrong">Що пішло не так в останній справі і як це вас згуртувало?</label><button type="button" class="die sm" data-lock="wentWrong" data-roll="wentWrong" aria-label="Кинути: що пішло не так"></button></div>
+            <textarea id="storyWentWrong" class="lined" rows="2"></textarea>
+          </div>
+          <div class="q">
+            <div class="q-head"><label for="notes">Примітки</label></div>
+            <textarea id="notes" class="lined notes" rows="6"></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Налаштування: надбавки й захист; внизу повного аркуша, згортка, типово згорнута; у компактному немає (автор, 2026-11-28) -->
     <section class="block" id="secSettings">
       <div class="block-head">
         <h2>Налаштування</h2>
-        <div class="tools"><button type="button" class="btn" id="defReset" title="Прибрати обидві надбавки й повернути захист до звичайного (натисніть двічі)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ico"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5V5h2.5"/></svg><span id="defResetText">Повернути все до стандартних значень</span></button></div>
+        <div class="tools"><button type="button" class="btn fold-btn" id="foldSettings" aria-expanded="false" aria-controls="setCols" title="Показати налаштування"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6 -6l6 6"/></svg><span class="fold-lbl"><span class="fold-a">Згорнути</span><span class="fold-b">Розгорнути</span></span></button><button type="button" class="btn" id="defReset" title="Прибрати обидві надбавки й повернути захист до звичайного (натисніть двічі)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ico"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5V5h2.5"/></svg><span id="defResetText">Повернути все до стандартних значень</span></button></div>
       </div>
-      <div class="set-cols">
+      <div class="set-cols" id="setCols" hidden>
         <div class="panel"><div class="screen set-box">
           <div class="legend"><span>Надбавки<small id="setCount"></small></span></div>
           <div class="set-grid">
@@ -954,35 +989,6 @@ html[data-theme="dark"] .cmp-who small { color: #b9b3a8; }
           <div class="legend"><span>Захист<small id="defCount"></small></span></div>
           <div class="set-grid" id="defGrid"></div>
         </div></div>
-      </div>
-    </section>
-
-    <!-- Історія -->
-    <section class="block" id="secStory">
-      <div class="block-head"><h2>Історія каравану та інші примітки</h2></div>
-      <div class="panel">
-        <div class="paper">
-          <div class="q">
-            <div class="q-head"><label for="storyMeeting">Як ви познайомилися?</label><button type="button" class="die sm" data-lock="meeting" data-roll="meeting" aria-label="Кинути: як ви познайомилися"></button></div>
-            <textarea id="storyMeeting" class="lined" rows="2"></textarea>
-          </div>
-          <div class="q">
-            <div class="q-head"><label for="storyFace">Хто з вас — обличчя компанії?</label></div>
-            <textarea id="storyFace" class="lined" rows="1" placeholder="Персонаж, який веде бюджет і аркуш каравану та представляє компанію"></textarea>
-          </div>
-          <div class="q">
-            <div class="q-head"><label for="storyLastJob">Яку останню справу ви провернули разом?</label><button type="button" class="die sm" data-lock="lastJob" data-roll="lastJob" aria-label="Кинути: остання справа"></button></div>
-            <textarea id="storyLastJob" class="lined" rows="2"></textarea>
-          </div>
-          <div class="q">
-            <div class="q-head"><label for="storyWentWrong">Що пішло не так в останній справі і як це вас згуртувало?</label><button type="button" class="die sm" data-lock="wentWrong" data-roll="wentWrong" aria-label="Кинути: що пішло не так"></button></div>
-            <textarea id="storyWentWrong" class="lined" rows="2"></textarea>
-          </div>
-          <div class="q">
-            <div class="q-head"><label for="notes">Примітки</label></div>
-            <textarea id="notes" class="lined notes" rows="6"></textarea>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -1674,6 +1680,22 @@ html[data-theme="dark"] .cmp-who small { color: #b9b3a8; }
     try { localStorage.setItem("pustelnyky-caravan-fold", impsFolded ? "1" : "0"); } catch (e) {}
     renderFold();
   });
+  // «Налаштування» внизу аркуша — згортка, типово згорнута; відкриту зберігає браузер, як згортку покращень (автор, 2026-11-28)
+  let setFolded = true;
+  try { setFolded = localStorage.getItem("pustelnyky-caravan-settings-fold") !== "0"; } catch (e) {}
+  function renderSetFold() {
+    const b = $("foldSettings");
+    $("setCols").hidden = setFolded;
+    $("secSettings").classList.toggle("folded", setFolded);
+    b.setAttribute("aria-expanded", setFolded ? "false" : "true");
+    b.title = setFolded ? "Показати налаштування" : "Сховати налаштування";
+  }
+  $("foldSettings").addEventListener("click", () => {
+    setFolded = !setFolded;
+    try { localStorage.setItem("pustelnyky-caravan-settings-fold", setFolded ? "1" : "0"); } catch (e) {}
+    renderSetFold();
+  });
+  renderSetFold();
   function renderImpsLock() {
     const b = $("rollImps"), locked = !!S.manual.imps;
     b.classList.toggle("locked", locked);
@@ -2827,6 +2849,20 @@ html[data-theme="dark"] .cmp-who small { color: #b9b3a8; }
     syncThemeBtn();
   });
   syncThemeBtn();
+
+  /* ================= У рамці вікі правил (html.embed, пакет Б, автор 2026-11-28) ================= */
+  // «Правила» першою кнопкою ряду вертають до сторінки правил; «?» переходить у кінець ряду; тему міняє вікі
+  if (document.documentElement.classList.contains("embed")) {
+    const row = document.querySelector(".topbar .actions");
+    const rb = document.createElement("button"); rb.type = "button"; rb.className = "btn"; rb.id = "btnRules";
+    rb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4.5 4.5V21H6z"/><path d="M14 3v4.5h4.5"/><path d="M9 12.5h6M9 16h6"/></svg><span>Правила</span>';
+    rb.addEventListener("click", () => parent.postMessage({ type: "pust:rules" }, location.origin));
+    row.insertBefore(rb, row.firstElementChild);
+    row.appendChild($("helpBtn"));
+    const theme = (v) => { if (v === "dark") document.documentElement.dataset.theme = "dark"; else delete document.documentElement.dataset.theme; syncThemeBtn(); };
+    addEventListener("storage", (e) => { if (e.key === "pustelnyky-theme") theme(e.newValue); });
+    addEventListener("message", (e) => { const m = e.data; if (e.origin === location.origin && e.source === parent && m && m.type === "pust:theme") theme(m.theme); });
+  }
 
   /* ================= Кнопки зверху в один ряд ================= */
   // Якщо системний шрифт ширший, зменшуємо кнопки до 11 px, щоб ряд не переносився; на вузьких екранах ряд переноситься як звичайно
