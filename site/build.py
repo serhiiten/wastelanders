@@ -96,16 +96,54 @@ def join_table_heads(lines):
     return out
 
 
+def join_table_rows(md):
+    """Notion writes a table cell of several lines (even with blank lines) as several Markdown lines, which breaks the
+    table: a row starts with «|» and ends with «|», the lines between are joined into it with <br> (a blank line inside
+    a cell: <br><br>). DEV's tools/wiki_sync/common.py word for word (author, 2026-11-15: «багато таблиць зламані»);
+    the site lacked it until package C (13 pages). Then a bold cell over two lines («**Люди⏎Чоловіки**») gets a bold
+    on each line: Markdown does not bold across <br>."""
+    out, cur, gap = [], None, False
+    for line in md.split("\n"):
+        if cur is None:
+            s = line.rstrip()
+            if s.startswith("|") and not s.endswith("|"):
+                cur = s
+            else:
+                out.append(line)
+            continue
+        s = line.strip()
+        if not s:
+            gap = True
+            continue
+        cur += ("<br><br>" if gap else "<br>") + s
+        gap = False
+        if cur.endswith("|"):
+            out.append(cur)
+            cur = None
+    if cur is not None:
+        out.append(cur)
+    return "\n".join(BOLD_BR_RE.sub(lambda m: "**" + m.group(1).replace("<br>", "**<br>**") + "**", x)
+                     if x.lstrip().startswith("|") and "<br>" in x else x for x in out)
+
+
 # Notion's export sometimes closes a bold run after the link that starts inside it: «[**Назва](url):**» shows the stars and
 # links them (author, 2026-11-28, package C, 4: 13 terms of the glossary, the home page's credits, «Створення каравану»).
 # The same fix as DEV's tools/wiki_sync/build_rules.py (link_pass); the source keeps Notion's text.
 BOLD_LINK_RE = re.compile(r"\[\*\*([^\]*]+)\]\(((?:[^()\s]|\([^()]*\))+)\)([:.,;]?)\*\*")
 
+# a whole cell in bold over two lines: «| **Люди<br>Чоловіки** |» (the names tables), nothing else
+BOLD_BR_RE = re.compile(r"(?<=\|\s)\*\*([^*|]*?<br>[^*|]*?)\*\*(?=\s*\|)")
+# Notion's Markdown that shows stray marks, fixed by hand (package C, the author's «all the stars», 2026-11-28).
+# The first is DEV's MD_FIXES (tools/wiki_sync/build_rules.py) word for word; the second takes only the stray quote
+# mark of DEV's fix: DEV also turns «-1» into «−1», a text change the site does not make.
+MD_FIXES = [("***Колишній** «**товар**» **хоче, щоб я здох***", "***Колишній «товар» хоче, щоб я здох***"),
+            ("**>+2, +2, +1, -1, -1, 0, 0.**", "**+2, +2, +1, -1, -1, 0, 0.**")]
+
 
 def md_to_html(body):
     """The page's Markdown as HTML: GitHub alerts become the Terminal's callouts."""
     blocks = []
-    lines, out, i = join_table_heads(body.split("\n")), [], 0
+    lines, out, i = join_table_heads(join_table_rows(body).split("\n")), [], 0
     while i < len(lines):
         m = ALERT_HEAD.match(lines[i])
         if not m:
@@ -134,6 +172,10 @@ def md_to_html(body):
     text = "\n".join(out)
     text = wikisrc.EMOJI_KEEP_RE.sub("", text)
     text = BOLD_LINK_RE.sub(r"**[\1](\2)\3**", text)
+    text = re.sub(r"(?<=\s)\*{4}", "", text)          # Notion's empty bold run «— ****текст» (DEV drops every «****»: that
+    # breaks «здібностями**** чи» in «Бандити, дикуни, рейдери», which renders right as it is)
+    for a, b in MD_FIXES:
+        text = text.replace(a, b)
     res = markdown.markdown(text, extensions=["tables", "sane_lists"], output_format="html")
     return PH_RE.sub(lambda m: blocks[int(m.group(1))], res)
 

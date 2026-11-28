@@ -342,6 +342,25 @@ for name, h in (("home", home), ("glossary", GLOSS), ("karavan", pages["stvorenn
     ok(not STARS.search(re.sub(r"<[^>]+>", "", h)), f"C4 {name}: no Markdown stars around a link: {STARS.findall(re.sub(r'<[^>]+>', '', h))[:3]}")
 ok(build.BOLD_LINK_RE.sub(r"**[\1](\2)\3**", "[**A](b.md):** x [**B](https://c/d_(e)).**") == "**[A](b.md):** x **[B](https://c/d_(e)).**",
    "C4 the fix keeps the link and the mark, also a link with brackets")
+# C4+ (author, 2026-11-28, «all the stars»): no Markdown mark is ever meant as text. «**» / «__» and a «|» of a table
+# row are Notion's export showing through (a bold closed after a link, an empty bold «****», a bold across <br>, a table
+# cell over several lines); a single «*» stays allowed: the rules use it as a footnote mark («Навичка 3*» … «⚠️*…»).
+
+
+def visible(h):
+    h = re.sub(r"<(script|style)[\s\S]*?</\1>|<head[\s\S]*?</head>", "", h)
+    return html.unescape(re.sub(r"<[^>]+>", " ", h))
+
+
+for name, h in [("home", home)] + sorted(pages.items()):
+    v = visible(h)
+    bad = re.findall(r".{0,30}(?:\*\*|__|\|).{0,30}", v)
+    ok(not bad, f"C4 {name}: Markdown marks in the visible text: {bad[:2]}")
+ok("<td><strong>Люди</strong><br><strong>Чоловіки</strong></td>" in pages["tablytsia-imen"], "C4 a bold cell over two lines")
+ok("<strong><em>Колишній «товар» хоче, щоб я здох</em></strong>" in pages["arkhetypy"], "C4 «Колишній товар» (DEV's MD_FIXES)")
+ok("<strong>+2, +2, +1, -1, -1, 0, 0.</strong>" in pages["atrybuty"], "C4 the stray «>» before «+2» (the text keeps «-1»)")
+ok("здібностями" in visible(pages["suprotyvnyky-bandyty-dykuny-reidery"]) and "<em>небезпечний мутант із дивними здібностями</em>" in pages["suprotyvnyky-bandyty-dykuny-reidery"],
+   "C4 «здібностями**** чи» is not an empty bold: kept as Markdown renders it")
 # C6: every fold's arrow is in the CSS (the live check measures it)
 for sel in (".fold > summary::before{content:\"▸\"", "details.sub > summary::before{content:\"▸\"", ".side > summary::before{content:\"▸\""):
     ok(sel in css, f"C6 «{sel}» in site.css")
