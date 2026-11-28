@@ -296,6 +296,12 @@ ok(all(h.count(' data-tool="') >= 3 for h in pages.values()), "Б.2 the three to
 # the home page has no tabs row, its red-lamp menu leads to the tools; every other page keeps it (author, 2026-11-28)
 ok('class="tabs"' not in home, "home page without the tabs row")
 ok(all('<nav class="tabs"' in h for h in pages.values()), "every other page keeps the tabs row")
+# narrow screens (≤ 760 px): the four tabs fit the width, no side scrolling; the label wraps under the icon.
+# An exception to the Terminal's look, wiki only: the Terminal's own tabs (6 + 2) wrap into 3 columns on a phone
+# and are not touched (author, 2026-11-28). The live check measures scrollWidth <= clientWidth at 320–414 px.
+narrow = re.search(r"@media \(max-width:760px\)\{(.*?)\n\}", css, re.S)
+ok(narrow and ".tabs{grid-template-columns:repeat(4,minmax(0,1fr))" in narrow.group(1) and "overflow-x" not in narrow.group(1),
+   "narrow tabs: four columns that fit, no side scrolling (author, 2026-11-28)")
 
 
 def no_foundry(w):
