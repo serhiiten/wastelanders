@@ -41,6 +41,10 @@ MEASURE = r"""() => {
 }"""
 
 
+# «**Назва» / «Назва:**» left in the text (package C, 4); «****» (an empty bold of Notion's, another defect) is not this
+re_stars = __import__("re").compile(r"(?<!\*)\*\*[^\s*]|[^\s*]\*\*(?!\*)")
+
+
 def scenarios(page, fails):
     """Real clicks: the tool buttons (3.3), the home menu (3.12, A7), the left menu's sections (A1), the history fold (A4),
     the search (3.4), the theme (3.10), the anchors (3.11)."""
@@ -126,10 +130,11 @@ def scenarios(page, fails):
     n += 3
     if page.locator(".plate-panel.on").count():
         fails.append("Б.1 панель таблички відкрита на старті")
+    page.click("#de-hraty-fold > summary")      # «Де грати» is a closed fold since package C
     page.click("#browser .plate-more"); page.click("#owlbear .plate-more")
     if page.locator(".plate-panel.on").count() != 1 or not page.locator("#owlbear-more").is_visible():
         fails.append("Б.1 «Докладніше» не відкрило рівно одну панель")
-    page.click("#owlbear-more summary"); page.click("#owlbear-more .copy-btn")
+    page.click("#owlbear-more .copy-btn")       # «Як встановити» opened with the plate (package C, 5)
     if page.evaluate("navigator.clipboard.readText()") != "https://serhiiten.github.io/wastelanders/owlbear/manifest.json":
         fails.append("Б.1 «Копіювати» не скопіювало адресу доповнення")
     # package A, 1: a section in the left menu opens its first page
@@ -142,15 +147,15 @@ def scenarios(page, fails):
             fails.append(f"A1 розділ «{s['title']}» у меню відкрив {page.url}, а не першу сторінку {s['pages'][0]}")
     # package A, 4: «Історія змін» is closed until clicked
     page.goto(BASE); settle()
-    fold = page.locator("details.fold")
+    fold = page.locator("#istoriia-zmin")
     n += 3
     if fold.count() != 1 or fold.get_attribute("open") is not None:
         fails.append("A4 «Історія змін» не згорнута на старті")
-    elif page.locator("details.fold li").first.is_visible():
+    elif page.locator("#istoriia-zmin li").first.is_visible():
         fails.append("A4 зміст «Історії змін» видно в згорнутій згортці")
     else:
-        page.locator("details.fold > summary").click()
-        if not page.locator("details.fold li").first.is_visible():
+        page.locator("#istoriia-zmin > summary").click()
+        if not page.locator("#istoriia-zmin li").first.is_visible():
             fails.append("A4 клік не розгорнув «Історію змін»")
     # 3.4: the search
     page.goto(BASE + "robymo-perevirky/"); settle()
@@ -198,8 +203,8 @@ def scenarios(page, fails):
         src = "" if a["page"] == wiki.contents["home"] else a["page"] + "/"
         page.goto(BASE + src); settle()
         link = page.locator(f'a[href*="{a["target"]}/#"]', has_text=a["text"]).first
-        if link.evaluate("e => !!e.closest('details.fold:not([open])')"):   # inside «Історія змін» (A4): open it first, as a reader does
-            page.locator("details.fold > summary").click()
+        if link.evaluate("e => !!e.closest('details.fold:not([open])')"):   # inside a closed fold (A4, C1): open it first, as a reader does
+            link.evaluate("e => e.closest('details.fold').querySelector(':scope > summary').click()")
         link.click(); settle()
         n += 2
         if f"/{a['target']}/#" not in page.url:
@@ -209,6 +214,82 @@ def scenarios(page, fails):
         # ≤ 200 px from the top: the heading is seen at once, not hidden under the header (author, 2026-11-28)
         if top is None or not (-5 <= top <= 200):
             fails.append(f"3.11 «{a['text']}»: «{a['heading']}» не вгорі вікна (top {top})")
+    return n
+
+
+def package_c(page, fails, w):
+    """Package C (author, 2026-11-28), real clicks at both widths: «Де грати» is a closed fold (1); its text and «Одна
+    Пустка на всіх» take the whole width (2); «Над грою працювали» in two columns, one under the other at 375 px (3);
+    no Markdown stars left where Notion closed the bold after a link (4); the menu buttons and «Докладніше» open the fold
+    and «Як встановити» (5); every fold has the ▸ arrow, turned when open (6)."""
+    n = 0
+
+    def home():
+        page.goto(BASE); page.wait_for_load_state("networkidle")
+    home()
+    n += 2
+    if page.evaluate("document.getElementById('de-hraty-fold').open") or page.locator("#owlbear").is_visible():
+        fails.append(f"C1 {w}px: «Де грати» не згорнута на старті")
+    page.click("#de-hraty-fold > summary")
+    if not page.locator("#owlbear .plate-more").is_visible():
+        fails.append(f"C1 {w}px: клік не розгорнув «Де грати»")
+    # 2: the text fills its block: the lead paragraph and «Одна Пустка на всіх» as wide as their box (± 2 px)
+    r = page.evaluate("""() => [...document.querySelectorAll('.intro-head p, .intro .eco p')].map(p => {
+        const b = p.parentElement, cs = getComputedStyle(b);
+        return [p.getBoundingClientRect().width, b.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)]; })""")
+    n += 1
+    if len(r) < 2 or any(a < b - 2 for a, b in r):
+        fails.append(f"C2 {w}px: текст вступу не на всю ширину (абзац, місце): {r}")
+    # 3: two columns side by side at 1366, one under the other at 375
+    c = page.evaluate("""() => { const a = document.querySelector('.cr-people').getBoundingClientRect(), b = document.querySelector('.cr-legal').getBoundingClientRect();
+        return [a.left, a.right, a.top, a.bottom, b.left, b.top, document.querySelector('.cr-legal h2').textContent]; }""")
+    n += 2
+    side = c[4] >= c[1] and abs(c[5] - c[2]) < 2
+    if (w >= 1366) != side or (w < 760 and c[5] < c[3]):
+        fails.append(f"C3 {w}px: колонки «Над грою працювали» не так: {c}")
+    if c[6] != "Офіційний текст":
+        fails.append(f"C3 {w}px: друга колонка починається з «{c[6]}»")
+    # 4: no stars from a bold closed after a link
+    for slug in ("", "hlosarii-ihrovykh-terminiv/", "stvorennia-karavanu/"):
+        page.goto(BASE + slug); page.wait_for_load_state("networkidle")
+        txt = page.evaluate("document.querySelector('main').innerText")
+        n += 1
+        if re_stars.search(txt):
+            fails.append(f"C4 {w}px {slug or 'головна'}: зірочки Markdown біля посилання: «{re_stars.search(txt).group(0)}»")
+    home()
+    n += 1
+    if page.locator("a", has_text="**").count():
+        fails.append(f"C4 {w}px: посилання з зірочками на головній")
+    # 5: the menu buttons and «Докладніше» open the fold, the plate and its «Як встановити»
+    state = """id => [document.getElementById('de-hraty-fold').open, document.querySelector('#' + id + ' .plate-more').getAttribute('aria-expanded'),
+        document.querySelector('#' + id + '-more details.install').open, document.querySelector('#' + id + '-more details.install summary').textContent,
+        [...document.querySelectorAll('#' + id + '-more details.sub:not(.install)')].some(d => d.open)]"""
+    for label, pid in (("Owlbear", "owlbear"), ("Foundry", "foundry")):
+        home()
+        page.locator("a.mi", has_text=label).click(); page.wait_for_timeout(200)
+        got = page.evaluate(state, pid)
+        n += 1
+        if got[:4] != [True, "true", True, "Як встановити"] or got[4]:
+            fails.append(f"C5 {w}px: кнопка меню «{label}»: згортка / табличка / «Як встановити» / інші згортки: {got}")
+        home()
+        page.click("#de-hraty-fold > summary")
+        page.click(f"#{pid} .plate-more"); page.wait_for_timeout(100)
+        got = page.evaluate(state, pid)
+        n += 1
+        if got[:4] != [True, "true", True, "Як встановити"] or got[4]:
+            fails.append(f"C5 {w}px: «Докладніше» на «{label}»: {got}")
+    # 6: every fold that a reader can see has the ▸ arrow; it turns when the fold is open
+    for slug in ("", "robymo-perevirky/"):
+        page.goto(BASE + slug); page.wait_for_load_state("networkidle")
+        page.evaluate("document.querySelectorAll('details').forEach(d => d.open = true); "
+                      "const m = document.querySelector('#foundry .plate-more'); if (m) m.click()")   # its panel: two folds
+        bad = page.evaluate("""() => [...document.querySelectorAll('details > summary')].filter(s => s.offsetParent).map(s => {
+            const b = getComputedStyle(s, '::before'); return [s.textContent.trim().slice(0, 20), b.content, b.transform]; })
+            .filter(x => x[1] !== '"▸"' || x[2] === 'none')""")
+        cnt = page.evaluate("[...document.querySelectorAll('details > summary')].filter(s => s.offsetParent).length")
+        n += 1
+        if bad or cnt < (4 if not slug else 0) or (slug and w < 900 and cnt < 1):
+            fails.append(f"C6 {w}px {slug or 'головна'}: згортки без стрілки чи стрілка не повернута ({cnt} згорток): {bad}")
     return n
 
 
@@ -472,6 +553,7 @@ def main():
                 fails.append(f"{w}px: у фокусі без видимої рамки: {seen}")
             if w == 1366:
                 checks += scenarios(page, fails)
+            checks += package_c(page, fails, w)
             checks += embed_checks(page, fails, w) + open_each(page, fails, w)
             checks += 1
             if errors:

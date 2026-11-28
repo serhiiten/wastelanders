@@ -304,6 +304,48 @@ ok("home/de-hraty.md" in e and "foundry" in e, f"Б.1 an intro without #foundry 
 e = broken(three_secs)
 ok("home/de-hraty.md" in e and "чотири" in e, f"Б.1 an intro without four parts stops the build: «{e[:160]}»")
 
+# ---------- package C (author, 2026-11-28) ----------
+# C1: «Де грати» (the lead and the plates) is a fold, closed; «Одна Пустка на всіх» stays outside it
+fold_at = intro.find('<details class="fold intro-fold" id="de-hraty-fold"><summary><h2 id="de-hraty">Де грати</h2></summary>')
+ok(fold_at >= 0 and "<details class=\"fold intro-fold\" id=\"de-hraty-fold\" open" not in intro, "C1 «Де грати» is a closed fold")
+ok(fold_at < intro.find('id="browser"') < intro.find('id="foundry-more"') < intro.find('<div class="eco" id="eco">'),
+   "C1 the lead and the plates are inside the fold, «Одна Пустка на всіх» after them")
+ok(intro[:intro.index('<div class="eco"')].endswith("</div></div></details>"), "C1 «Одна Пустка на всіх» stands outside the fold")
+# C5: «Як встановити» is marked so that the plate's button opens it; only that fold of the panel
+ok(intro.count('<details class="sub install"><summary>Як встановити</summary>') == 2
+   and intro.count('<details class="sub">') == 1, "C5 the two «Як встановити» folds carry .install, the other fold not")
+# C3: «Над грою працювали» in two columns: the people | «Офіційний текст» and everything after it (history too)
+tail = home[home.index('<article class="paper sheet home-tail">'):]
+ok(re.search(r'</aside><div class="credits"><div class="cr-people">\s*<p><strong>Автор текстів', tail) is not None
+   and '</div><div class="cr-legal"><h2 id="ofitsiinyi-tekst">Офіційний текст</h2>' in tail
+   and tail.index('class="cr-legal"') < tail.index('id="istoriia-zmin"'), "C3 the credits in two columns")
+ok("НАД ГРОЮ ПРАЦЮВАЛИ" in tail[:tail.index('class="credits"')], "C3 the block's heading stays above both columns")
+
+
+def no_official(w):
+    p = os.path.join(w, "pages", "pustelnyky.md")
+    t = read(p).replace("## Офіційний текст", "## Офіційне")
+    with open(p, "w", encoding="utf-8", newline="") as fh:
+        fh.write(t)
+
+
+e = broken(no_official)
+ok("pustelnyky.md" in e and "Офіційний текст" in e, f"C3 a home page without «Офіційний текст» stops the build: «{e[:160]}»")
+# C4: «[**Назва](url):**» of Notion's export → a bold label with its link, no stars (13 glossary terms, the credits, the caravan)
+GLOSS = pages["hlosarii-ihrovykh-terminiv"]
+ok('<strong><a href="https://foundryvtt.com/packages/wastelanders" target="_blank" rel="noopener">Модуль Foundry VTT</a>:</strong> '
+   '<a href="https://github.com/GMonlineua"' in home, "C4 «Модуль Foundry VTT:» bold, the name a link")
+ok(GLOSS.count("<li><strong><a href=") == 13 and '<strong><a href="../arkhetypy/">Архетип</a>:</strong>' in GLOSS, "C4 the glossary's 13 terms")
+ok('<strong><a href="../kistka-doli-ta-udacha-partii/#udacha-partii">Удачу партії</a></strong>' in pages["stvorennia-karavanu"], "C4 «Удачу партії»")
+STARS = re.compile(r"(?<!\*)\*\*[^\s*]|[^\s*]\*\*(?!\*)")
+for name, h in (("home", home), ("glossary", GLOSS), ("karavan", pages["stvorennia-karavanu"])):
+    ok(not STARS.search(re.sub(r"<[^>]+>", "", h)), f"C4 {name}: no Markdown stars around a link: {STARS.findall(re.sub(r'<[^>]+>', '', h))[:3]}")
+ok(build.BOLD_LINK_RE.sub(r"**[\1](\2)\3**", "[**A](b.md):** x [**B](https://c/d_(e)).**") == "**[A](b.md):** x **[B](https://c/d_(e)).**",
+   "C4 the fix keeps the link and the mark, also a link with brackets")
+# C6: every fold's arrow is in the CSS (the live check measures it)
+for sel in (".fold > summary::before{content:\"▸\"", "details.sub > summary::before{content:\"▸\"", ".side > summary::before{content:\"▸\""):
+    ok(sel in css, f"C6 «{sel}» in site.css")
+
 # ---------- 3.13: callouts with their icon; nothing of Notion's left ----------
 for slug, p in wiki.pages.items():
     h = home if slug == home_slug else pages[slug]

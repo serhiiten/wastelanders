@@ -96,6 +96,12 @@ def join_table_heads(lines):
     return out
 
 
+# Notion's export sometimes closes a bold run after the link that starts inside it: «[**Назва](url):**» shows the stars and
+# links them (author, 2026-11-28, package C, 4: 13 terms of the glossary, the home page's credits, «Створення каравану»).
+# The same fix as DEV's tools/wiki_sync/build_rules.py (link_pass); the source keeps Notion's text.
+BOLD_LINK_RE = re.compile(r"\[\*\*([^\]*]+)\]\(((?:[^()\s]|\([^()]*\))+)\)([:.,;]?)\*\*")
+
+
 def md_to_html(body):
     """The page's Markdown as HTML: GitHub alerts become the Terminal's callouts."""
     blocks = []
@@ -127,6 +133,7 @@ def md_to_html(body):
         out += ["", ind + PH.format(len(blocks) - 1), ""]
     text = "\n".join(out)
     text = wikisrc.EMOJI_KEEP_RE.sub("", text)
+    text = BOLD_LINK_RE.sub(r"**[\1](\2)\3**", text)
     res = markdown.markdown(text, extensions=["tables", "sane_lists"], output_format="html")
     return PH_RE.sub(lambda m: blocks[int(m.group(1))], res)
 
@@ -359,7 +366,7 @@ class Site:
             raise BuildError(f"pages/{home.slug}.md: розділи на головній не збігаються з contents.yml")
         lead = self.rewrite_links(add_heading_ids(md_to_html(intro)), rel, f"pages/{home.slug}.md")
         tail = self.rewrite_links(add_heading_ids(md_to_html(rest)), rel, f"pages/{home.slug}.md")
-        tail = fold_history(tail, f"pages/{home.slug}.md")
+        tail = credits_columns(fold_history(tail, f"pages/{home.slug}.md"), f"pages/{home.slug}.md")
         intro, intro_ids = self.intro_html()
         menu = []
         for b in self.wiki.contents.get("buttons", []):
@@ -443,9 +450,12 @@ class Site:
         name, pid, body = secs[3]
         eco = f'<div class="eco" id="{pid}"><h3>{esc(name)}</h3>{conv(body)}</div>'
         lead = conv(parts[0].strip())
+        # «Де грати» (the lead and the three plates) is a fold, closed by default; «Одна Пустка на всіх» stays open under it
+        # (author, 2026-11-28, package C, 1)
         out = (f'<article class="paper sheet intro" aria-labelledby="{hid}" data-pagefind-body>'
-               f'<div class="intro-head"><h2 id="{hid}">{esc(title)}</h2>{lead}</div>'
-               f'<div class="plates">{"".join(plates)}{"".join(panels)}</div>{eco}</article>')
+               f'<details class="fold intro-fold" id="{hid}-fold"><summary><h2 id="{hid}">{esc(title)}</h2></summary>'
+               f'<div class="intro-head">{lead}</div>'
+               f'<div class="plates">{"".join(plates)}{"".join(panels)}</div></details>{eco}</article>')
         return out, ids[:3]
 
     def not_found_html(self):
@@ -532,11 +542,16 @@ def intro_md(md, where):
     if cards:
         out += '<ul class="toolcards">' + "".join(cards) + "</ul>"
     for i in range(1, len(parts), 2):
-        out += f'<details class="sub"><summary>{esc(parts[i].strip())}</summary>{one(parts[i + 1])}</details>'
+        name = parts[i].strip()
+        # «Як встановити» opens together with its plate (author, 2026-11-28, package C, 5)
+        cls = "sub install" if name == INSTALL else "sub"
+        out += f'<details class="{cls}"><summary>{esc(name)}</summary>{one(parts[i + 1])}</details>'
     return out
 
 
 HISTORY = "Історія змін"
+INSTALL = "Як встановити"
+OFFICIAL = "Офіційний текст"
 
 
 def fold_history(htm, where):
@@ -547,6 +562,18 @@ def fold_history(htm, where):
         raise BuildError(f"{where}: немає заголовка «{HISTORY}»")
     return (htm[:m.start()] + f'<details class="fold" id="{m.group(1)}"><summary><h2>{HISTORY}</h2></summary>'
             + htm[m.end():] + "</details>")
+
+
+def credits_columns(htm, where):
+    """«Над грою працювали» in two columns: the people on the left; «Офіційний текст» (the licences) and everything after
+    it on the right; one under the other on a narrow screen (author, 2026-11-28, package C, 3). The block's heading
+    (the callout «НАД ГРОЮ ПРАЦЮВАЛИ») stays above both."""
+    head = re.match(r"\s*<aside .*?</aside>", htm, re.S)
+    m = re.search(r'<h2 id="[^"]+">' + OFFICIAL + r'</h2>', htm)
+    if not head or "НАД ГРОЮ ПРАЦЮВАЛИ" not in head.group(0) or not m or m.start() < head.end():
+        raise BuildError(f"{where}: не знайдено «НАД ГРОЮ ПРАЦЮВАЛИ» і за ним «{OFFICIAL}»")
+    return (head.group(0) + '<div class="credits"><div class="cr-people">' + htm[head.end():m.start()]
+            + '</div><div class="cr-legal">' + htm[m.start():] + "</div></div>")
 
 
 def write(path, text):

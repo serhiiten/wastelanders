@@ -275,6 +275,15 @@ html[data-theme="dark"] .themebtn .th-sun{display:inline-flex}
 .fold[open] > summary::before{transform:rotate(90deg)}
 .fold > summary h2{margin:0}
 .fold > summary:hover h2{color:var(--link)}
+/* Стрілка біля кожної згортки сайту, як в «Історії змін» (автор, 2026-11-28, пакет В, 6) */
+details.sub > summary{list-style:none;gap:10px}
+details.sub > summary::-webkit-details-marker{display:none}
+details.sub > summary::before{content:"▸";font:700 20px/1 'Roboto Condensed',sans-serif;transition:transform .12s}
+details.sub[open] > summary::before{transform:rotate(90deg)}
+/* «Над грою працювали» у дві колонки: люди | офіційний текст і все далі (автор, 2026-11-28, пакет В, 3) */
+.paper.home-tail .text{max-width:none}
+.credits{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 40px;align-items:start}
+.credits > div > :first-child{margin-top:0}
 
 /* ---------- Темна тема (як у Терміналі): темніють тло, шапка, рама й папір ---------- */
 html[data-theme="dark"]{background:#1f1e1c}
@@ -317,11 +326,11 @@ html[data-theme="dark"] .fold > summary{color:#ef9d62}
   .frame{margin:14px 10px;padding:14px}
   .layout{grid-template-columns:minmax(0,1fr);gap:14px}
   .side{position:static;max-height:none;padding:0}
-  .side > summary{display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:8px 14px;cursor:pointer;list-style:none;
+  .side > summary{display:flex;gap:10px;align-items:center;min-height:44px;padding:8px 14px;cursor:pointer;list-style:none;
     font:700 22px/1 'Handjet',monospace;letter-spacing:.05em;color:var(--term);position:relative;z-index:1}
   .side > summary::-webkit-details-marker{display:none}
-  .side > summary::after{content:"▾"}
-  .side[open] > summary::after{content:"▴"}
+  .side > summary::before{content:"▸";transition:transform .12s}
+  .side[open] > summary::before{transform:rotate(90deg)}
   .side[open] > nav{padding-bottom:10px}
   .hero{grid-template-columns:minmax(0,1fr)}
   .hero-art{min-height:0;padding:150px 12px 12px}
@@ -366,9 +375,11 @@ html[data-theme="dark"] .fold > summary{color:#ef9d62}
 /* ---------- Вступ «Де грати» на головній (пакет Б, автор 2026-11-28): розкладка макета Г3 «Таблички»,
    кожна табличка — зелений екран Термінала (макет Г2 «Екран»); «Докладніше» відкриває панель під табличками ---------- */
 .paper.intro{padding:0 0 22px;margin-bottom:22px}
-.intro-head{padding:6px 40px 0;font:16.5px/1.6 'Ubuntu',system-ui,sans-serif}
-.intro-head h2{font:700 24px/1.2 'Roboto Condensed',sans-serif;text-transform:uppercase;letter-spacing:.03em;margin:22px 0 6px;color:var(--rust-2)}
-.intro-head p{margin:0 0 12px;max-width:84ch}
+.intro-head{padding:0 40px;font:16.5px/1.6 'Ubuntu',system-ui,sans-serif}
+.intro-fold > summary{margin:0;padding:14px 40px 10px}
+.intro-fold:not([open]){margin-bottom:8px}
+.intro h2{font:700 24px/1.2 'Roboto Condensed',sans-serif;text-transform:uppercase;letter-spacing:.03em;color:var(--rust-2)}
+.intro-head p{margin:0 0 12px}   /* на всю ширину (автор, 2026-11-28, пакет В, 2) */
 .plates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:0 22px;margin:6px 0 14px;align-items:stretch}
 .plate{display:flex;flex-direction:column;gap:8px;padding:14px 16px 16px;font:15px/1.45 'Ubuntu Mono',monospace;scroll-margin-top:12px}
 .plate > *{position:relative;z-index:1}
@@ -412,8 +423,8 @@ a.tool .desc{display:block;font-size:14px;margin-top:4px;color:var(--ink-2)}
 a.tool:hover{background:var(--paper-3);color:var(--ink)}
 .intro .eco{margin:0 22px;padding:4px 0 4px 14px;border-left:6px solid var(--rust-3);font:16px/1.55 'Ubuntu',system-ui,sans-serif;scroll-margin-top:12px}
 .intro .eco h3{margin:4px 0;font:700 20px/1.25 'Roboto Condensed',sans-serif;text-transform:uppercase;letter-spacing:.03em;color:var(--rust-2)}
-.intro .eco p{margin:0;max-width:84ch}
-html[data-theme="dark"] .intro-head h2,html[data-theme="dark"] .intro .eco h3,html[data-theme="dark"] .plate-panel h4,
+.intro .eco p{margin:0}
+html[data-theme="dark"] .intro h2,html[data-theme="dark"] .intro .eco h3,html[data-theme="dark"] .plate-panel h4,
 html[data-theme="dark"] .plate-panel details.sub > summary,html[data-theme="dark"] a.tool .name{color:#ef9d62}
 html[data-theme="dark"] .plate-panel{background:#34322d;border-color:#141312}
 html[data-theme="dark"] .plate-panel details.sub{border-top-color:#5b554a}
@@ -425,7 +436,9 @@ html[data-theme="dark"] a.tool:hover{background:#3a3833}
 @media (max-width:900px){ .plates{grid-template-columns:minmax(0,1fr)}
   .plate.n1{order:1}.plate-panel.n1{order:2}.plate.n2{order:3}.plate-panel.n2{order:4}.plate.n3{order:5}.plate-panel.n3{order:6} }
 @media (max-width:760px){
-  .intro-head{padding:4px 18px 0}
+  .intro-head{padding:0 18px}
+  .intro-fold > summary{padding:12px 18px 8px}
+  .credits{grid-template-columns:minmax(0,1fr)}
   .plates{padding:0 12px}
   .plate-panel{padding:8px 12px 12px}
   .intro .eco{margin:0 12px}

@@ -58,6 +58,11 @@
       var p = document.getElementById(x.getAttribute('aria-controls'));
       if (p) p.classList.toggle('on', on);
     });
+    /* з таблички розгортається й згортка «Де грати», а з панелі — її «Як встановити» (автор, 2026-11-28, пакет В, 5) */
+    var fold = plate.closest('details');
+    if (fold) fold.open = true;
+    var inst = open && panel && panel.querySelector('details.install');
+    if (inst) inst.open = true;
     if (!toggle) plate.scrollIntoView({ block: 'start' });
     return true;
   }
