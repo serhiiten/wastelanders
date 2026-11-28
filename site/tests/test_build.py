@@ -293,6 +293,9 @@ ok(f'<link rel="canonical" href="{build.SITE_URL}rules/">' in home and all(f'<li
    "Б.10 every page names its own address as canonical (also with ?tool=)")
 # Б.2: the tabs open the tools in the frame
 ok(all(h.count(' data-tool="') >= 3 for h in pages.values()), "Б.2 the three tool tabs carry data-tool")
+# the home page has no tabs row, its red-lamp menu leads to the tools; every other page keeps it (author, 2026-11-28)
+ok('class="tabs"' not in home, "home page without the tabs row")
+ok(all('<nav class="tabs"' in h for h in pages.values()), "every other page keeps the tabs row")
 
 
 def no_foundry(w):

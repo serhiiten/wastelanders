@@ -573,7 +573,8 @@ class Site:
                 continue
             cards.append(f'<section class="group"><h2 class="group-h">{esc(g["title"])}</h2>{"".join(secs)}</section>')
         return (self.head("Пустельники — правила гри", rel, canonical="")
-                + f'<body class="pg-home">\n{self.header(rel)}<main class="frame">\n{self.tabs(rel)}'
+                # no tabs row on the home page: its menu of red lamps already leads to the tools (author, 2026-11-28)
+                + f'<body class="pg-home">\n{self.header(rel)}<main class="frame">\n'
                 # the cover whole at any width, the menu beside it, the lead the whole width under both; one under another
                 # at ≤ 900 px: cover, menu, lead (author via the dispatcher, 2026-11-28, DC5, variant В)
                 + f'<div class="hero"><div class="hero-art"><img class="cover" src="img/cover.jpg" width="{COVER_W}" height="{cover_h}" alt=""></div>'
