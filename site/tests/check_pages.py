@@ -737,6 +737,8 @@ def embed_checks(page, fails, w):
         page.evaluate(f"(() => {{ const f = document.createElement('iframe'); f.id = 'tst'; f.src = '{site_root}{file}?embed=1'; f.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:99;border:0'; document.body.appendChild(f); }})()")
         page.wait_for_function(f"() => {{ const d = document.getElementById('tst').contentDocument; return d && d.readyState === 'complete' && d.querySelector('{rules}'); }}", timeout=60000)
         fr = page.frame_locator("#tst")
+        # the sheets' header buttons sit in a fold «Аркуш», closed at ≤ 560 px (2026-11-28): open it as a user would
+        page.evaluate("() => { const f = document.getElementById('tst').contentDocument.querySelector('#tb-fold, #tbFold'); if (f) f.open = true; }")
         r = page.evaluate(f"""() => {{ const d = document.getElementById('tst').contentDocument, v = s => {{ const e = d.querySelector(s); return !!e && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden'; }};
             const b = d.querySelector('{rules}').getBoundingClientRect();
             return [{', '.join(f"v('{h}')" for h in hidden)}].concat([d.querySelector('{first}') === d.querySelector('{rules}'), b.width >= 24 && b.height >= 24,
