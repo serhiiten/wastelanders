@@ -159,6 +159,10 @@ ok(min(sizes) >= 12, f"3.6 no font size under 12 px in site.css (min {min(sizes)
 # ---------- 3.7: page weight and the cover ----------
 # The rule text of two pages alone is over 50 KB (perky: 78 KB, henerator-pustelnykiv-ruchnyi: 54 KB); the texts are
 # not cut, so for them the frame around the text is what is held small. Every other page: ≤ 60 KB in all.
+# Thresholds (global rule §7, 2026-11-28: every limit needs a written reason). No reason is written yet:
+# 60 KB per page comes from plan row 3.7 (approved by the author, reason not stated); 12 KB frame, 40 KB site.css and
+# 400 KB cover were set by Claudine from measurements (≈ 9 KB, ≈ 23 KB, 160 KB) plus a margin, not agreed with the
+# author. Accepted for now: author, 2026-11-28 (frame ≤ 12 KB, other pages ≤ 60 KB, the two LONG pages stay whole).
 LONG = {"perky", "henerator-pustelnykiv-ruchnyi"}
 for name, h in everything.items():
     size = len(h.encode("utf-8"))
