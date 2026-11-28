@@ -8,11 +8,11 @@ import { T } from './lib/texts.mjs'
 import { icon } from './lib/icons.mjs'
 import { sendRoll, rollEnemy } from './lib/rolls.mjs'
 import { newCid } from './lib/store.mjs'
-import { barOf } from './lib/enemy-bar.mjs'
+import { barOf, onEnemyLayer } from './lib/enemy-bar.mjs'
 import { BOOK, enemyFromBook, cleanSystem } from './lib/enemy-data.mjs'
 import { createEnemyCtl } from './lib/enemy-ctl.mjs'
 import { makeEnemies, removeEnemy } from './lib/enemy-bars.mjs'
-import { battleList, bookGroups, cardModel, ammoClick, markClick, clearMarks, limitText, attackRoll } from './lib/enemy-view.mjs'
+import { battleList, bookGroups, cardModel, ammoClick, markClick, clearMarks, limitText, attackRoll, addSit, rmSit, invStep, SIT_MAX, SIT_LEN } from './lib/enemy-view.mjs'
 import { formPage } from './lib/enemy-form.mjs'
 
 const q = new URLSearchParams(location.search)
@@ -44,6 +44,7 @@ const rid = () => newCid(rnd)
 // ---- стан сторінки ----
 let view = { mode: 'list' }   // list | card | book | make | form
 let search = '', openGroups = new Set(), removeArm = false
+let sitDraft = ''   // набране в полі ситуативного аспекту: картка перемальовується від чужих записів, текст не губиться
 const ctl = createEnemyCtl({
   OBR, rand: rnd,
   onState: () => { if (view.mode === 'card') render() },
@@ -124,14 +125,18 @@ async function renderList() {
 function fillGroups(box, make) {
   const groups = bookGroups(search)
   if (!groups.length) return box.replaceChildren(el('p', { cls: 'mut', text: T.enNothing }))
-  box.replaceChildren(...groups.map(g => {
-    const d = el('details', { open: !!search || openGroups.has(g.n) })
-    d.ontoggle = () => { if (!search) d.open ? openGroups.add(g.n) : openGroups.delete(g.n) }
-    d.append(el('summary', { text: `${g.n} (${g.items.length})` }), el('div', { cls: 'rows' }, ...g.items.map(b => el('button', {
-      type: 'button', cls: 'rw', 'data-f': 'k:' + b.id, on: () => make ? doMake(enemyFromBook(b.id)) : openBook(b.id),
-    }, el('i', { cls: 'dot ' + b.cat }), el('span', { cls: 'n', text: b.name }), el('span', { cls: 'h', text: String(b.hp) })))))
+  const rows = items => el('div', { cls: 'rows' }, ...items.map(b => el('button', {
+    type: 'button', cls: 'rw', 'data-f': 'k:' + b.id, on: () => make ? doMake(enemyFromBook(b.id)) : openBook(b.id),
+  }, el('i', { cls: 'dot ' + b.cat }), el('span', { cls: 'n', text: b.name }), el('span', { cls: 'h', text: String(b.hp) }))))
+  const fold = (key, title, cls, kids) => {
+    const d = el('details', { cls, open: !!search || openGroups.has(key) })
+    d.ontoggle = () => { if (!search) d.open ? openGroups.add(key) : openGroups.delete(key) }
+    d.append(el('summary', { text: title }), ...kids)
     return d
-  }))
+  }
+  // тека «Швидкий старт» — з підтеками зустрічей, як у Foundry (автор, 2026-11-28)
+  box.replaceChildren(...groups.map(g => fold(g.n, `${g.n} (${g.items.length})`, g.subs ? 'qs' : null,
+    g.subs ? g.subs.map(s => fold(g.n + '/' + s.n, `${s.n} (${s.items.length})`, 'sub', [rows(s.items)])) : [rows(g.items)])))
 }
 
 async function doMake(rec) {
@@ -149,7 +154,7 @@ async function doMake(rec) {
 
 // ---- картка ----
 async function openCard(id, select) {
-  removeArm = false
+  removeArm = false; sitDraft = ''
   view = { mode: 'card', id }
   if (select) { try { await OBR.player.select([id]) } catch { /* вибір необов'язковий */ } }
   await ctl.bind(id)
@@ -159,9 +164,44 @@ function openBook(id) { view = { mode: 'book', id }; render() }
 function openOwn(id) { view = { mode: 'own', id }; render() }
 async function openForm(opts) { view = { mode: 'form', back: view, ...opts }; render() }
 
-function cardNodes(name, e, { live, who }) {
+// ---- аспекти в картці (автор, 2026-11-28, п.7, макет Б): чипи, рахівниця Посилень «− +N +» як у Foundry, × у ситуативних ----
+function aspChip(a, which, live) {
+  const chip = el('span', { cls: 'chip' + (which === 'b' ? ' base' : '') + (a.inv > 0 ? ' has' : '') }, el('span', { cls: 't', text: a.t }))
+  if (!live) { if (a.inv > 0) chip.append(el('b', { cls: 'invn', title: T.enInvHint, text: '+' + a.inv })); return chip }
+  const step = d => ctl.change(x => invStep(x, which, a.i, d) || x)
+  chip.append(el('span', { cls: 'inv', title: T.enInvHint },
+    el('button', { type: 'button', 'aria-label': T.enInvLess, title: T.enInvLess, 'data-f': `iv:${which}:${a.i}:-`, on: () => step(-1) }, '−'),
+    el('b', { text: '+' + a.inv }),
+    el('button', { type: 'button', 'aria-label': T.enInvMore, title: T.enInvMore, 'data-f': `iv:${which}:${a.i}:+`, on: () => step(1) }, '+')))
+  if (which === 's') chip.append(el('button', { type: 'button', cls: 'x', 'aria-label': T.enAspRm, title: T.enAspRm, on: () => ctl.change(x => rmSit(x, a.i)) }, '×'))
+  return chip
+}
+function sitNodes(m, live) {
+  const out = [el('div', { cls: 'sec', text: T.enSit }, live ? el('em', { text: `${m.sit.length} / ${SIT_MAX}` }) : null)]
+  out.push(el('div', { cls: 'asp' }, ...(m.sit.length ? m.sit.map(a => aspChip(a, 's', live)) : [el('span', { cls: 'none', text: T.enSitNone })])))
+  if (!live) return out
+  if (m.sit.length >= SIT_MAX) { out.push(el('p', { cls: 'mut small', text: T.enSitFull })); return out }
+  const inp = el('input', { type: 'text', cls: 'fld', maxlength: SIT_LEN, placeholder: T.enSitAdd, 'aria-label': T.enSitAddLabel, autocomplete: 'off', 'data-f': 'sit', value: sitDraft })
+  const cnt = el('small', { cls: 'cnt', 'aria-hidden': 'true' })
+  const count = () => { cnt.textContent = inp.value.length >= 50 ? `${inp.value.length}/${SIT_LEN}` : '' }
+  inp.oninput = () => { sitDraft = inp.value; count() }
+  inp.onkeydown = ev => {
+    if (ev.key !== 'Enter') return
+    ev.preventDefault()
+    const r = addSit(ctl.state.rec.e, inp.value)
+    if (r.err === 'full') return say('sit', 'warn', T.enSitFull, { ttl: 6000 })
+    if (r.err) return
+    sitDraft = ''
+    ctl.change(() => r.e)
+  }
+  count()
+  out.push(el('div', { cls: 'sitin' }, inp, cnt))
+  return out
+}
+
+function cardNodes(name, e, { live, who, tools = null, sure = false }) {
   const m = cardModel(e)
-  const nodes = [el('div', { cls: 'head' }, el('span', { cls: 'nm', text: name }), m.cat ? el('span', { cls: 'cat ' + e.cat, text: m.cat }) : null)]
+  const nodes = [el('div', { cls: 'head' }, el('span', { cls: 'nm' + (sure ? ' sure' : ''), text: sure ? T.enRemoveSure : name }), m.cat ? el('span', { cls: 'cat ' + e.cat, text: m.cat }) : null, tools)]
   if (live) {
     const set = v => ctl.change(x => { x.hp.value = Math.max(0, Math.min(x.hp.max, v)) })
     const inp = el('input', { type: 'number', min: 0, max: e.hp.max, step: 1, value: e.hp.value, inputmode: 'numeric', 'aria-label': T.enHpField, 'data-f': 'hp' })
@@ -172,10 +212,12 @@ function cardNodes(name, e, { live, who }) {
       el('span', { cls: 'mx', text: `/ ${e.hp.max}` })))
     const b = barOf(e.hp)
     nodes.push(el('div', { cls: 'hpbar', 'aria-hidden': 'true' }, el('i', { cls: b.tone, style: `width:${Math.round(b.frac * 100)}%` })))
+    nodes.push(...sitNodes(m, true))   // ситуативні — одразу під ОЗ, вище за броню (макет Б)
   } else nodes.push(el('div', { cls: 'kv' }, `${T.enHp} `, el('b', { text: String(e.hp.max) })), el('p', { cls: 'mut', text: T.enBookView }))
   nodes.push(el('div', { cls: 'kv' }, `${T.enArmor} `, el('b', { text: String(m.armor) }), m.armorText ? el('span', { cls: 'mut', text: ` (${m.armorText})` }) : null))
   if (m.tags.length) nodes.push(el('div', { cls: 'tags' }, ...m.tags.map(t => el('span', { cls: 'chip', text: t }))))
-  if (m.aspects.length) nodes.push(el('div', { cls: 'asp' }, ...m.aspects.map(t => el('span', { text: t }))))
+  if (!live && m.sit.length) nodes.push(...sitNodes(m, false))
+  if (m.base.length) nodes.push(el('div', { cls: 'asp', title: T.enAspects }, ...m.base.map(a => aspChip(a, 'b', live))))
   if (m.attacks.length) nodes.push(el('div', { cls: 'sec', text: T.enAttacks }))
   for (const a of m.attacks) {
     const tip = T.enRoll(a.name, a.label)
@@ -227,21 +269,42 @@ function renderCard() {
     return main.replaceChildren(el('div', { cls: 'card no mini' }, el('div', { cls: 'big' }, icon(s.kind === 'bad' ? 'err' : 'enemy')), el('p', { text }), el('div', { cls: 'acts' }, ...acts)))
   }
   const e = s.rec.e
-  const nodes = cardNodes(s.label || s.rec.name, e, { live: true, who: () => ctl.state.label || ctl.state.rec.name })
+  // кнопки картки — значками біля імені (автор, 2026-11-28, макет Б); назва — у підказці й aria-label
   const cleared = clearMarks(e)
-  nodes.push(el('div', { cls: 'foot' },
-    el('button', { type: 'button', 'data-f': 'clear', title: T.enClearHint, disabled: !cleared, on: () => ctl.change(x => clearMarks(x) || x) }, '↺ ' + T.enClear),
-    el('button', { type: 'button', 'data-f': 'edit', on: () => openForm({ kind: 'edit' }) }, T.enEdit),
-    el('button', { type: 'button', 'data-f': 'rm', title: T.enRemoveHint, on: () => {
-      if (!removeArm) { removeArm = true; return keepFocus(render) }
-      removeArm = false
-      ctl.leave().then(() => removeEnemy(OBR, s.itemId)).catch(e => say('w', 'err', T.enWriteFailed(String((e && e.message) || e))))
-    } }, removeArm ? T.enRemoveSure : T.enRemove)))
+  const tool = (f, glyph, label, hint, on, extra = {}) => el('button', { type: 'button', cls: 'ib', 'data-f': f, title: hint ? `${label}. ${hint}` : label, 'aria-label': label, on, ...extra }, glyph)
+  const tools = el('span', { cls: 'tools' },
+    tool('clear', '↺', T.enClear, T.enClearHint, () => ctl.change(x => clearMarks(x) || x), { disabled: !cleared }),
+    tool('edit', '✎', T.enEdit, '', () => openForm({ kind: 'edit' })),
+    tool('rm', '⊘', removeArm ? T.enRemoveSure : T.enRemove, T.enRemoveHint, rmClick, removeArm ? { cls: 'ib sure' } : {}))
+  // друге натискання на тому самому місці: кнопка не росте й не зсувається, «Точно зняти? Ще раз» — червоним замість імені
+  // (як «Точно видалити?» у лічильниках, живий захід 2026-11-27)
+  function rmClick() {
+    if (!removeArm) { removeArm = true; return keepFocus(render) }
+    removeArm = false
+    ctl.leave().then(() => removeEnemy(OBR, s.itemId)).catch(e => say('w', 'err', T.enWriteFailed(String((e && e.message) || e))))
+  }
+  main.replaceChildren(...cardNodes(s.label || s.rec.name, e, { live: true, who: () => ctl.state.label || ctl.state.rec.name, tools, sure: removeArm }))
+}
+function renderBook(name, e, id = '') {
+  setBar(name, { back: true })
+  const nodes = cardNodes(name, e, { live: false, who: () => name })
+  // ворог бестіарію чи Швидкого старту — на вибрані токени (автор, 2026-11-28; той самий код, що значок у «Битвах»)
+  if (id) nodes.push(el('div', { cls: 'foot' }, el('button', { type: 'button', cls: 'main', 'data-f': 'to-tokens', on: () => toTokens(id, name) }, T.genToTokens(name))))
   main.replaceChildren(...nodes)
 }
-function renderBook(name, e) {
-  setBar(name, { back: true })
-  main.replaceChildren(...cardNodes(name, e, { live: false, who: () => name }))
+async function toTokens(id, name) {
+  try {
+    const w = 'bk' + rid(), rec = enemyFromBook(id, { w })
+    if (!rec) return
+    rec.name = String(name).slice(0, 80)   // група з «Генераторів» — під назвою виду, як makeFromBattle у «Битвах»
+    const sel = (await OBR.player.getSelection()) || []
+    const ids = (sel.length ? await OBR.scene.items.getItems(sel) : []).filter(onEnemyLayer).map(it => it.id)
+    if (!ids.length) return say('sel', 'warn', T.enToTokensNone, { ttl: 6000 })
+    const res = await makeEnemies(OBR, ids, rec, { w })
+    if (res.made.length === 1) await openCard(res.made[0], false)
+    if (res.made.length) say('mk', 'ok', T.enMakeDone(res.made.length), { ttl: 5000 })
+    if (res.refused.length) say('mkr', 'warn', T.enMakeRefused(res.refused.map(r => `«${r.label}»`).join(', ')))
+  } catch (e) { console.error(e); say('w', 'err', T.enWriteFailed(String((e && e.message) || e))) }
 }
 
 // зміна розміру екрана, поки відкрита форма «Свій» / «Редагувати»: перевідкриття загубило б уведене (ревізор 2026-11-27),
@@ -252,7 +315,7 @@ async function render() {
   if (movePending && view.mode !== 'form') { const p = movePending; movePending = null; return moveTo(p) }
   try {
     if (view.mode === 'card') return keepFocus(renderCard)
-    if (view.mode === 'book') { const b = BOOK.get(view.id); return b ? renderBook(view.as || b.name, cleanSystem(b.sys)) : back() }
+    if (view.mode === 'book') { const b = BOOK.get(view.id); return b ? renderBook(view.as || b.name, cleanSystem(b.sys), view.id) : back() }
     if (view.mode === 'own') { const o = formPage.ownRecord(view.id); return o ? renderBook(o.name, o.e) : back() }
     if (view.mode === 'form') return formPage.render({ main, el, setBar, say, view, ctl, done: back, made: rec => doFormMade(rec) })
     return await renderList()

@@ -62,8 +62,10 @@ export function createEnemyCtl({ OBR, writer, onState = () => {}, onError = () =
   }
 
   /**
-   * «Редагувати» з новою назвою (автор, 2026-11-27): підпис токена стає новою назвою, лише якщо він дорівнював старій.
-   * Підпис, який Доглядач змінив сам («Вертиберд 2»), лишається. Окремий запис після черги (writer пише лише metadata).
+   * «Редагувати» з новою назвою: підпис токена стає новою назвою, хай який був — і свій підпис Доглядача («Вертиберд 2»),
+   * і порожній (автор, 2026-11-28, п.6 фідбеку: остання зміна перемагає; замінює «лише якщо дорівнював старій» 2026-11-27).
+   * Перейменування самого токена в Owlbear пізніше — теж остання зміна: картка показує підпис. RICH-текст не чіпаємо.
+   * Окремий запис після черги (writer пише лише metadata). from — стара назва: та сама назва — нічого не пишемо.
    */
   async function relabel(from, to, { wait = ms => new Promise(ok => (timers.setTimeout || setTimeout)(ok, ms)) } = {}) {
     from = String(from || '').trim(); to = String(to || '').trim()
@@ -73,7 +75,7 @@ export function createEnemyCtl({ OBR, writer, onState = () => {}, onError = () =
     let done = false
     const fix = ds => { for (const d of ds) {
       const t = d.text
-      if (t && typeof t.plainText === 'string' && t.plainText.trim() === from && (t.type === undefined || t.type === 'PLAIN')) { t.plainText = to; done = true }
+      if (t && typeof t.plainText === 'string' && (t.type === undefined || t.type === 'PLAIN')) { if (t.plainText !== to) t.plainText = to; done = true }
     } }
     for (const ms of [0, 500, 1000]) {
       if (ms) await wait(ms)

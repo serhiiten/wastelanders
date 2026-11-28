@@ -4,19 +4,19 @@
 // з токена береться лише те, що пройшло unpackEnemy; рядки показуються лише через textContent.
 import { bytes } from './store.mjs'
 import { K_ENEMY, HP_MAX, hasEnemy } from './enemy-bar.mjs'
-import { ENEMIES, GROUPS } from './bestiary.mjs'
+import { ENEMIES, GROUPS, QS_GROUP, QS_ENEMIES } from './bestiary.mjs'
 import { DMG_TYPES, R3, R4, DICE_RE } from '../foundry/battle.mjs'
 import { CATS, ENEMY_V, bookCopy } from '../foundry/enemy-model.mjs'
 
-export { K_ENEMY, GROUPS }
+export { K_ENEMY, GROUPS, QS_GROUP }
 export const ENEMY_MAX = 30000   // байт на запис ворога (книжковий до 4 623, з книжковою копією «Свого» до ~10 000)
 export const OWN = 'own'
 const LIM = { name: 80, armorText: 400, atkName: 120, note: 400, aspect: 100, moveN: 120, moveT: 1500, notes: 4000, attacks: 16, aspects: 24, moves: 20, num: 99, inv: 9 }
 const DEF_KEYS = ['phys', 'energy', 'fire', 'rad', 'poison', 'psy']
 const FLAG_KEYS = ['electricVuln', 'halfPartial', 'noKnockdown', 'noStun', 'noDisarm', 'kamikaze', 'psyVuln']
 
-/** Бестіарій за id: Map (не obj[src], щоб «__proto__» чи «constructor» нічого не знайшли). */
-export const BOOK = new Map(ENEMIES.map(x => [x.id, x]))
+/** Бестіарій і вороги Швидкого старту за id: Map (не obj[src], щоб «__proto__» чи «constructor» нічого не знайшли). */
+export const BOOK = new Map([...ENEMIES, ...QS_ENEMIES].map(x => [x.id, x]))
 
 const isObj = x => !!x && typeof x === 'object' && !Array.isArray(x)
 const str = (v, n) => typeof v === 'string' && v.length <= n ? v : null

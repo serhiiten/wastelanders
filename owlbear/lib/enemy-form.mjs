@@ -66,6 +66,8 @@ export function formToEnemy(form, { edit = null, baseName = '' } = {}) {
     // та сама атака (назва й запас) лишає свої набої, той самий хід — свої позначки: правка не «перезаряджає» ворога
     for (const a of e.attacks) { const o = edit.e.attacks.find(x => x.name === a.name && x.ammoMax === a.ammoMax); if (o) a.ammo = Math.min(o.ammo, a.ammoMax) }
     for (const m of e.moves) { const o = edit.e.moves.find(x => x.n === m.n && x.t === m.t); if (o) { m.used = o.used; m.spent = o.spent || 0 } }
+    // ситуативні аспекти живуть у картці, не у формі (автор, 2026-11-28): правка й «Як у книзі» їх не стирають
+    e.aspects = structuredClone(edit.e.aspects || [])
   }
   return { name: b.name, e }
 }
@@ -183,7 +185,7 @@ export const formPage = {
       if (edit) {
         const raw = { v: 1, src: edit.src, name: r.name, e: r.e, ...(edit.o ? { o: edit.o } : {}) }
         if (ctl.put(raw)) {
-          if (r.name !== edit.name) ctl.relabel(edit.name, r.name).catch(e => console.error(e))   // підпис = стара назва → нова (автор, 2026-11-27)
+          if (r.name !== edit.name) ctl.relabel(edit.name, r.name).catch(e => console.error(e))   // підпис токена = нова назва, хай який був (автор, 2026-11-28)
           say('f', 'ok', T.enSaved, { ttl: 4000 }); view.form = null; return ctx.done()
         }
         return
