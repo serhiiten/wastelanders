@@ -111,6 +111,10 @@
   }
   .price.free { background: #2f6b3a; }
   .price.paid { background: var(--rust); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .price.tag { background: transparent; color: var(--paper-ink); box-shadow: inset 0 0 0 2px var(--rim); }
+  details h4.half { font: 600 17px/1.3 var(--f-head); text-transform: uppercase; letter-spacing: .03em; margin: 12px 0 4px; }
+  details h4.half:first-of-type { margin-top: 8px; }
   .card ul { list-style: square; display: block; padding-left: 20px; font-size: 15px; }
   .card li { margin: 3px 0; }
   .card ol { margin: 6px 0 0; padding-left: 22px; font-size: 15px; display: grid; gap: 6px; }
@@ -163,7 +167,7 @@
     <div class="cards">
       <article class="card">
         <h3>У браузері</h3>
-        <span class="price free">Безкоштовно</span>
+        <div class="chips"><span class="price free">Безкоштовно</span><span class="price tag">Для столу</span></div>
         <p>Для гри наживо, коли всі поруч.</p>
         <ul>
           <li>Термінал Доглядача: генератори, трекер бою, «Мапа Пустки»</li>
@@ -174,7 +178,7 @@
 
       <article class="card">
         <h3>Owlbear Rodeo</h3>
-        <span class="price free">Безкоштовно</span>
+        <div class="chips"><span class="price free">Безкоштовно</span><span class="price tag">Легко</span></div>
         <p>Легкий віртуальний стіл. Гравці заходять за посиланням, навіть без акаунта.</p>
         <ul>
           <li>Аркуші персонажа й каравану просто на токенах</li>
@@ -198,7 +202,7 @@
 
       <article class="card big">
         <h3>Foundry VTT</h3>
-        <span class="price paid">Ліцензія Доглядача</span>
+        <div class="chips"><span class="price paid">Ліцензія Доглядача</span><span class="price tag">Повна автоматизація</span></div>
         <p>Повний віртуальний стіл з потужним ігровим модулем та найширшими можливостями для кастомізації, де правила обраховуються автоматично, а Доглядачу та гравцям лишається найцікавіше. Ліцензію Foundry Доглядач купує один раз, гравці заходять безкоштовно.</p>
         <div class="feats">
           <div>
@@ -254,6 +258,7 @@
         </details>
         <details>
           <summary>Як запросити гравців через інтернет</summary>
+          <h4 class="half">Безкоштовно: налаштуй сам</h4>
           <p>Гравці з твоєї домашньої мережі заходять одразу. Щоб зайшли гравці з інтернету, твій комп'ютер має бути видно ззовні: Foundry приймає їх на порт 30000 (TCP).</p>
           <ol>
             <li>Перевір, чи вже все відкрито: у світі на бічній панелі відкрий вкладку налаштувань (шестерня) → Invitation Links. Якщо там «Your connection appears to be open», просто надішли гравцям посилання з рядка Internet (IPv4).</li>
@@ -270,7 +275,14 @@
             <li>Перезапусти Foundry, відкрий Invitation Links і натисни Re-check Connectivity. Має стати «open».</li>
             <li>Домашня адреса в інтернеті часто змінюється, тож перед кожною грою бери свіже посилання з Invitation Links.</li>
           </ol>
-          <p class="note">Усе зроблено, а порт закритий? Імовірно, провайдер дає «сіру» IP-адресу, і ззовні до тебе не достукатися. Тоді або попроси в провайдера «білу» (публічну) IP-адресу, зазвичай це платна послуга, або візьми хостинг для Foundry на кшталт <a href="https://forge-vtt.com/">The Forge</a>, де портів налаштовувати не треба. Докладніше англійською: <a href="https://foundryvtt.com/article/port-forwarding/">інструкція Foundry про порти</a>.</p>
+          <p class="note">Усе зроблено, а порт закритий? Імовірно, провайдер дає «сіру» IP-адресу, і ззовні до тебе не достукатися. Тоді попроси в провайдера «білу» (публічну) IP-адресу, зазвичай це платна послуга, або дивись спосіб нижче. Докладніше англійською: <a href="https://foundryvtt.com/article/port-forwarding/">інструкція Foundry про порти</a>.</p>
+          <h4 class="half">Платно, але легко: The Forge</h4>
+          <p><a href="https://forge-vtt.com/">The Forge</a> тримає Foundry в інтернеті замість твого комп'ютера: ні портів, ні роутера, а гра доступна, навіть коли твій комп'ютер вимкнено. Платиш щомісячну підписку The Forge.</p>
+          <ol>
+            <li>Зареєструйся на The Forge, обери тариф і підключи свою ліцензію Foundry.</li>
+            <li>Встанови систему «Пустельники»: знайди її в каталозі пакетів The Forge або встав Manifest URL з кроку 3 вище.</li>
+            <li>Створи світ із системою «Пустельники» і надішли гравцям посилання на гру.</li>
+          </ol>
         </details>
       </article>
     </div>
