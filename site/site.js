@@ -64,9 +64,9 @@
   document.addEventListener('click', function (e) {
     var mb = e.target.closest && e.target.closest('.plate-more');
     if (mb) { openPlate(mb.closest('.plate').id, true); return; }
-    /* кнопка меню «Доповнення Owlbear» / «Модуль Foundry VTT»: та сама адреса двічі — хеш не зміниться, відкриваємо самі */
+    /* кнопка меню «Доповнення Owlbear» / «Модуль Foundry VTT»: розгортаємо одразу (і коли хеш уже той самий і не зміниться) */
     var ha = e.target.closest && e.target.closest('a[href^="#"]');
-    if (ha && ha.getAttribute('href').slice(1) === location.hash.slice(1)) openPlate(location.hash.slice(1), false);
+    if (ha) openPlate(ha.getAttribute('href').slice(1), false);
     var cb = e.target.closest && e.target.closest('.copy-btn');
     if (cb) {
       var url = cb.previousElementSibling;
