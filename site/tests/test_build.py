@@ -30,6 +30,15 @@ def ok(cond, msg):
         fails.append(msg)
 
 
+warns = []
+
+
+def warn(cond, msg):
+    """A soft limit (author, 2026-11-28): printed as WARN, the test still passes."""
+    if not cond:
+        warns.append(msg)
+
+
 def read(path):
     with open(path, encoding="utf-8") as fh:
         return fh.read()
@@ -157,25 +166,19 @@ sizes = [float(x) for x in re.findall(r"font(?:-size)?:[^;{}]*?(\d+(?:\.\d+)?)px
 ok(min(sizes) >= 12, f"3.6 no font size under 12 px in site.css (min {min(sizes)})")
 
 # ---------- 3.7: page weight and the cover ----------
-# The rule text of two pages alone is over 50 KB (perky: 78 KB, henerator-pustelnykiv-ruchnyi: 54 KB); the texts are
-# not cut, so for them the frame around the text is what is held small. Every other page: ≤ 60 KB in all.
-# Thresholds (global rule §7, 2026-11-28: every limit needs a written reason). No reason is written yet:
-# 60 KB per page comes from plan row 3.7 (approved by the author, reason not stated); 12 KB frame, 40 KB site.css and
-# 400 KB cover were set by Claudine from measurements (≈ 9 KB, ≈ 23 KB, 160 KB) plus a margin, not agreed with the
-# author. Accepted for now: author, 2026-11-28 (frame ≤ 12 KB, other pages ≤ 60 KB, the two LONG pages stay whole).
-LONG = {"perky", "henerator-pustelnykiv-ruchnyi"}
+# Author, 2026-11-28: the rule text is never limited (no per-page limit). The numbers below are warnings, not limits:
+# they catch accidental bloat (the raw cover weighed 2.1 MB) and sit about 1.5–2.5× above today's size.
 for name, h in everything.items():
     size = len(h.encode("utf-8"))
     m = re.search(r'<div class="text" data-pagefind-body>(.*?)</div>\n<nav class="pn"', h, re.S)
     shell = size - (len(m.group(1).encode("utf-8")) if m else 0)
-    ok(not m or shell <= 12 * 1024, f"3.7 {name}: everything around the text {shell // 1024} KB > 12 KB")
-    if name in LONG:
-        ok(size > 60 * 1024, f"3.7 {name} fits 60 KB now: drop it from LONG")
-    else:
-        ok(size <= 60 * 1024, f"3.7 {name}: {size // 1024} KB > 60 KB")
-ok(len(css.encode("utf-8")) <= 40 * 1024, "3.7 site.css ≤ 40 KB")
+    # 12 KB: everything around the rule text (header, tabs, contents, footer) is ≈ 9 KB today
+    warn(not m or shell <= 12 * 1024, f"3.7 {name}: everything around the text {shell // 1024} KB > 12 KB")
+# 40 KB: site.css is ≈ 23 KB today
+warn(len(css.encode("utf-8")) <= 40 * 1024, f"3.7 site.css {len(css.encode('utf-8')) // 1024} KB > 40 KB")
 cover = os.path.getsize(os.path.join(rules, "img", "cover.jpg"))
-ok(cover <= 400 * 1024, f"3.7 cover compressed: {cover // 1024} KB")
+# 400 KB: the compressed cover is ≈ 160 KB today (the source is 2.1 MB)
+warn(cover <= 400 * 1024, f"3.7 cover {cover // 1024} KB > 400 KB")
 ok(not os.path.exists(os.path.join(rules, "img", "cover.png")), "3.7 the 2 MB cover.png is not published")
 
 # ---------- 3.8: the 404 page has the site's menu ----------
@@ -266,6 +269,8 @@ else:
     print("SKIP the Terminal look comparison (no pustelnyky_src next to the repository)")
 
 shutil.rmtree(tmp, ignore_errors=True)
+for w in warns:
+    print("WARN", w)
 for f in fails:
     print("FAIL", f)
 print(("FAIL" if fails else "OK") + f" ({checks} checks)")

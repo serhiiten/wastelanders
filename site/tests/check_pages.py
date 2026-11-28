@@ -1,5 +1,5 @@
 """Every built page in a real browser (plan 2026-11-28, rows 3.2, 3.6, 3.8): nothing runs off sideways, text ≥ 12 px,
-click targets ≥ 24×24 (links inside running text excepted, as in WCAG 2.5.8), a visible keyboard focus, Tab reaches the
+click targets ≥ 24×24 (links inside running text excepted, as in WCAG 2.5.8; both limits: docs/ui-rules.md, V6, author 2026-11-21), a visible keyboard focus, Tab reaches the
 tabs, the search and the contents; no console errors.
 
     python site/build.py && python site/serve.py &        (or the `wiki-site` launch configuration)
@@ -87,6 +87,7 @@ def scenarios(page, fails):
             fails.append(f"3.12 «{b['text']}»: відкрилось {page.url}, а не {want}")
     # 3.4: the search
     page.goto(BASE + "robymo-perevirky/"); settle()
+    # «Доглядач» ≥ 10 results: the search sees the whole wiki, not a few pages (author, 2026-11-28)
     for q, want_first, at_least in (("перевір", "Робимо перевірки", 1), ("Доглядач", None, 10)):
         page.fill(".pagefind-ui__search-input", q)
         page.wait_for_selector(".pagefind-ui__result-link", timeout=10000)
@@ -135,6 +136,7 @@ def scenarios(page, fails):
             fails.append(f"3.11 «{a['text']}» привів на {page.url}")
             continue
         top = page.evaluate("(() => { const e = document.getElementById(decodeURIComponent(location.hash.slice(1))); return e ? e.getBoundingClientRect().top : null; })()")
+        # ≤ 200 px from the top: the heading is seen at once, not hidden under the header (author, 2026-11-28)
         if top is None or not (-5 <= top <= 200):
             fails.append(f"3.11 «{a['text']}»: «{a['heading']}» не вгорі вікна (top {top})")
     return n

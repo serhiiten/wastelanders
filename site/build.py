@@ -40,8 +40,11 @@ SHEET_TEXT = "▶ Відкрити аркуш"        # author, 2026-11-28 (char
 SHEETS = ("character_generator.html", "caravan_generator.html")
 EDIT_TEXT = "Редагувати на GitHub"     # plan §2.4
 ALERT_ICON = {"TIP": "☝", "WARNING": "⚠️", "NOTE": "☢"}   # a Notion emoji (no file) gets the section's ☢, as in the Terminal
-LONG_PAGE = 1500                        # a page with a tool longer than this (characters) gets its button at the bottom too
-COVER_W = 1400                         # the cover is 2752 px / 2.1 MB in the source
+LONG_PAGE = 1500                        # a page with a tool longer than this (characters) gets its button at the bottom too:
+                                        # 1500 characters ≈ one screen of text at 1366×768; beyond it the top button
+                                        # needs scrolling back (author, 2026-11-28)
+COVER_W = 1400                         # the cover is 2752 px / 2.1 MB in the source; 1400 px covers a 1366 px
+                                       # screen (author, 2026-11-28)
 
 
 class BuildError(Exception):
