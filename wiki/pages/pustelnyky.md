@@ -155,7 +155,7 @@ notion: "21de66cd8c78803186b2e9a38f160a4f"
     - Додано [автоматичний генератор подорожей](avtomatychnyi-henerator-podorozhei.md) для Доглядача.
     - Додано [автоматичний генератор битв](avtomatychnyi-henerator-bytv.md) для Доглядача.
     - Таблиці натхнення інтегровані в [автоматичний генератор](heneratory-natkhnennia.md).
-    - [Всі генератори](https://app.notion.com/p/258e66cd8c7880ecb7fedd8f8bf65174?pvs=21) також доступні на одній сторінці.
+    - [Всі генератори](https://serhiiten.github.io/wastelanders/all_generators.html) також доступні на одній сторінці.
     - Додано 10 нових [замовників справ.](struktura-sesii-stvorennia-sprav.md)
     - Додано опціональні правила для рідкісного випадку — [масових сутичок](ridkisni-vypadky.md).
     - Додано правила щодо [енергетичної зброї](zbroia.md).
