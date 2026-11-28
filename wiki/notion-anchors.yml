@@ -1,0 +1,178 @@
+# Links that pointed at a place inside a page in Notion (its export kept only the page). To restore on the site
+# (plan stage 3): on `page`, the link with `text` goes to `heading` on `target`. `notion_block`: Notion's block id.
+
+- page: henerator-pustelnykiv-ruchnyi
+  text: "Псионік"
+  target: arkhetypy
+  heading: "Псионік"
+  notion_block: "21ee66cd8c7880bc8a5efc3e488f9a10"
+- page: hroshi-ta-rechi-shcho-yikh-koshtuiut
+  text: "БТР"
+  target: suprotyvnyky-voiny-bratstva-stali
+  heading: "БТР Братства Сталі"
+  notion_block: "266e66cd8c7880de9a95f183a8bfcd9d"
+- page: navychky
+  text: "людину"
+  target: vydy
+  heading: "Людина"
+  notion_block: "21ee66cd8c7880068037ea5702492115"
+- page: nebezpeky-pustky
+  text: "«Небезпеки Пустки»"
+  target: tablytsi-natkhnennia
+  heading: "Небезпеки Пустки"
+  notion_block: "21ee66cd8c7880de831aef0dbe42ae15"
+- page: perky
+  text: "людину"
+  target: vydy
+  heading: "Людина"
+  notion_block: "21ee66cd8c7880068037ea5702492115"
+- page: podorozhi-ta-vypadkovi-podii
+  text: "«Люди»"
+  target: tablytsi-natkhnennia
+  heading: "Люди"
+  notion_block: "21ee66cd8c788025bc35c657ecfb7675"
+- page: podorozhi-ta-vypadkovi-podii
+  text: "«Небезпеки Пустки»"
+  target: tablytsi-natkhnennia
+  heading: "Небезпеки Пустки"
+  notion_block: "21ee66cd8c7880de831aef0dbe42ae15"
+- page: podorozhi-ta-vypadkovi-podii
+  text: "«Об'єкти та місця в Пустці»"
+  target: tablytsi-natkhnennia
+  heading: "Об’єкти та місця в Пустці"
+  notion_block: "21ee66cd8c788087addfc3cfaf52de1e"
+- page: pravyla-aspektiv
+  text: "електричне"
+  target: zbroia
+  heading: "Енергетична зброя"
+  notion_block: "21de66cd8c788031b97ed29468aaeecf"
+- page: pustelnyky
+  text: "таблиці винагород"
+  target: nahorody-ta-zarobitok
+  heading: "Нагороди за битви"
+  notion_block: "21ee66cd8c78808286b1db768a25bf1e"
+- page: pustelnyky
+  text: "Професійний торчок"
+  target: osoblyvosti
+  heading: "Професійний торчок"
+  notion_block: "26fe66cd8c7880178162d088f8521851"
+- page: pustelnyky
+  text: "масових сутичок"
+  target: ridkisni-vypadky
+  heading: "Масові сутички"
+  notion_block: "267e66cd8c788093a94bddd1bb2e0e9c"
+- page: pustelnyky
+  text: "замовників справ."
+  target: struktura-sesii-stvorennia-sprav
+  heading: "Замовники"
+  notion_block: "21ee66cd8c7880cca1dbdb27035523a0"
+- page: pustelnyky
+  text: "мольфар"
+  target: suprotyvnyky-bandyty-dykuny-reidery
+  heading: "Мольфари, відуни, дивні"
+  notion_block: "267e66cd8c788081a128ec6a1ffb215b"
+- page: pustelnyky
+  text: "преторіанець"
+  target: suprotyvnyky-biitsi-lehionu-tsezaria
+  heading: "Преторіанець"
+  notion_block: "269e66cd8c788070a8c3f058ccef0ad0"
+- page: pustelnyky
+  text: "спороносець"
+  target: suprotyvnyky-mutanty-ta-inshi-koshmary
+  heading: "Спороносець"
+  notion_block: "26ae66cd8c78805294adeef6c14cc30a"
+- page: pustelnyky
+  text: "тунельник"
+  target: suprotyvnyky-mutanty-ta-inshi-koshmary
+  heading: "Тунельник"
+  notion_block: "21ee66cd8c78800e9262e026f70dfeae"
+- page: pustelnyky
+  text: "бум-око"
+  target: suprotyvnyky-roboty
+  heading: "Бум-око"
+  notion_block: "269e66cd8c7880d1801ce9b65713a32a"
+- page: pustelnyky
+  text: "важка турель"
+  target: suprotyvnyky-roboty
+  heading: "Важка турель"
+  notion_block: "266e66cd8c7880f6a91adbfa5acf8a2f"
+- page: pustelnyky
+  text: "гігантський робо-скорпіон Х-42"
+  target: suprotyvnyky-roboty
+  heading: "Гігантський робо-скорпіон X-42"
+  notion_block: "266e66cd8c788038b41ee7aa0c6d1b4c"
+- page: pustelnyky
+  text: "робо-скорпіон Mk1"
+  target: suprotyvnyky-roboty
+  heading: "Робо-скорпіон Mk1"
+  notion_block: "266e66cd8c78802db4bde66ae64ff28b"
+- page: pustelnyky
+  text: "робо-скорпіон Mk6"
+  target: suprotyvnyky-roboty
+  heading: "Робо-скорпіон Mk6"
+  notion_block: "266e66cd8c7880aeaa96ee173f90cafc"
+- page: pustelnyky
+  text: "бронетранспортер"
+  target: suprotyvnyky-voiny-bratstva-stali
+  heading: "БТР Братства Сталі"
+  notion_block: "266e66cd8c7880de9a95f183a8bfcd9d"
+- page: pustelnyky
+  text: "лоботоміт"
+  target: suprotyvnyky-zbroini-syly-anklavu
+  heading: "Лоботоміт Анклаву"
+  notion_block: "266e66cd8c78800ba48cf23e68e8cfe2"
+- page: pustelnyky
+  text: "польовий дослідник"
+  target: suprotyvnyky-zbroini-syly-anklavu
+  heading: "Польовий дослідник Анклаву"
+  notion_block: "266e66cd8c78801ca137f82de2e6be2d"
+- page: pustelnyky
+  text: "Виходець зі Сховища"
+  target: vydovi-osoblyvosti
+  heading: "Виходець зі Сховища"
+  notion_block: "26ae66cd8c78804b9e48c9f07a6737d4"
+- page: pustelnyky
+  text: "Здичавіння"
+  target: vydovi-osoblyvosti
+  heading: "Здичавіння"
+  notion_block: "269e66cd8c78808eb3abd9369f2b164c"
+- page: pustelnyky
+  text: "Кіборг"
+  target: vydovi-osoblyvosti
+  heading: "Кіборг"
+  notion_block: "269e66cd8c788016b384cc2fad214ab3"
+- page: pustelnyky
+  text: "Синт"
+  target: vydovi-osoblyvosti
+  heading: "Синт"
+  notion_block: "269e66cd8c78808ca560c93ba5ea1d19"
+- page: pustelnyky
+  text: "енергетичної зброї"
+  target: zbroia
+  heading: "Енергетична зброя"
+  notion_block: "21de66cd8c788031b97ed29468aaeecf"
+- page: struktura-sesii-stvorennia-sprav
+  text: "«Люди»"
+  target: tablytsi-natkhnennia
+  heading: "Люди"
+  notion_block: "21ee66cd8c788025bc35c657ecfb7675"
+- page: stvorennia-karavanu
+  text: "Удачу партії"
+  target: kistka-doli-ta-udacha-partii
+  heading: "Удача партії"
+  notion_block: "21ee66cd8c7880ddb55cdb9c0579b0bf"
+- page: znachushchi-poselennia-zakhidnoho-uzberezhzhia
+  text: "фракцію Ши."
+  target: fraktsii-zakhidnoho-uzberezhzhia-ssha
+  heading: "Ши"
+  notion_block: "21ee66cd8c7880e7b439cfd20323b5c5"
+- page: znachushchi-poselennia-zakhidnoho-uzberezhzhia
+  text: "фракцію містера Хауса."
+  target: fraktsii-zakhidnoho-uzberezhzhia-ssha
+  heading: "Містер Хаус, володар Нью-Вегаса"
+  notion_block: "21ee66cd8c7880fd850dc0688fcdfc2c"
+- page: zony-u-bytvakh
+  text: "«Об'єкти та місця у Пустці»."
+  target: tablytsi-natkhnennia
+  heading: "Об’єкти та місця в Пустці"
+  notion_block: "21ee66cd8c788087addfc3cfaf52de1e"

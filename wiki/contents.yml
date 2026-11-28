@@ -1,0 +1,240 @@
+# The wiki's order: groups → sections → pages (one place; the site's menu and the Foundry compendiums follow it).
+# A page is its file name in pages/ without «.md». `notion`: the Notion id (old links, the compendiums' database ids).
+# Format: wiki/README.md.
+
+home: pustelnyky
+
+groups:
+  - title: "ШВИДКИЙ СТАРТ"          # site only (package D-B, author 2026-11-28): the pages are `compendium: false`
+    sections:
+      - slug: hravtsiam
+        title: "Гравцям"
+        pages:
+          - shvydkyi-start-avtory-ta-litsenziia
+          - shvydkyi-start-hravtsiam
+          - shvydkyi-start-kym-mozhna-hraty
+          - shvydkyi-start-koly-robysh-shchos-ryzykovane-ta-krute
+          - shvydkyi-start-aspekty-ta-zhetony-doli
+          - shvydkyi-start-zdorovia-perky-sporiadzhennia
+          - shvydkyi-start-karavan
+      - slug: dohliadachu
+        title: "Доглядачу"
+        pages:
+          - shvydkyi-start-dohliadachu-tsili-ta-pryntsypy
+          - shvydkyi-start-koly-kydaty-kistky
+          - shvydkyi-start-khody-dohliadacha-ta-lichylnyky
+          - shvydkyi-start-bytvy
+      - slug: startova-pryhoda
+        title: "Стартова пригода «Світ ловив, та (не) спіймав»"
+        pages:
+          - shvydkyi-start-sprava-na-odnu-ihrovu-sesiiu
+          - shvydkyi-start-podii-zaviazka-marshrut-podorozh
+          - shvydkyi-start-lehka-bytva-papa-detonator
+          - shvydkyi-start-serednia-bytva-robo-kovboi-viktor
+          - shvydkyi-start-serednia-bytva-zasidka-lehionu
+          - shvydkyi-start-vazhka-bytva-zahin-ketrin
+          - shvydkyi-start-povorotna-tochka
+          - shvydkyi-start-protystoiannia
+          - shvydkyi-start-finaly
+          - shvydkyi-start-kinets-hry
+  - title: "ПРАВИЛА ГРАВЦІВ"
+    sections:
+      - slug: vstup
+        title: "Вступ"
+        notion: "21de66cd8c788047afdafb5af347024e"
+        pages:
+          - pro-hru
+          - ihrovyi-protses
+          - hlosarii-ihrovykh-terminiv
+          - korotko-pro-vsesvit-fallout
+      - slug: perevirky-ta-dii
+        title: "Перевірки та дії"
+        notion: "21de66cd8c7880b3b22adb2efa754717"
+        pages:
+          - robymo-perevirky
+          - standartni-dii
+          - inshi-poshyreni-dii
+          - poriadok-dii-u-bytvakh
+      - slug: stvorennia-personazha
+        title: "Створення персонажа"
+        notion: "21de66cd8c78807ea95ef6a4a032a0fe"
+        pages:
+          - pokrokova-instruktsiia
+          - elektronnyi-arkush-personazha
+          - arkhetypy
+          - vydy
+          - atrybuty
+          - navychky
+          - perky
+          - osoblyvosti
+          - vydovi-osoblyvosti
+          - detal-personazha
+          - henerator-pustelnykiv-ruchnyi
+      - slug: aspekty
+        title: "Аспекти"
+        notion: "21de66cd8c7880e084f2ce6116705379"
+        pages:
+          - pravyla-aspektiv
+          - zhetony-doli-hravtsiv-ta-dohliadacha
+          - aspekty-personazhiv-hravtsiv
+      - slug: prypasy-kryshky-dva-stvoly
+        title: "Припаси, кришки, два стволи"
+        notion: "21de66cd8c7880cd9729f9cc26a6348b"
+        pages:
+          - prypasy
+          - hroshi-ta-rechi-shcho-yikh-koshtuiut
+          - vazhki-rechi
+          - zbroia
+          - bronia
+          - narkota-medykamenty-zalezhnist
+          - otruty
+      - slug: karavan
+        title: "Караван"
+        notion: "21de66cd8c788023abcbcb3b6393f83f"
+        pages:
+          - stvorennia-karavanu
+          - elektronnyi-arkush-karavanu
+          - karma-ta-reputatsiia-karavanu
+          - pokrashchennia-karavanu
+          - podorozhi-pustkoiu
+          - dostavka-vantazhiv-ta-zarobitok
+          - tachky
+      - slug: shkoda-ta-likuvannia
+        title: "Шкода та лікування"
+        notion: "21de66cd8c7880b29f87ce17f339e114"
+        pages:
+          - zahalni-pravyla-shkody
+          - naslidky
+          - ochky-zdorovia-naslidky-smert
+          - vidnovlennia-oz-ta-likuvannia-naslidkiv
+      - slug: rozvytok-personazhiv
+        title: "Розвиток персонажів"
+        notion: "21de66cd8c7880109cd6f441007c96b4"
+        pages:
+          - ochky-dosvidu-ta-pokrashchennia
+          - zavershennia-hry
+      - slug: dopovnennia-guns-lots-of-guns
+        title: "Доповнення: Guns. Lots of guns"
+        notion: "21ee66cd8c788020af7be9e56c2c5e2a"
+        pages:
+          - dodatkovi-vlastyvosti-zbroi
+          - striletska-zbroia
+          - zbroia-blyzhnoho-boiu
+          - hranaty-ta-vybukhivka
+          - dyzainerski-narkotyky
+  - title: "ПРАВИЛА ДОГЛЯДАЧА (ВЕДУЧОГО)"
+    sections:
+      - slug: baza
+        title: "База"
+        notion: "21ee66cd8c788008864bc3f59167f858"
+        pages:
+          - pryntsypy-dohliadacha
+          - khody-dohliadacha
+          - lichylnyky
+          - kistka-doli-ta-udacha-partii
+          - hostri-temy-ta-komfort-hravtsiv
+          - ridkisni-vypadky
+      - slug: osnova-hry-spravy
+        title: "Основа гри: справи"
+        notion: "21ee66cd8c7880149678e28e881c28e2"
+        pages:
+          - struktura-sesii-stvorennia-sprav
+          - avtomatychnyi-henerator-sprav
+          - pryklad-spravy-vtikach
+          - nahorody-ta-zarobitok
+          - vynahorody-karmoiu-ta-reputatsiieiu
+          - stvorennia-perkiv-ta-osoblyvostei
+      - slug: bytvy
+        title: "Битви"
+        notion: "21ee66cd8c78804db565f38ef69bede4"
+        pages:
+          - pravyla-bytv
+          - zony-u-bytvakh
+          - skladnist-bytv
+          - avtomatychnyi-henerator-bytv
+      - slug: podorozhi-ta-nebezpeky
+        title: "Подорожі та небезпеки"
+        notion: "21ee66cd8c7880edb2f3d57afa4a545d"
+        pages:
+          - podorozhi-ta-vypadkovi-podii
+          - avtomatychnyi-henerator-podorozhei
+          - nebezpeky-pustky
+      - slug: dovha-hra-stvorennia-kampanii
+        title: "Довга гра: створення кампанії"
+        notion: "21ee66cd8c78802d9c69fff4c3746835"
+        pages:
+          - stvorennia-kampanii
+          - pryklad-kampanii-pomsta-velykykh-khaniv
+      - slug: fraktsii-ta-poselennia
+        title: "Фракції та поселення"
+        notion: "21ee66cd8c78809d8981c864d2a13daf"
+        pages:
+          - shablony-opysu-fraktsii-ta-poselen
+          - fraktsii-zakhidnoho-uzberezhzhia-ssha
+          - znachushchi-poselennia-zakhidnoho-uzberezhzhia
+      - slug: suprotyvnyky-ta-nipy
+        title: "Супротивники та НІПи"
+        notion: "21ee66cd8c7880e5a0c5e0949826b1f3"
+        pages:
+          - pravyla-stvorennia-nipiv
+          - suprotyvnyky-zviri-ta-inshi-braty-nashi-menshi
+          - suprotyvnyky-mutanty-ta-inshi-koshmary
+          - suprotyvnyky-roboty
+          - suprotyvnyky-dyki-huli
+          - suprotyvnyky-supermutanty
+          - suprotyvnyky-bandyty-dykuny-reidery
+          - suprotyvnyky-biitsi-lehionu-tsezaria
+          - suprotyvnyky-armiia-novoi-kaliforniiskoi-respubliky
+          - suprotyvnyky-shy
+          - suprotyvnyky-voiny-bratstva-stali
+          - suprotyvnyky-zbroini-syly-anklavu
+      - slug: dlia-natkhnennia
+        title: "Для натхнення"
+        notion: "21ee66cd8c7880439b02ed3fd62e9479"
+        pages:
+          - heneratory-natkhnennia
+          - tablytsi-natkhnennia
+          - tablytsia-bytv
+          - tablytsia-imen
+      - slug: dodatkovi-materialy
+        title: "Додаткові матеріали"
+        notion: "21ee66cd8c78808b955be06011207daf"
+        pages:
+          - arkushi-personazhiv-ta-karavanu
+          - pamiatky-hravtsia-ta-dohliadacha
+          - pamiatka-hravtsia                 # site only (package D-B): text from Foundry; the page above is off the site
+          - pamiatka-dohliadacha
+          - mapa-zakhidnoho-uzberezhzhia-ssha-2277
+          - fishky-personazhiv-ta-nipiv
+
+# the home page's picture buttons (Notion lost their links in the export; taken from the live Notion 2026-11-28)
+buttons:
+  - text: "ПОЧАТИ ГРУ"
+    image: pochaty-hru.png
+    link: pro-hru.md
+  - text: "тг"
+    label: "TELEGRAM"       # the button's text on the site (author, 2026-11-28); `text` is the Notion picture's name
+    image: telegram.png
+    link: https://t.me/wastelanderstrpg
+  - text: "СТВОРИТИ ПЕРСОНАЖА"
+    image: stvoryty-personazha.png
+    link: character_generator.html
+  - text: "СТВОРИТИ КАРАВАН"
+    image: stvoryty-karavan.png
+    link: caravan_generator.html
+  - text: "СТВОРИТИ СПРАВУ"
+    label: "Термінал Доглядача"   # author, 2026-11-28 (package A, 7)
+    image: stvoryty-spravu.png
+    link: all_generators.html
+  - text: "ПОЧАТИ ПОДОРОЖ"
+    label: "Доповнення Owlbear"   # author, 2026-11-28 (package A, 7)
+    image: pochaty-podorozh.png
+    link: "#owlbear"              # its plate of the intro «Де грати» on the wiki home (package B, author 2026-11-28)
+  - text: "СТВОРИТИ БИТВУ"
+    label: "Модуль Foundry VTT"   # author, 2026-11-28 (package A, 7)
+    image: stvoryty-bytvu.png
+    link: "#foundry"              # its plate of the intro «Де грати» on the wiki home (package B, author 2026-11-28)
+  - text: "генератори натхнення"
+    image: heneratory-natkhnennia.png
+    link: all_generators.html#tables
+    menu: false                   # not in the site's menu (author, 2026-11-28, package A, 7); the picture stays in the source

@@ -1,0 +1,5 @@
+# the wiki source and its tools: LF on every machine (site/wikisrc.py reads the YAML header by its «---» lines)
+wiki/** text=auto eol=lf
+wiki/images/** binary
+wiki/files/** binary
+site/** text=auto eol=lf
