@@ -528,16 +528,16 @@ class Site:
                           f'<button type="button" class="plate-more" aria-expanded="false" aria-controls="{pid}-more">{MORE_TEXT}</button></section>')
             panels.append(f'<div class="plate-panel n{n}" id="{pid}-more" role="region" aria-labelledby="{pid}-h">{conv(rest)}</div>')
         name, pid, body = secs[3]
-        # «Одна Пустка на всіх» is a fold too, closed by default (author, 2026-11-28, package D-A, 1)
-        eco = (f'<details class="fold eco" id="{pid}"><summary><h3 id="{pid}-h">{esc(name)}</h3></summary>'
-               f'<div class="eco-body">{conv(body)}</div></details>')
+        # «Одна Пустка на всіх» lives inside the fold «Де грати», at its end after the plates (author via the dispatcher,
+        # 2026-11-28, package D-A, 1: not a fold of its own)
+        eco = f'<div class="eco" id="{pid}"><h3>{esc(name)}</h3><div class="eco-body">{conv(body)}</div></div>'
         lead = conv(parts[0].strip())
         # «Де грати» (the lead and the three plates) is a fold, closed by default (package C, 1); its summary is a prominent
         # bar in the style of the groups' header «Правила гравців» (author, 2026-11-28, package D-A, 2)
         out = (f'<article class="intro" aria-labelledby="{hid}" data-pagefind-body>'
                f'<details class="intro-fold" id="{hid}-fold"><summary class="group-h"><h2 id="{hid}">{esc(title)}</h2></summary>'
                f'<div class="intro-in"><div class="intro-head">{lead}</div>'
-               f'<div class="plates">{"".join(plates)}{"".join(panels)}</div></div></details>{eco}</article>')
+               f'<div class="plates">{"".join(plates)}{"".join(panels)}</div>{eco}</div></details></article>')
         return out, ids[:3]
 
     def not_found_html(self):

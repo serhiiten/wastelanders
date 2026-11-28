@@ -310,9 +310,10 @@ ok("home/de-hraty.md" in e and "чотири" in e, f"Б.1 an intro without four
 # C1: «Де грати» (the lead and the plates) is a fold, closed; «Одна Пустка на всіх» stays outside it
 fold_at = intro.find('<details class="intro-fold" id="de-hraty-fold"><summary class="group-h"><h2 id="de-hraty">Де грати</h2></summary>')
 ok(fold_at >= 0 and "id=\"de-hraty-fold\" open" not in intro, "C1 «Де грати» is a closed fold; D2 its summary is a .group-h bar")
-ok(fold_at < intro.find('id="browser"') < intro.find('id="foundry-more"') < intro.find('<details class="fold eco" id="eco">'),
+ok(fold_at < intro.find('id="browser"') < intro.find('id="foundry-more"') < intro.find('<div class="eco" id="eco">'),
    "C1 the lead and the plates are inside the fold, «Одна Пустка на всіх» after them")
-ok(intro[:intro.index('<details class="fold eco"')].endswith("</div></div></div></details>"), "C1 «Одна Пустка на всіх» stands outside the fold")
+ok(intro.index('<div class="eco"') < intro.rindex("</details>") and intro.rstrip().endswith("</div></div></details></article>"),
+   "D1 «Одна Пустка на всіх» stands inside the fold, at its end")
 # C5: «Як встановити» is marked so that the plate's button opens it; only that fold of the panel
 ok(intro.count('<details class="sub install"><summary>Як встановити</summary>') == 2
    and intro.count('<details class="sub">') == 1, "C5 the two «Як встановити» folds carry .install, the other fold not")
@@ -403,8 +404,9 @@ ok(not any('<a href="' + build.SITE_URL in h or re.search(r'<a [^>]*href="' + re
 
 # ---------- package D-A (author, 2026-11-28) ----------
 # D1: «Одна Пустка на всіх» is a fold, closed by default
-ok(re.search(r'<details class="fold eco" id="eco"><summary><h3 id="eco-h">Одна Пустка на всіх</h3></summary>', intro) is not None,
-   "D1 «Одна Пустка на всіх» is a closed fold")
+# D1 (corrected by the dispatcher, 2026-11-28): not a fold of its own but the last block inside «Де грати», after the plates' panels
+ok(re.search(r'</div><div class="eco" id="eco"><h3>Одна Пустка на всіх</h3><div class="eco-body">', intro) is not None
+   and 'class="fold eco"' not in intro, "D1 «Одна Пустка на всіх» is the end of the fold «Де грати», not a fold")
 # D2: the «Де грати» bar looks like the groups' header: the same CSS class, and it is not a plain .fold
 ok('<details class="intro-fold"' in intro and 'class="fold intro-fold"' not in intro, "D2 «Де грати» is the .group-h bar, not a plain fold")
 # D3: no page keeps a bare address of its own tool under the button

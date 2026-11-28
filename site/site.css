@@ -433,15 +433,11 @@ a.tool{display:block;height:100%;padding:10px 12px;border:2px solid var(--rust-0
 a.tool .name{display:block;font:800 17px/1.2 'Roboto Condensed',sans-serif;text-transform:uppercase;color:var(--rust-2)}
 a.tool .desc{display:block;font-size:14px;margin-top:4px;color:var(--ink-2)}
 a.tool:hover{background:var(--paper-3);color:var(--ink)}
-.intro .eco{border-top:2px dashed #b9a57c;scroll-margin-top:12px}
-/* «Одна Пустка на всіх» — згортка, типово згорнута (автор, 2026-11-28, пакет Г-А, 1) */
-.intro .eco > summary{margin:0;padding:6px 40px}
-.intro .eco h3{margin:0;font:700 20px/1.25 'Roboto Condensed',sans-serif;text-transform:uppercase;letter-spacing:.03em;color:inherit}
-.intro .eco > summary:hover h3{color:var(--link)}
-.eco-body{margin:0 40px 14px;padding:4px 0 4px 14px;border-left:6px solid var(--rust-3);font:16px/1.55 'Ubuntu',system-ui,sans-serif}
+.intro .eco{margin:4px 22px 8px;padding:4px 0 4px 14px;border-left:6px solid var(--rust-3);font:16px/1.55 'Ubuntu',system-ui,sans-serif;scroll-margin-top:12px}
+/* «Одна Пустка на всіх» — наприкінці згортки «Де грати», після табличок (автор через диспетчера, 2026-11-28, пакет Г-А, 1) */
+.intro .eco h3{margin:4px 0;font:700 20px/1.25 'Roboto Condensed',sans-serif;text-transform:uppercase;letter-spacing:.03em;color:var(--rust-2)}
 .eco-body p{margin:0}
-html[data-theme="dark"] .intro{background:#2a2926;border-color:#141312}
-html[data-theme="dark"] .intro .eco{border-top-color:#5b554a}
+html[data-theme="dark"] .intro{background:#2a2926;border-color:#141312;color:#e6dfcc}   /* як .paper у темній темі */
 html[data-theme="dark"] .intro .eco h3,html[data-theme="dark"] .plate-panel h4,
 html[data-theme="dark"] .plate-panel details.sub > summary,html[data-theme="dark"] a.tool .name{color:#ef9d62}
 html[data-theme="dark"] .plate-panel{background:#34322d;border-color:#141312}
@@ -456,8 +452,7 @@ html[data-theme="dark"] a.tool:hover{background:#3a3833}
 @media (max-width:760px){
   .intro-head{padding:0 18px}
   .intro-fold > summary.group-h{padding:10px 14px}
-  .intro .eco > summary{padding:6px 18px}
-  .eco-body{margin:0 18px 12px}
+  .intro .eco{margin:4px 12px 8px}
   .credits{grid-template-columns:minmax(0,1fr)}
   .plates{padding:0 12px}
   .plate-panel{padding:8px 12px 12px}

@@ -243,7 +243,6 @@ def package_c(page, fails, w):
     if not page.locator("#owlbear .plate-more").is_visible():
         fails.append(f"C1 {w}px: клік не розгорнув «Де грати»")
     # 2: the text fills its block: the lead paragraph and «Одна Пустка на всіх» as wide as their box (± 2 px)
-    page.click("#eco > summary")                # «Одна Пустка на всіх» is a closed fold since package D-A
     r = page.evaluate("""() => [...document.querySelectorAll('.intro-head p, .intro .eco-body p')].map(p => {
         const b = p.parentElement, cs = getComputedStyle(b);
         return [p.getBoundingClientRect().width, b.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)]; })""")
@@ -314,11 +313,29 @@ def package_d(page, fails, w):
         page.goto(BASE + path); page.wait_for_load_state("networkidle")
     go("")
     n += 2
-    if page.evaluate("document.getElementById('eco').open") or page.locator(".eco-body").is_visible():
-        fails.append(f"D1 {w}px: «Одна Пустка на всіх» не згорнута на старті")
-    page.click("#eco > summary")
-    if not page.locator(".eco-body p").is_visible():
-        fails.append(f"D1 {w}px: клік не розгорнув «Одна Пустка на всіх»")
+    if page.locator("#eco").is_visible():
+        fails.append(f"D1 {w}px: «Одна Пустка на всіх» видно при згорнутій «Де грати»")
+    page.click("#de-hraty-fold > summary")
+    last = page.evaluate("""() => { const e = document.getElementById('eco'), r = e.getBoundingClientRect(),
+        others = [...document.querySelectorAll('#de-hraty-fold .plate, #de-hraty-fold .plate-panel.on')].map(x => x.getBoundingClientRect().bottom);
+        return [r.height > 0, Math.max(...others) <= r.top + 1, !!e.closest('#de-hraty-fold'), !e.closest('details.fold.eco')]; }""")
+    if last != [True, True, True, True]:
+        fails.append(f"D1 {w}px: «Одна Пустка на всіх» не наприкінці розгорнутої «Де грати» (видно, нижче табличок, у згортці, не своя згортка): {last}")
+    # dark theme: the intro card is not .paper, so its text needs its own light colour (found on the d1 shots, 2026-11-28)
+    page.evaluate("localStorage.setItem('pustelnyky-theme','dark')"); go("")
+    page.click("#de-hraty-fold > summary")
+    lum = page.evaluate("""() => [...document.querySelectorAll('.intro-head p, #eco .eco-body p, #eco h3')].map(p =>
+        getComputedStyle(p).color.match(/\\d+/g).slice(0, 3).reduce((a, b) => a + +b, 0))""")
+    page.evaluate("localStorage.setItem('pustelnyky-theme','light')")
+    n += 1
+    if not lum or min(lum) < 400:
+        fails.append(f"D1 {w}px: у темній темі текст вступу темний (сума RGB): {lum}")
+    go("")
+    page.click("#de-hraty-fold > summary")
+    page.click("#foundry .plate-more"); page.wait_for_timeout(100)
+    if page.evaluate("document.getElementById('foundry-more').getBoundingClientRect().bottom > document.getElementById('eco').getBoundingClientRect().top + 1"):
+        fails.append(f"D1 {w}px: відкрита панель Foundry стоїть нижче «Одної Пустки на всіх»")
+    go("")
     # 2: the bar wears the groups' header look (background, colour, case) and opens on a click
     look = page.evaluate("""() => { const a = getComputedStyle(document.querySelector('#de-hraty-fold > summary')),
         b = getComputedStyle(document.querySelector('.group .group-h'));
