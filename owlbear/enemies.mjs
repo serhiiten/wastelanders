@@ -43,7 +43,7 @@ const rid = () => newCid(rnd)
 
 // ---- стан сторінки ----
 let view = { mode: 'list' }   // list | card | book | make | form
-let search = '', openGroups = new Set(), removeArm = false
+let search = '', openGroups = new Set(), removeArm = false, ownArm = '', ownArmT = 0
 let sitDraft = ''   // набране в полі ситуативного аспекту: картка перемальовується від чужих записів, текст не губиться
 const ctl = createEnemyCtl({
   OBR, rand: rnd,
@@ -111,8 +111,19 @@ async function renderList() {
   const own = formPage.ownList()
   if (own.length || make) {
     nodes.push(el('h2', { text: T.enOwn }))
-    const rows = own.filter(o => !search || o.name.toLowerCase().includes(search.toLowerCase())).map(o => el('button', { type: 'button', cls: 'rw', 'data-f': 'o:' + o.id, on: () => make ? doMake(formPage.ownRecord(o.id)) : openOwn(o.id) },
-      el('i', { cls: 'dot ' + o.cat }), el('span', { cls: 'n', text: o.name }), el('span', { cls: 'h', text: String(o.hp) })))
+    const rows = own.filter(o => !search || o.name.toLowerCase().includes(search.toLowerCase())).map(o => {
+      const sure = !make && ownArm === o.id
+      const row = el('button', { type: 'button', cls: 'rw', 'data-f': 'o:' + o.id, on: () => make ? doMake(formPage.ownRecord(o.id)) : openOwn(o.id) },
+        el('i', { cls: 'dot ' + o.cat }), el('span', { cls: 'n' + (sure ? ' sure' : ''), text: sure ? T.enOwnRmSure : o.name }), el('span', { cls: 'h', text: String(o.hp) }))
+      if (make) return row
+      // × — лише в списку «Свої» цього браузера; перший клік взводить (4 с), другий видаляє; токени не чіпає (автор, 2026-11-28)
+      const rm = el('button', { type: 'button', cls: 'ib' + (sure ? ' sure' : ''), 'data-f': 'orm:' + o.id, title: `${T.enOwnRm}. ${T.enOwnRmHint}`, 'aria-label': `${T.enOwnRm}: ${o.name}`, on: () => {
+        clearTimeout(ownArmT)
+        if (ownArm !== o.id) { ownArm = o.id; ownArmT = setTimeout(() => { ownArm = ''; keepFocus(renderList) }, 4000); return keepFocus(renderList) }
+        ownArm = ''; formPage.ownRemove(o.id); keepFocus(renderList)
+      } }, '×')
+      return el('div', { cls: 'orow' }, row, rm)
+    })
     nodes.push(el('div', { cls: 'rows' }, ...rows))
     if (make) nodes.push(el('div', { cls: 'foot' }, el('button', { type: 'button', cls: 'main', 'data-f': 'own-new', on: () => openForm({ kind: 'new' }) }, T.enOwnNew)))
   }

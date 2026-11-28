@@ -86,6 +86,7 @@ const defLabel = k => (DEF_FIELDS.find(f => f[0] === k) || [k, k])[1]
 export const formPage = {
   ownList: () => ownGet(safeStorage()).map(x => ({ id: x.id, name: x.name, cat: x.e.cat, hp: x.e.hp.max })),
   ownRecord: id => { const x = ownGet(safeStorage()).find(o => o.id === id); return x ? { ...ownToRecord(x), e: x.e } : null },
+  ownRemove: id => ownRemove(safeStorage(), id),
 
   /** ctx = {main, el, setBar, say, view, ctl, done(), made(rec)}; view.kind 'new' | 'edit'. */
   async render(ctx) {
