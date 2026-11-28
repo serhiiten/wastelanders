@@ -16,7 +16,6 @@
   --noise:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   --screw: radial-gradient(circle at 45% 40%, #efe9dc 0 1.2px, #b3ab9b 1.8px, #6c6557 3.2px, #2c2822 4.2px, transparent 4.8px);
   --screw-red: radial-gradient(circle at 45% 40%, #f3d9c9 0 1.2px, #c48b74 2px, #7a3c2a 3.6px, #2c1510 4.6px, transparent 5.2px);
-  --worn-text:linear-gradient(104deg,#000 0 18%,rgba(0,0,0,.55) 18% 19.2%,#000 19.2% 47%,rgba(0,0,0,.6) 47% 48%,#000 48% 71%,rgba(0,0,0,.5) 71% 72.5%,#000 72.5%);
   --focus-in:#14120e; --focus-out:#f2a93b;
   color-scheme:light;
 }
@@ -227,44 +226,33 @@ html[data-theme="dark"] .themebtn .th-sun{display:inline-flex}
 .hero-lead p:last-child{margin:0}
 .hero-lead a{color:#e7b25c}
 .hero-side{display:grid;align-content:center;padding:22px;background:linear-gradient(90deg,rgba(0,0,0,.4),transparent 30%),#2b1a12}
-/* затертий метал панелі (автор, 2026-11-28, пакет А, 5): подряпини й потертості лише градієнтами, без картинок */
-.panel{--wear:
-    radial-gradient(ellipse 38% 22% at 18% 12%,rgba(255,255,255,.14),transparent 70%),
-    radial-gradient(ellipse 30% 40% at 88% 78%,rgba(0,0,0,.22),transparent 70%),
-    radial-gradient(ellipse 20% 12% at 64% 40%,rgba(40,28,16,.18),transparent 70%),
-    repeating-linear-gradient(97deg,transparent 0 53px,rgba(255,255,255,.09) 53px 54px,transparent 54px 97px),
-    repeating-linear-gradient(168deg,transparent 0 31px,rgba(0,0,0,.09) 31px 32px,transparent 32px 47px),
-    repeating-linear-gradient(32deg,transparent 0 71px,rgba(255,255,255,.06) 71px 72px,transparent 72px 113px);
-  position:relative;
-  background:var(--wear),linear-gradient(160deg,#a7a197,#7c766c 35%,#4a453d);
+.panel{position:relative;
+  background:linear-gradient(160deg,#a7a197,#7c766c 35%,#4a453d);
   border:3px solid #1c1a16;border-radius:6px;padding:22px 20px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 -2px 0 rgba(0,0,0,.35),0 10px 24px rgba(0,0,0,.5)}
 .panel::before,.panel::after{content:"";position:absolute;left:7px;right:7px;height:9px;pointer-events:none;
   background:var(--screw) left/9px 9px no-repeat,var(--screw) right/9px 9px no-repeat}
 .panel::before{top:7px}.panel::after{bottom:7px}
 .panel ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-.mi{display:flex;align-items:center;gap:14px;min-height:48px;padding:6px 14px 6px 8px;text-decoration:none;border-radius:6px;
-  background:
-    radial-gradient(ellipse 35% 70% at 86% 25%,rgba(255,255,255,.07),transparent 70%),
-    radial-gradient(ellipse 25% 60% at 30% 85%,rgba(0,0,0,.3),transparent 70%),
-    repeating-linear-gradient(101deg,transparent 0 37px,rgba(255,255,255,.06) 37px 38px,transparent 38px 61px),
-    repeating-linear-gradient(-8deg,transparent 0 9px,rgba(255,255,255,.025) 9px 10px,transparent 10px 23px),
-    linear-gradient(#3a352e,#2b2722);
+/* «старий екран», як поля аркуша персонажа (.screen у character_generator.html): ті самі скан-лінії 1 px через 5 px,
+   відблиск і внутрішня тінь, але слабші, щоб жовтий напис лишався чітким (автор, 2026-11-28, замість затертості) */
+.mi{position:relative;display:flex;align-items:center;gap:14px;min-height:48px;padding:6px 14px 6px 8px;text-decoration:none;border-radius:6px;
+  background:radial-gradient(ellipse at 50% 40%,rgba(255,255,255,.08),rgba(20,45,30,.07) 80%),linear-gradient(#3a352e,#2b2722);
   border:2px solid #121110;
-  box-shadow:inset 0 2px 4px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.18)}
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.6),inset 0 0 22px rgba(18,40,26,.4),0 1px 0 rgba(255,255,255,.18)}
+.mi::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(19,35,26,.16) 0 1px,transparent 1px 5px)}
 .lamp{flex:none;width:30px;height:30px;border-radius:50%;border:3px solid #1a1714;
   background:radial-gradient(circle at 38% 32%,#ff9a85 0 2px,#d23a22 5px,#a3170d 11px,#4d0a05 15px);
   box-shadow:0 0 0 2px #6e6a62,0 2px 3px rgba(0,0,0,.7),inset 0 -2px 3px rgba(0,0,0,.5);transition:box-shadow .12s,background .12s,transform .08s}
 .mi-t{flex:1;min-width:0;white-space:nowrap;color:var(--yellow);text-transform:uppercase;text-shadow:0 2px 0 #000,0 0 1px #000;
-  font:800 22px/1 'Roboto Condensed',sans-serif;letter-spacing:.06em;transition:color .12s;
-  /* стерта фарба: кілька тонких косих смуг напівпрозорі (замість лінії-трафарету, автор, 2026-11-28, пакет А, 5) */
-  -webkit-mask:var(--worn-text);mask:var(--worn-text)}
+  font:800 22px/1 'Roboto Condensed',sans-serif;letter-spacing:.06em;transition:color .12s}
 .mi-ext{font:13px/1 'Ubuntu Mono',monospace;color:#c9c2b2}
 .mi:hover .lamp,.mi:focus-visible .lamp{
   background:radial-gradient(circle at 38% 32%,#fff3d6 0 3px,#ff4a2e 7px,#c3200f 12px,#5e0c06 15px);
   box-shadow:0 0 0 2px #6e6a62,0 0 14px 3px rgba(255,80,40,.7),inset 0 -2px 3px rgba(0,0,0,.3)}
 .mi:hover .mi-t,.mi:focus-visible .mi-t{color:#ffe766}
-.mi:focus-visible{box-shadow:inset 0 2px 4px rgba(0,0,0,.6),0 0 0 2px var(--focus-in),0 0 0 5px var(--focus-out)}
+.mi:focus-visible{box-shadow:inset 0 2px 4px rgba(0,0,0,.6),inset 0 0 22px rgba(18,40,26,.4),0 0 0 2px var(--focus-in),0 0 0 5px var(--focus-out)}
 .mi:active .lamp{transform:scale(.92);box-shadow:0 0 0 2px #6e6a62,inset 0 3px 5px rgba(0,0,0,.8)}
 /* групи й розділи: картки паперу */
 .groups{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px;align-items:start}
@@ -317,7 +305,7 @@ html[data-theme="dark"] .sec li a:hover{color:var(--link)}
 html[data-theme="dark"] .sec:target{background:#34322d}
 html[data-theme="dark"] .hero-art{background-color:#111}   /* обкладинка не темніє (автор, 2026-11-28, пакет А, 2) */
 html[data-theme="dark"] .hero-side{background:linear-gradient(90deg,rgba(0,0,0,.4),transparent 30%),#181614}
-html[data-theme="dark"] .panel{background:var(--wear),linear-gradient(160deg,#77726a,#57534c 35%,#2f2c28)}
+html[data-theme="dark"] .panel{background:linear-gradient(160deg,#77726a,#57534c 35%,#2f2c28)}
 html[data-theme="dark"] .fold > summary{color:#ef9d62}
 
 /* ---------- Вужчі екрани ---------- */
