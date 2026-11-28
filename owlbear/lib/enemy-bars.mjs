@@ -6,10 +6,11 @@
 //   гравцеві прихований токен (visible:false) смужки не має; підпис стану (sig) — щоб рух токена нічого не перемальовував
 //   (смужка прикріплена до токена й їде за ним сама); тло гравця читає лише ОЗ у межах (hpOf, heroHpOf, carOf).
 import { NS, K } from './store.mjs'
-import { K_ENEMY, K_CARTOK, hpOf, heroHpOf, carOf, barOf, canMakeEnemy, canMakeCaravan, isCaravanToken, labelEmpty, labelStep, setLabel, onEnemyLayer } from './enemy-bar.mjs'
+import { K_ENEMY, K_CARTOK, hpOf, heroHpOf, carOf, barOf, canMakeEnemy, canMakeCaravan, isCaravanToken, labelEmpty, labelStep, setLabel, onEnemyLayer, LABEL_MAX } from './enemy-bar.mjs'
 import { isRateLimit } from './writer.mjs'
 import { enemyFromBook } from './enemy-data.mjs'
 import { unpackCaravan } from './caravan-data.mjs'
+import { freeLabel, enemyLabels } from './copies.mjs'
 
 export const K_BAR = NS + '/bar'
 export const TONE = { ok: '#3d9a5c', warn: '#d9a032', err: '#d0453a' }
@@ -176,13 +177,23 @@ export async function makeEnemies(OBR, ids, rec, { w = 'mk' } = {}) {
   const items = await OBR.scene.items.getItems(ids)
   const ok = items.filter(it => canMakeEnemy(it.metadata)), refused = items.filter(it => !canMakeEnemy(it.metadata))
   if (ok.length) {
+    // підписи з назвою ворога нумеруються, як копії (автор, 2026-11-28): перший вільний на сцені — «Рейдер», далі
+    // «Рейдер 2», «Рейдер 3»…, рахуючи вже наявних на сцені «Рейдерів» (lib/copies.mjs, freeLabel)
+    const relabel = it => !!it.text && (it.text.type === undefined || it.text.type === 'PLAIN') && (labelEmpty(it) || it.metadata[K_ENEMY] !== undefined)
+    const labels = new Map()
+    if (ok.some(relabel)) {
+      const taken = enemyLabels(await OBR.scene.items.getItems(), new Set(ok.map(it => it.id)))
+      // токени, що лишають свій підпис, теж його займають
+      for (const it of ok) if (!relabel(it) && typeof it.text?.plainText === 'string' && it.text.plainText.trim()) taken.add(it.text.plainText.trim())
+      for (const it of ok) if (relabel(it)) labels.set(it.id, freeLabel(String(rec.name || '').trim().slice(0, LABEL_MAX), taken))
+    }
     await OBR.scene.items.updateItems(ok.map(it => it.id), drafts => {
       for (const d of drafts) {
         if (!canMakeEnemy(d.metadata)) continue
         const old = d.metadata[K_ENEMY], r = (old && Number.isSafeInteger(old.r) ? old.r : 0) + 1
         d.metadata[K_ENEMY] = { ...structuredClone(rec), r, w }
         const plain = d.text && (d.text.type === undefined || d.text.type === 'PLAIN')
-        if (plain && (labelEmpty(d) || old !== undefined)) setLabel(d, rec.name)
+        if (plain && (labelEmpty(d) || old !== undefined)) setLabel(d, labels.get(d.id) || rec.name)
       }
     })
   }

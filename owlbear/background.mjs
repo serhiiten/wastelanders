@@ -10,6 +10,8 @@ import { receiveRolls } from './lib/rolls.mjs'
 import { K_ENEMY, K_CARTOK, LAYER_FILTER } from './lib/enemy-bar.mjs'
 import { startBars, makeCaravan, removeCaravan } from './lib/enemy-bars.mjs'
 import { K } from './lib/store.mjs'
+import { startCopies } from './lib/copies.mjs'
+import { unpackCaravan } from './lib/caravan-data.mjs'
 import { safeStorage } from './lib/storage.mjs'
 import { followCounters } from './lib/counters-win.mjs'
 import { followMovesBtn } from './lib/moves-win.mjs'
@@ -83,6 +85,19 @@ OBR.onReady(async () => {
     return b.build()
   }
   startBars(OBR, { gm, make })
+
+  // копії токенів на сцені (автор, 2026-11-28): номери копіям ворогів і попередження про копію героя чи каравану;
+  // пише й попереджає лише тло Доглядача (роль читається на кожну вставку)
+  startCopies(OBR, {
+    warn: async (heroes, caravan) => {
+      if (heroes.length) await OBR.notification.show(T.copyHero(heroes.map(n => `«${n || '?'}»`).join(', ')), 'WARNING')
+      if (caravan) {
+        let name = ''
+        try { const m = ((await OBR.room.getMetadata()) || {})[K.caravan]; const d = m === undefined ? null : await unpackCaravan(m); name = (d && d.st && typeof d.st.companyName === 'string' && d.st.companyName.trim()) || '' } catch { /* без назви */ }
+        await OBR.notification.show(T.copyCaravan(name), 'WARNING')
+      }
+    },
+  })
 
   // Автожурнал і сповіщення (автор, 2026-11-27): кидок будь-кого показує журнал у цій вкладці на 10 с (відкритий з меню —
   // не чіпає); поки журнал відкритий, сповіщення немає; сповіщення — лише тому, хто закрив журнал вручну, і не тому, хто кидав.
