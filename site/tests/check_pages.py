@@ -505,6 +505,39 @@ def package_dc(page, fails, w):
     under = c[2][3] >= c[1][4] and abs(c[1][1] - c[2][1]) < 1
     if (w > 900 and not side) or (w <= 900 and not under):
         fails.append(f"DC3 {w}px: «{c[1][0]}» і «{c[2][0]}» не {'поруч' if w > 900 else 'одна під одною'}: {c[1][1:]} / {c[2][1:]}")
+    # DC7: «Швидкий старт» a fold, closed by default; open: «Гравцям» + «Доглядачу» | the adventure (one under another
+    # at ≤ 900 px); an address of its section opens it
+    qs = page.evaluate("""() => { const f = document.querySelector('details.qs-fold'); if (!f) return null; const was = f.open; f.open = true;
+        const c = [...f.querySelectorAll('.qs-cols > div')].map(d => { const r = d.getBoundingClientRect();
+          return [r.left, r.top, r.bottom, [...d.querySelectorAll('h3')].map(h => h.textContent)]; });
+        f.open = was; return {was, c}; }""")
+    n += 2
+    if not qs or qs["was"] or len(qs["c"]) != 2 or len(qs["c"][0][3]) != 2 or len(qs["c"][1][3]) != 1:
+        fails.append(f"DC7 {w}px: «Швидкий старт» не згортка, згорнута типово, з колонками 2 | 1 розділ: {qs}")
+    elif (w > 900 and not (qs["c"][1][0] > qs["c"][0][0] and abs(qs["c"][1][1] - qs["c"][0][1]) < 2)) or (w <= 900 and qs["c"][1][1] < qs["c"][0][2] - 1):
+        fails.append(f"DC7 {w}px: колонки «Швидкого старту» не {'поруч' if w > 900 else 'одна під одною'}: {qs['c']}")
+    page.goto(BASE + "#startova-pryhoda"); page.wait_for_load_state("networkidle")
+    n += 1
+    if not page.evaluate("document.querySelector('details.qs-fold').open"):
+        fails.append(f"DC7 {w}px: адреса #startova-pryhoda не розгортає «Швидкий старт»")
+    page.goto(BASE); page.wait_for_load_state("networkidle")
+    # DC5 (variant В, author via the dispatcher, 2026-11-28): the cover whole: its natural proportions are the shown ones,
+    # nothing cut by `object-fit` or an `overflow` box around it; the menu beside it (under it at ≤ 900 px), the lead the
+    # whole width under both
+    cv = page.evaluate("""() => { const i = document.querySelector('.hero .cover'); if (!i) return null;
+        const r = i.getBoundingClientRect(), box = e => e.getBoundingClientRect();
+        let cut = false; for (let e = i.parentElement; e && e !== document.body; e = e.parentElement) {
+          const b = box(e), o = getComputedStyle(e).overflow;
+          if (o !== 'visible' && (r.left < b.left - 1 || r.right > b.right + 1 || r.top < b.top - 1 || r.bottom > b.bottom + 1)) cut = true; }
+        const s = box(document.querySelector('.hero-side')), f = box(document.querySelector('.hero-foot'));
+        return {nat: i.naturalWidth / i.naturalHeight, shown: r.width / r.height, fit: getComputedStyle(i).objectFit, cut,
+                beside: Math.abs(s.top - r.top) < 2 && s.left >= r.right - 1, under: s.top >= r.bottom - 1,
+                foot: f.top >= Math.max(r.bottom, s.bottom) - 1 && f.width >= r.width + (s.top < r.bottom ? s.width : 0) - 2}; }""")
+    n += 2
+    if not cv or abs(cv["nat"] - cv["shown"]) > 0.01 * cv["nat"] or cv["fit"] not in ("fill", "contain") or cv["cut"]:
+        fails.append(f"DC5 {w}px: обкладинку видно не повністю: {cv}")
+    elif not ((cv["beside"] if w > 900 else cv["under"]) and cv["foot"]):
+        fails.append(f"DC5 {w}px: меню чи вступ не там (поруч / під обкладинкою, вступ під обома): {cv}")
     # DC4: the CSS, then a long page in the usual window (it scrolls) and a short one in a window so tall that it does not
     gut = page.evaluate("getComputedStyle(document.documentElement).scrollbarGutter")
     n += 1

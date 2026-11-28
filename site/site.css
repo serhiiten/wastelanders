@@ -235,10 +235,13 @@ li > .dls,p > .dls{margin:8px 0 4px}
 .edit a{display:inline-flex;align-items:center;min-height:28px;color:var(--ink-3)}
 
 /* ---------- Головна правил: меню (лампи на металевій панелі) над обкладинкою ---------- */
-.hero{display:grid;grid-template-columns:minmax(0,1fr) 450px;min-height:470px;margin-bottom:22px;border:3px solid var(--rust-0);border-radius:6px;overflow:hidden;
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 450px;margin-bottom:22px;border:3px solid var(--rust-0);border-radius:6px;overflow:hidden;
   box-shadow:0 8px 18px rgba(0,0,0,.35)}
-.hero-art{position:relative;display:flex;align-items:flex-end;padding:22px;background:#3a2216 url(img/cover.jpg) 30% 0/cover no-repeat}
-.hero-lead{max-width:62ch;background:rgba(16,26,16,.9);color:#9ff59a;border:4px solid var(--rust-0);border-radius:8px;padding:12px 16px;font:15px/1.45 'Ubuntu Mono',monospace}
+.hero-art{background:#3a2216}
+/* обкладинка завжди ціла: пропорції свої, нічого не обрізано (автор, 2026-11-28, DC5, варіант В) */
+.hero-art .cover{display:block;width:100%;height:auto}
+.hero-foot{grid-column:1/-1;padding:16px 22px;background:#2b1a12;border-top:3px solid var(--rust-0)}
+.hero-lead{background:rgba(16,26,16,.9);color:#9ff59a;border:4px solid var(--rust-0);border-radius:8px;padding:12px 16px;font:15px/1.45 'Ubuntu Mono',monospace}
 .hero-lead p{margin:0 0 8px}
 .hero-lead p:last-child{margin:0}
 .hero-lead a{color:#e7b25c}
@@ -275,6 +278,18 @@ li > .dls,p > .dls{margin:8px 0 4px}
 .groups{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px;align-items:start}
 /* «Швидкий старт» на всю ширину під «Де грати»; під ним «Правила гравців» і «Правила Доглядача» поруч, кожна ціла (автор, 2026-11-28, після Г-Б) */
 .group-wide{grid-column:1/-1}
+/* «Швидкий старт» — згортка, типово згорнута; усередині дві колонки: «Гравцям» і «Доглядачу» | пригода (автор, 2026-11-28, DC7) */
+.qs-fold > summary.group-h{display:flex;align-items:center;gap:12px;min-height:48px;cursor:pointer;list-style:none;border-bottom:0}
+.qs-fold[open] > summary.group-h{border-bottom:3px solid var(--rust-0)}
+.qs-fold > summary::-webkit-details-marker{display:none}
+.qs-fold > summary::before{content:"▸";font:700 20px/1 'Roboto Condensed',sans-serif;transition:transform .12s}
+.qs-fold[open] > summary::before{transform:rotate(90deg)}
+.qs-fold > summary h2{margin:0;font:inherit;letter-spacing:inherit;color:inherit}
+.qs-fold > summary:hover{color:#b8ffb0;text-shadow:0 0 10px rgba(61,255,71,.7)}
+.qs-fold > summary:focus-visible{outline:3px solid var(--term-amber);outline-offset:-3px}
+.qs-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.qs-cols > div + div{border-left:2px dashed #b9a57c}
+.qs-cols > div > .sec:first-child{border-top:0}
 .group{background:var(--paper);border:2px solid var(--rust-0);border-radius:6px;overflow:hidden;box-shadow:0 8px 18px rgba(0,0,0,.35)}
 .group-h{margin:0;padding:12px 16px;font:800 16px/1.1 'Roboto Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;
   color:var(--term);text-shadow:0 0 6px rgba(61,255,71,.4);background:#101a10 repeating-linear-gradient(0deg, rgba(61,255,71,.05) 0 2px, transparent 2px 4px);border-bottom:3px solid var(--rust-0)}
@@ -327,11 +342,13 @@ html[data-theme="dark"] .call-note{background:#2e3328;border-left-color:#6f9a52}
 html[data-theme="dark"] .edit a{color:#b9b3a8}
 html[data-theme="dark"] .group{background:#2a2926;border-color:#141312}
 html[data-theme="dark"] .sec{border-top-color:#5b554a}
+html[data-theme="dark"] .qs-cols > div + div{border-color:#5b554a}
 html[data-theme="dark"] .sec h3{color:#ef9d62}
 html[data-theme="dark"] .sec li a{color:#e6dfcc}
 html[data-theme="dark"] .sec li a:hover{color:var(--link)}
 html[data-theme="dark"] .sec:target{background:#34322d}
 html[data-theme="dark"] .hero-art{background-color:#111}   /* обкладинка не темніє (автор, 2026-11-28, пакет А, 2) */
+html[data-theme="dark"] .hero-foot{background:#181614}
 html[data-theme="dark"] .hero-side{background:linear-gradient(90deg,rgba(0,0,0,.4),transparent 30%),#181614}
 html[data-theme="dark"] .panel{background:linear-gradient(160deg,#77726a,#57534c 35%,#2f2c28)}
 html[data-theme="dark"] .fold > summary{color:#ef9d62}
@@ -352,9 +369,11 @@ html[data-theme="dark"] .fold > summary{color:#ef9d62}
   .side[open] > summary::before{transform:rotate(90deg)}
   .side[open] > nav{padding-bottom:10px}
   .hero{grid-template-columns:minmax(0,1fr)}
-  .hero-art{min-height:0;padding:150px 12px 12px}
+  .hero-foot{padding:12px}
   .hero-side{padding:14px 12px}
   .groups{grid-template-columns:minmax(0,1fr)}
+  .qs-cols{grid-template-columns:minmax(0,1fr)}
+  .qs-cols > div + div{border-left:0;border-top:2px dashed #b9a57c}
 }
 @media (max-width:760px){
   .brand{flex-wrap:wrap;row-gap:10px}

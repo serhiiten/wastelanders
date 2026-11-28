@@ -50,8 +50,9 @@
   function openPlate(id, toggle) {
     var plate = id && document.getElementById(id);
     /* адреса на блок усередині «Де грати» («Одна Пустка на всіх», #eco; пакет Г-А, 1) розгортає згортку */
-    if (plate && !plate.classList.contains('plate') && plate.closest('.intro-fold')) {
-      plate.closest('.intro-fold').open = true;
+    /* і адреса на розділ «Швидкого старту» (#hravtsiam…) розгортає його згортку (DC7) */
+    if (plate && !plate.classList.contains('plate') && plate.closest('.intro-fold, .qs-fold')) {
+      plate.closest('.intro-fold, .qs-fold').open = true;
       if (!toggle) plate.scrollIntoView({ block: 'start' });
       return true;
     }

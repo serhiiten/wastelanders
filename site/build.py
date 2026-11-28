@@ -550,6 +550,9 @@ class Site:
             tool = TOOLS.get(link.split("#")[0])
             ext += f' data-tool="{tool[0]}"' if tool and not ext else ""
             menu.append(f'<li><a class="mi" href="{esc(href)}"{ext}><span class="lamp" aria-hidden="true"></span><span class="mi-t">{esc(b.get("label", b["text"]))}</span>{mark}</a></li>')
+        from PIL import Image
+        with Image.open(os.path.join(self.wiki.dir, "images", "cover.png")) as im:
+            cover_h = round(COVER_W * im.size[1] / im.size[0])   # the same rounding as the resized cover.jpg
         cards = []
         if not self.groups or self.groups[0]["title"] != QUICK_GROUP:
             raise BuildError(f"contents.yml: перша група має бути «{QUICK_GROUP}» (на головній — блок на всю ширину під «Де грати»)")
@@ -558,12 +561,22 @@ class Site:
             for s in g["sections"]:
                 pages = "".join(f'<li><a href="{p}/">{esc(self.wiki.pages[p].title)}</a></li>' for p in s["pages"])
                 secs.append(f'<section class="sec" id="{s["slug"]}"><h3>{esc(s["title"])}</h3><ul>{pages}</ul></section>')
-            wide = " group-wide" if g["title"] == QUICK_GROUP else ""
-            cards.append(f'<section class="group{wide}"><h2 class="group-h">{esc(g["title"])}</h2>{"".join(secs)}</section>')
+            if g["title"] == QUICK_GROUP:
+                # a fold, closed by default; «Гравцям» and «Доглядачу» on the left, the adventure on the right (one under
+                # another at ≤ 900 px) (author via the dispatcher, 2026-11-28, DC7)
+                if len(secs) != 3:
+                    raise BuildError(f"contents.yml: у «{QUICK_GROUP}» мають бути три розділи (гравцям, Доглядачу, пригода), а не {len(secs)}")
+                cards.append(f'<details class="group group-wide qs-fold"><summary class="group-h"><h2>{esc(g["title"])}</h2></summary>'
+                             f'<div class="qs-cols"><div>{secs[0]}{secs[1]}</div><div>{secs[2]}</div></div></details>')
+                continue
+            cards.append(f'<section class="group"><h2 class="group-h">{esc(g["title"])}</h2>{"".join(secs)}</section>')
         return (self.head("Пустельники — правила гри", rel, canonical="")
                 + f'<body class="pg-home">\n{self.header(rel)}<main class="frame">\n{self.tabs(rel)}'
-                + f'<div class="hero"><div class="hero-art"><div class="hero-lead screen-text" data-pagefind-body>{lead}</div></div>'
-                + f'<div class="hero-side"><nav class="panel" aria-label="Швидкий старт" data-pagefind-ignore><ul>{"".join(menu)}</ul></nav></div></div>\n'
+                # the cover whole at any width, the menu beside it, the lead the whole width under both; one under another
+                # at ≤ 900 px: cover, menu, lead (author via the dispatcher, 2026-11-28, DC5, variant В)
+                + f'<div class="hero"><div class="hero-art"><img class="cover" src="img/cover.jpg" width="{COVER_W}" height="{cover_h}" alt=""></div>'
+                + f'<div class="hero-side"><nav class="panel" aria-label="Швидкий старт" data-pagefind-ignore><ul>{"".join(menu)}</ul></nav></div>'
+                + f'<div class="hero-foot"><div class="hero-lead screen-text" data-pagefind-body>{lead}</div></div></div>\n'
                 + intro + "\n"
                 + f'<div class="groups">{"".join(cards)}</div>\n'
                 + f'<article class="paper sheet home-tail"><div class="text">{tail}</div>'
