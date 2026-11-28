@@ -75,6 +75,12 @@ with tempfile.TemporaryDirectory() as tmp:
 
 # ---------- against the Notion export (rows 2.1, 2.2) ----------
 export = sys.argv[1] if len(sys.argv) > 1 else os.path.join(REPO, "..", "wiki")
+# Lines the author added to the source after the export (the export stays the record of Notion), by page:
+# DC10 (author via the dispatcher, 2026-11-28), «Історія змін» → «Версія 2.0»; the compendiums do not read this page.
+SOURCE_EDITS = {
+    "pustelnyky": ["    - Вікі з правилами перенесено з Notion на сайт, поруч із Терміналом Доглядача та електронними аркушами.",
+                   "    - Додано доповнення для Owlbear Rodeo."],
+}
 
 
 def canon(text):
@@ -116,6 +122,9 @@ else:
             continue
         ok(text.startswith(f"# {p.title}\n"), f"{p.slug}: title «{p.title}»")
         a, b = canon(text), canon(wiki.to_notion_md(p))
+        for line in SOURCE_EDITS.get(p.slug, ()):     # the source's own edits since the export: present, then left out
+            ok(("\n" + line + "\n") in b, f"{p.slug}: the source edit is gone: {line.strip()[:60]}")
+            b = b.replace("\n" + line + "\n", "\n", 1)
         if a == b:
             same += 1
         else:

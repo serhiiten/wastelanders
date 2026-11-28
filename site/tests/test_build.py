@@ -79,7 +79,9 @@ ok(tool_hashes() == before_tools, "3.14 the build changed a tool file")
 ok(set(os.listdir(rules)) == set(pages) | {"index.html", "site.css", "site.js", "img", "pagefind", "files"}, "3.14 rules/: pages, index, css, js, img, pagefind, files only")
 
 # ---------- 3.1: the home lists the groups and sections in the wiki's order ----------
-groups = re.findall(r'<h2 class="group-h">(.*?)</h2>', home)
+# a group is a <section> with an <h2 class="group-h">, or (the quick start, DC7) a fold whose summary is the header bar
+groups = re.findall(r'<h2 class="group-h">(.*?)</h2>|<details class="group[^"]*"><summary class="group-h"><h2>(.*?)</h2>', home)
+groups = [a or b for a, b in groups]
 ok(groups == [html.escape(g["title"]) for g in wiki.contents["groups"]], f"3.1 groups on the home page: {groups}")
 secs = re.findall(r'<section class="sec" id="([a-z0-9-]+)"><h3>', home)
 ok(secs == [s["slug"] for _, s in site.sections], "3.1 sections on the home page in contents.yml's order")
