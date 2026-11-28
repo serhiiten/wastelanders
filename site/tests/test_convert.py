@@ -83,6 +83,14 @@ SOURCE_EDITS = {
 }
 
 
+# Lines the author changed on purpose in the source (b860815, 2026-11-28): the export keeps the old Notion line, the
+# test applies the same change to the export text first. {slug: [(export line, source line)]}
+EXPORT_EDITS = {
+    "pustelnyky": [("    - [Всі генератори](https://app.notion.com/p/258e66cd8c7880ecb7fedd8f8bf65174?pvs=21) також доступні на одній сторінці.",
+                    "    - [Всі генератори](https://serhiiten.github.io/wastelanders/all_generators.html) також доступні на одній сторінці.")],
+}
+
+
 def canon(text):
     """The Notion text without what the conversion is allowed to change: navigation, picture addresses, link
     addresses (only the target's id counts), trailing spaces and blank lines at the end."""
@@ -123,6 +131,9 @@ else:
         if not p:
             continue
         ok(text.startswith(f"# {p.title}\n"), f"{p.slug}: title «{p.title}»")
+        for old, new in EXPORT_EDITS.get(p.slug, ()):    # the source's deliberate changes: present in the export, then applied
+            ok(old in text, f"{p.slug}: the export line for a deliberate change is gone: {old.strip()[:60]}")
+            text = text.replace(old, new, 1)
         a, b = canon(text), canon(wiki.to_notion_md(p))
         for line in SOURCE_EDITS.get(p.slug, ()):     # the source's own edits since the export: present, then left out
             ok(("\n" + line + "\n") in b, f"{p.slug}: the source edit is gone: {line.strip()[:60]}")
