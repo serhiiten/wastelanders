@@ -6,9 +6,7 @@
 import { CASE_DIFF, caseBattle, caseKind, casePower } from '../foundry/case-battle.mjs'
 import { concreteKinds, namePicks } from '../foundry/enemy-kinds.mjs'
 import { ENEMIES } from './bestiary.mjs'
-import { enemyFromBook } from './enemy-data.mjs'
-import { makeEnemies } from './enemy-bars.mjs'
-import { onEnemyLayer } from './enemy-bar.mjs'
+import { makeFromBook } from './enemy-bars.mjs'
 
 export const GEN_KEY = 'pust-obr-gen'
 export const TABS = [{ id: 'case', label: 'Справа' }, { id: 'travel', label: 'Подорож' }, { id: 'tables', label: 'Натхнення' }, { id: 'battle', label: 'Битви' }]
@@ -323,13 +321,4 @@ export function travelPlace(html, i) {
  * → {nobook: true} — ворога немає в бестіарії розширення; {none: true} — нічого не вибрано;
  * інакше {made, refused} від makeEnemies (персонажам відмова).
  */
-export async function makeFromBattle(OBR, book, { w = 'gen' } = {}) {
-  const rec = book && enemyFromBook(book.id, { w })
-  if (!rec) return { nobook: true }
-  if (book.as) rec.name = String(book.as).slice(0, 80)
-  const sel = (await OBR.player.getSelection()) || []
-  const items = sel.length ? await OBR.scene.items.getItems(sel) : []
-  const ids = items.filter(onEnemyLayer).map(it => it.id)
-  if (!ids.length) return { none: true }
-  return makeEnemies(OBR, ids, rec, { w })
-}
+export const makeFromBattle = (OBR, book, { w = 'gen' } = {}) => makeFromBook(OBR, book, { w })   // спільне з карткою «Ворогів» (ревізор, 2026-11-28)

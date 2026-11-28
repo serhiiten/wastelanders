@@ -6,8 +6,9 @@
 //   гравцеві прихований токен (visible:false) смужки не має; підпис стану (sig) — щоб рух токена нічого не перемальовував
 //   (смужка прикріплена до токена й їде за ним сама); тло гравця читає лише ОЗ у межах (hpOf, heroHpOf, carOf).
 import { NS, K } from './store.mjs'
-import { K_ENEMY, K_CARTOK, hpOf, heroHpOf, carOf, barOf, canMakeEnemy, canMakeCaravan, isCaravanToken, labelEmpty, labelStep, setLabel } from './enemy-bar.mjs'
+import { K_ENEMY, K_CARTOK, hpOf, heroHpOf, carOf, barOf, canMakeEnemy, canMakeCaravan, isCaravanToken, labelEmpty, labelStep, setLabel, onEnemyLayer } from './enemy-bar.mjs'
 import { isRateLimit } from './writer.mjs'
+import { enemyFromBook } from './enemy-data.mjs'
 import { unpackCaravan } from './caravan-data.mjs'
 
 export const K_BAR = NS + '/bar'
@@ -166,7 +167,9 @@ export function startBars(OBR, { gm = false, make, onError = e => console.error(
 
 /**
  * «Зробити ворогом…» на вибраних токенах одним updateItems. rec — запис ворога (enemyFromBook / enemyOwn) без r / w.
- * Персонажі (аркуш чи власник) і караван — відмова, не заміна. Порожній підпис отримує назву ворога (автор, 2026-11-27).
+ * Персонажі (аркуш чи власник) і караван — відмова, не заміна. Порожній підпис отримує назву ворога (автор, 2026-11-27);
+ * токен, що вже був ворогом, — теж, хай який підпис мав: остання зміна перемагає (автор, 2026-11-28, п.6; ревізор).
+ * Свій підпис звичайного токена («Вартовий біля брами») лишається. RICH-текст не чіпаємо.
  * → {made: [id], refused: [{id, label}]}.
  */
 export async function makeEnemies(OBR, ids, rec, { w = 'mk' } = {}) {
@@ -178,11 +181,28 @@ export async function makeEnemies(OBR, ids, rec, { w = 'mk' } = {}) {
         if (!canMakeEnemy(d.metadata)) continue
         const old = d.metadata[K_ENEMY], r = (old && Number.isSafeInteger(old.r) ? old.r : 0) + 1
         d.metadata[K_ENEMY] = { ...structuredClone(rec), r, w }
-        if (labelEmpty(d) && d.text) { d.text.plainText = rec.name; if (d.text.type === undefined) d.text.type = 'PLAIN' }
+        const plain = d.text && (d.text.type === undefined || d.text.type === 'PLAIN')
+        if (plain && (labelEmpty(d) || old !== undefined)) setLabel(d, rec.name)
       }
     })
   }
   return { made: ok.map(it => it.id), refused: refused.map(it => ({ id: it.id, label: (it.text && it.text.plainText) || it.name || '' })) }
+}
+
+/**
+ * Ворог бестіарію чи Швидкого старту на вибрані на мапі токени (шари CHARACTER, MOUNT): значок у «Битвах» і кнопка
+ * «Зробити вибрані токени ворогом «…»» на картці «Ворогів». book = {id, as?}; as — назва виду групи («Радтарган»).
+ * → {nobook: true} — такого ворога немає; {none: true} — нічого не вибрано; інакше {made, refused} від makeEnemies.
+ */
+export async function makeFromBook(OBR, book, { w = 'bk' } = {}) {
+  const rec = book && enemyFromBook(book.id, { w })
+  if (!rec) return { nobook: true }
+  if (book.as) rec.name = String(book.as).slice(0, 80)
+  const sel = (await OBR.player.getSelection()) || []
+  const items = sel.length ? await OBR.scene.items.getItems(sel) : []
+  const ids = items.filter(onEnemyLayer).map(it => it.id)
+  if (!ids.length) return { none: true }
+  return makeEnemies(OBR, ids, rec, { w })
 }
 
 /** «Зняти ворога»: прибрати запис з токена (смужка зникне на звірянні). */

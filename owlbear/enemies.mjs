@@ -8,10 +8,10 @@ import { T } from './lib/texts.mjs'
 import { icon } from './lib/icons.mjs'
 import { sendRoll, rollEnemy } from './lib/rolls.mjs'
 import { newCid } from './lib/store.mjs'
-import { barOf, onEnemyLayer } from './lib/enemy-bar.mjs'
+import { barOf } from './lib/enemy-bar.mjs'
 import { BOOK, enemyFromBook, cleanSystem } from './lib/enemy-data.mjs'
 import { createEnemyCtl } from './lib/enemy-ctl.mjs'
-import { makeEnemies, removeEnemy } from './lib/enemy-bars.mjs'
+import { makeEnemies, makeFromBook, removeEnemy } from './lib/enemy-bars.mjs'
 import { battleList, bookGroups, cardModel, ammoClick, markClick, clearMarks, limitText, attackRoll, addSit, rmSit, invStep, SIT_MAX, SIT_LEN } from './lib/enemy-view.mjs'
 import { formPage } from './lib/enemy-form.mjs'
 
@@ -188,6 +188,7 @@ function sitNodes(m, live) {
   inp.onkeydown = ev => {
     if (ev.key !== 'Enter') return
     ev.preventDefault()
+    if (ctl.state.kind !== 'ok' || !ctl.state.rec) return   // запис токена зник чи не читається, поки поле було відкрите (ревізор)
     const r = addSit(ctl.state.rec.e, inp.value)
     if (r.err === 'full') return say('sit', 'warn', T.enSitFull, { ttl: 6000 })
     if (r.err) return
@@ -294,13 +295,10 @@ function renderBook(name, e, id = '') {
 }
 async function toTokens(id, name) {
   try {
-    const w = 'bk' + rid(), rec = enemyFromBook(id, { w })
-    if (!rec) return
-    rec.name = String(name).slice(0, 80)   // група з «Генераторів» — під назвою виду, як makeFromBattle у «Битвах»
-    const sel = (await OBR.player.getSelection()) || []
-    const ids = (sel.length ? await OBR.scene.items.getItems(sel) : []).filter(onEnemyLayer).map(it => it.id)
-    if (!ids.length) return say('sel', 'warn', T.enToTokensNone, { ttl: 6000 })
-    const res = await makeEnemies(OBR, ids, rec, { w })
+    // група з «Генераторів» — під назвою виду (as), як значок у «Битвах»: той самий makeFromBook
+    const res = await makeFromBook(OBR, { id, as: name }, { w: 'bk' + rid() })
+    if (res.nobook) return
+    if (res.none) return say('sel', 'warn', T.enToTokensNone, { ttl: 6000 })
     if (res.made.length === 1) await openCard(res.made[0], false)
     if (res.made.length) say('mk', 'ok', T.enMakeDone(res.made.length), { ttl: 5000 })
     if (res.refused.length) say('mkr', 'warn', T.enMakeRefused(res.refused.map(r => `«${r.label}»`).join(', ')))

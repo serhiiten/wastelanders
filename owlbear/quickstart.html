@@ -50,7 +50,8 @@
   #side button.on{background:var(--btn);color:var(--rust-text);font-weight:700}
   body.full #nav{display:none}
   body.full #text{padding:8px 32px 40vh;font-size:16px}
-  body.full #text > *{max-width:62ch;margin-left:auto;margin-right:auto}
+  /* ширина в rem, не в ch: у заголовка сторінки більший шрифт, і 62ch робили його ширшим за колонку (живий захід 2026-11-28) */
+  body.full #text > *{max-width:38rem;margin-left:auto;margin-right:auto}
 </style>
 </head>
 <body>
