@@ -74,13 +74,74 @@
   footer { margin-top: 28px; font: 14px/1.5 var(--f-mono); color: var(--ink-mute); }
   footer a { color: var(--screen-ink); }
   @media (prefers-reduced-motion: reduce) { a.tool { transition: none; } a.tool:hover { transform: none; } }
+
+  /* «Де грати»: браузер, Owlbear Rodeo, Foundry VTT */
+  .play { margin-top: 36px; }
+  h2 {
+    font: 700 clamp(28px, 6vw, 40px)/1.1 var(--f-head);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+  }
+  h2::before { content: "> "; font-family: var(--f-mono); color: var(--rust); }
+  .play .lead { margin-bottom: 18px; }
+  .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+  .card {
+    background: var(--paper);
+    color: var(--paper-ink);
+    border: 2px solid var(--rim);
+    border-top: 8px solid var(--rust);
+    border-radius: 6px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .card h3 { font: 600 22px/1.2 var(--f-head); text-transform: uppercase; letter-spacing: .03em; margin: 0; }
+  .card p { margin: 0; font-size: 15px; }
+  .price {
+    align-self: flex-start;
+    font: 13px/1 var(--f-mono);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    padding: 5px 8px;
+    border-radius: 4px;
+    color: var(--paper);
+  }
+  .price.free { background: #2f6b3a; }
+  .price.paid { background: var(--rust); }
+  .card ul { list-style: square; display: block; padding-left: 20px; font-size: 15px; }
+  .card li { margin: 3px 0; }
+  .card ol { margin: 6px 0 0; padding-left: 22px; font-size: 15px; display: grid; gap: 6px; }
+  .card a { color: var(--paper-ink); }
+  details { margin-top: auto; border-top: 2px solid rgba(30, 27, 23, .25); padding-top: 8px; }
+  summary { cursor: pointer; font: 600 16px/1.3 var(--f-head); text-transform: uppercase; letter-spacing: .03em; color: var(--rust); }
+  summary:focus-visible, .copy button:focus-visible, .card a:focus-visible { outline: 3px solid var(--rust-hi); outline-offset: 2px; }
+  .url { font: 13px/1.4 var(--f-mono); background: rgba(30, 27, 23, .1); padding: 2px 5px; border-radius: 3px; overflow-wrap: anywhere; }
+  .copy { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; }
+  .copy button {
+    font: 700 13px/1 var(--f-ui);
+    background: var(--screen);
+    color: var(--screen-ink);
+    border: 2px solid var(--rim);
+    border-radius: 4px;
+    padding: 5px 9px;
+    cursor: pointer;
+  }
+  .note { color: var(--ink-mute); }
+  .card.big { grid-column: 1 / -1; }
+  .feats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 22px; }
+  .feats h4 { font: 600 16px/1.3 var(--f-head); text-transform: uppercase; letter-spacing: .03em; color: var(--rust); margin: 6px 0 0; }
+  .feats ul { margin: 2px 0 0; }
+  @media (max-width: 640px) { .cards, .feats { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 <main>
   <p class="boot">ТЕРМІНАЛ ПІДКЛЮЧЕНО_</p>
   <h1>Пустельники</h1>
-  <p class="lead">Інструменти для гравців і Доглядача: електронні аркуші та генератори. Усе працює просто в браузері, нічого встановлювати не треба.</p>
+  <p class="lead">Інструменти для гравців і Доглядача: електронні аркуші та генератори просто в браузері, а ще доповнення для Owlbear Rodeo і Foundry VTT.</p>
   <ul>
     <li><a class="tool" href="all_generators.html">
       <span class="name">Термінал Доглядача</span>
@@ -95,10 +156,116 @@
       <span class="desc">Покращення, лічильники, вантажі та історія вашого каравану.</span>
     </a></li>
   </ul>
+
+  <section class="play" aria-labelledby="play-h">
+    <h2 id="play-h">Де грати</h2>
+    <p class="lead">Якщо всі сидять за одним столом, вистачить браузера й кісток. Якщо банду розкидало по всій Пустці, обирайте віртуальний стіл.</p>
+    <div class="cards">
+      <article class="card">
+        <h3>У браузері</h3>
+        <span class="price free">Безкоштовно</span>
+        <p>Для гри наживо, коли всі поруч.</p>
+        <ul>
+          <li>Термінал Доглядача: генератори, трекер бою, «Мапа Пустки»</li>
+          <li>Аркуші персонажа й каравану</li>
+          <li>Нічого не треба встановлювати</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h3>Owlbear Rodeo</h3>
+        <span class="price free">Безкоштовно</span>
+        <p>Легкий віртуальний стіл. Гравці заходять за посиланням, навіть без акаунта.</p>
+        <ul>
+          <li>Аркуші персонажа й каравану просто на токенах</li>
+          <li>Перевірки й спільний журнал кидків</li>
+          <li>Картки ворогів зі здоров'ям на токені</li>
+          <li>Генератори Доглядача, «Ходи» й «Швидкий старт»</li>
+        </ul>
+        <details>
+          <summary>Як встановити</summary>
+          <ol>
+            <li>Увійди в <a href="https://www.owlbear.rodeo/">Owlbear Rodeo</a>: вистачить безкоштовного акаунта.</li>
+            <li>Відкрий профіль → Extensions → Add Custom Extension.</li>
+            <li>Встав адресу доповнення:
+              <div class="copy"><span class="url">https://serhiiten.github.io/wastelanders/owlbear/manifest.json</span><button type="button" id="copy-owlbear">Копіювати</button></div>
+            </li>
+            <li>У своїй кімнаті ввімкни розширення «Пустельники».</li>
+          </ol>
+          <p class="note">Встановлює лише Доглядач, гравцям нічого робити не треба.</p>
+        </details>
+      </article>
+
+      <article class="card big">
+        <h3>Foundry VTT</h3>
+        <span class="price paid">Ліцензія Доглядача</span>
+        <p>Повний віртуальний стіл, де правила рахують себе самі, а Доглядачеві лишається найцікавіше. Ліцензію Foundry Доглядач купує один раз, гравці заходять безкоштовно.</p>
+        <div class="feats">
+          <div>
+            <h4>Автоматизація</h4>
+            <ul>
+              <li>Перевірки з кісткою Долі в один клік</li>
+              <li>Шкода за правилами: типи шкоди й розподіл між цілями</li>
+              <li>Хімія, замки, спорядження й ціни прямо з аркуша</li>
+              <li>Кінець сцени, новий день і кінець сесії для всієї групи одразу</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Світ Пустки</h4>
+            <ul>
+              <li>«Мапа Пустки» з поселеннями, фракціями й маршрутами</li>
+              <li>36 піксельних бойових мап, по одній на кожне місце з таблиці «Об'єкти та місця в Пустці»</li>
+              <li>20 фотокарток поселень і 4 інтер'єри: бар, крамниця, казино, клініка</li>
+              <li>Погода й час дня на сцені</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Бій</h4>
+            <ul>
+              <li>Трекер бою, «Бойова мапа» й зони</li>
+              <li>Картки ворогів, бестіарій під рукою</li>
+              <li>«Ходи Доглядача», коли гравці розслабились</li>
+              <li>Звуки подій: від кришок до лічильника Гейгера</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Довідка</h4>
+            <ul>
+              <li>Правила, перки, зброя, броня й вороги в компендіумах</li>
+              <li>Навчальні тури для Доглядача й гравців</li>
+              <li>«Швидкий старт» із готовими персонажами</li>
+            </ul>
+          </div>
+        </div>
+        <details>
+          <summary>Як встановити</summary>
+          <ol>
+            <li>На екрані налаштувань Foundry відкрий Game Systems → Install System.</li>
+            <li>У пошуку введи «Пустельники» і натисни Install.</li>
+            <li>Create World з системою «Пустельники».</li>
+          </ol>
+          <p class="note">Не знаходиться? У тому ж вікні встав у Manifest URL:</p>
+          <div class="copy"><span class="url">https://raw.githubusercontent.com/serhiiten/wastelandersrpg_foundry/main/system.json</span><button type="button" id="copy-foundry">Копіювати</button></div>
+          <p class="note">Сторінка системи в каталозі: <a href="https://foundryvtt.com/packages/wastelanders">foundryvtt.com/packages/wastelanders</a>. Ліцензія: <a href="https://foundryvtt.com/">foundryvtt.com</a>.</p>
+        </details>
+      </article>
+    </div>
+  </section>
+
   <footer>
     Правила: <a href="https://sergeyten.notion.site/21de66cd8c78803186b2e9a38f160a4f">sergeyten.notion.site</a><br>
     Foundry VTT: <a href="https://github.com/serhiiten/wastelandersrpg_foundry">wastelandersrpg_foundry</a>
   </footer>
 </main>
+<script>
+  document.querySelectorAll('.copy button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var url = b.previousElementSibling
+      var done = function () { b.textContent = 'Скопійовано'; setTimeout(function () { b.textContent = 'Копіювати' }, 1500) }
+      var pick = function () { getSelection().selectAllChildren(url) }
+      try { navigator.clipboard.writeText(url.textContent).then(done, pick) } catch (e) { pick() }
+    })
+  })
+</script>
 </body>
 </html>
