@@ -551,6 +551,7 @@ class Site:
             menu.append(f'<li><a class="mi" href="{esc(href)}"{ext}><span class="lamp" aria-hidden="true"></span><span class="mi-t">{esc(b.get("label", b["text"]))}</span>{mark}</a></li>')
         # DC8: a tool the menu opens keeps no second link in «Історія змін» / the credits (the words stay)
         tail = one_link_each(tail, {m.group("key") for m in TOOL_LINK_RE.finditer("".join(menu))})
+        tail = ua_callout(tail, f"pages/{home.slug}.md")
         from PIL import Image
         with Image.open(os.path.join(self.wiki.dir, "images", "cover.png")) as im:
             cover_h = round(COVER_W * im.size[1] / im.size[0])   # the same rounding as the resized cover.jpg
@@ -772,6 +773,24 @@ def one_link_each(htm, buttons=()):
         files.add(m.group(2))
         return m.group(0)
     return re.sub(r'<(div|span) class="dls"><a class="dlbtn" href="([^"]+)".*?</a></\1>', dl, htm, flags=re.S)
+
+
+DONATE_URL = "https://savelife.in.ua/donate/"
+DONATE_TEXT = "Допомогти ЗСУ: фонд „Повернись живим“"   # author via the dispatcher, 2026-11-28, DC10
+
+
+def ua_callout(htm, where):
+    """The home page's callout «Ця гра була випущена в Україні під час війни…» (author via the dispatcher, 2026-11-28,
+    DC10): the colours of the flag (`.call-ua`: yellow, a blue strip on the left), no 🇺🇦 icon (Windows draws it as «UA»),
+    and its heading «Допомогти ЗСУ: <bare address>» a button to the fund in a new tab. The source keeps its text."""
+    m = re.search(r'<aside class="call call-note"><span class="call-ico" aria-hidden="true">🇺🇦</span><div class="call-body">(.*?)</div></aside>', htm, re.S)
+    if not m:
+        raise BuildError(f"{where}: немає виноски з 🇺🇦 (про війну й допомогу ЗСУ)")
+    body, n = re.subn(r'<h3[^>]*><strong>Допомогти ЗСУ: <a href="' + re.escape(DONATE_URL) + r'"[^>]*>[^<]*</a></strong></h3>',
+                      f'<p class="ua-do"><a class="ua-btn" href="{DONATE_URL}" target="_blank" rel="noopener">{esc(DONATE_TEXT)}</a></p>', m.group(1))
+    if n != 1:
+        raise BuildError(f"{where}: у виносці з 🇺🇦 немає рядка «Допомогти ЗСУ: {DONATE_URL}»")
+    return htm[:m.start()] + f'<aside class="call call-ua"><div class="call-body">{body}</div></aside>' + htm[m.end():]
 
 
 def drop_tool_links(htm, tool):

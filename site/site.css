@@ -201,6 +201,15 @@ html[data-theme="dark"] .themebtn .th-sun{display:inline-flex}
 .call-tip{background:#f6e9b8;border-left-color:#b98a14}
 .call-warning{background:#f3d2bd;border-left-color:#9a4a20}
 .call-note{background:#e6ddc0;border-left-color:#4f6b3a}
+/* «Ця гра була випущена в Україні…»: кольори прапора, без значка; темний текст на жовтому (≈ 12:1), білий на синій кнопці
+   (≈ 7:1), однаково в обох темах (автор, 2026-11-28, DC10) */
+.call.call-ua,html[data-theme="dark"] .call.call-ua{grid-template-columns:minmax(0,1fr);background:#FFD500;border-color:#0057B7;color:#1d1d1b}
+.call-ua a{color:#00347a}
+.call-ua .ua-do{margin:12px 0 0}
+.call-ua a.ua-btn{display:inline-flex;align-items:center;min-height:44px;padding:8px 16px;border-radius:5px;background:#0057B7;color:#fff;
+  font:700 17px/1.25 'Roboto Condensed',sans-serif;text-decoration:none;box-shadow:0 2px 0 #00347a}
+.call-ua a.ua-btn:hover{background:#004a9c;text-decoration:underline}
+.call-ua a.ua-btn:focus-visible{outline:3px solid #1d1d1b;outline-offset:2px}
 .call-ico{font-size:22px;line-height:1.2;text-align:center}
 .call-body > :last-child{margin-bottom:0}
 .call-body h2{margin-top:0}

@@ -135,6 +135,8 @@ notion: "21de66cd8c78803186b2e9a38f160a4f"
 ## Історія змін
 
 - **Версія 2.0**
+    - Вікі з правилами перенесено з Notion на сайт, поруч із Терміналом Доглядача та електронними аркушами.
+    - Додано доповнення для Owlbear Rodeo.
     - Глобально оновлено до версії 2.x [офіційний системний модуль для FoundryVTT](https://foundryvtt.com/packages/wastelanders).
     - Створено [трекер битв](https://serhiiten.github.io/wastelanders/all_generators.html#tracker).
     - Створено [електронний термінал Доглядача](https://serhiiten.github.io/wastelanders/all_generators.html).

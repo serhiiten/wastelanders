@@ -518,6 +518,13 @@ for slug, f in (("pamiatka-hravtsia", "pamiatka-hravtsia.pdf"), ("pamiatka-dohli
     ok(re.search(r'<div class="dls"><a class="dlbtn" href="\.\./files/' + f + r'"[^>]*>.*?</a></div>\s*</div>\s*$', txt, re.S),
        f"DB7 {slug}: the printable PDF's button at the bottom of the page")
 ok("dlbtn" not in home, "DB8 «Історія змін» keeps the words of its Drive links, no buttons")
+# DC10 (author via the dispatcher, 2026-11-28): the war callout in the flag's colours, no 🇺🇦 icon, the donate line a button
+ua = re.search(r'<aside class="call call-ua"><div class="call-body">(.*?)</div></aside>', home, re.S)
+ok(ua and "🇺🇦" not in ua.group(1) and f'<a class="ua-btn" href="{build.DONATE_URL}" target="_blank" rel="noopener">{html.escape(build.DONATE_TEXT, quote=True)}</a>' in ua.group(1)
+   and ">https://savelife" not in ua.group(1), "DC10 the war callout: no icon, the fund's button, no bare address")
+ok(".call.call-ua,html[data-theme=\"dark\"] .call.call-ua{" in css, "DC10 the callout keeps the flag's colours in the dark theme too")
+hist = home.split('id="istoriia-zmin"')[1]
+ok("Вікі з правилами перенесено з Notion на сайт" in hist and "Додано доповнення для Owlbear Rodeo." in hist, "DC10 the two new lines of «Версія 2.0»")
 ok("Оновлено дизайн листа персонажа та листа каравану" in visible(home).replace("  ", " "), "DB8 the changelog's link words stay as text")
 ok("Аркуші персонажів та каравану." in re.sub(r"\s+", " ", visible(pages["ihrovyi-protses"])), "DB8 a link inside a sentence keeps its words")
 ok(re.search(r"Аркуші персонажів та каравану\.<span class=\"dls\">(?:<a class=\"dlbtn\"[^>]*>.*?</a>){2}</span><ul>", pages["ihrovyi-protses"]),
