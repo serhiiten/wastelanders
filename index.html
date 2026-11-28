@@ -73,10 +73,10 @@
   .name { font: 600 22px/1.2 var(--f-head); text-transform: uppercase; letter-spacing: .03em; }
   .name::before { content: "> "; font-family: var(--f-mono); color: var(--rust); }
   .desc { display: block; margin-top: 4px; font-size: 15px; }
-  footer { margin-top: 28px; font: 14px/1.5 var(--f-mono); color: var(--ink-mute); }
-  footer a { color: var(--screen-ink); }
   @media (prefers-reduced-motion: reduce) { a.tool { transition: none; } a.tool:hover { transform: none; } }
 
+  a.tool.rules { background: var(--rim); color: var(--paper); border-color: var(--rim); margin-bottom: 14px; }
+  a.tool.rules .name::before { color: var(--rust-hi); }
   /* «Де грати»: браузер, Owlbear Rodeo, Foundry VTT */
   .play { margin-top: 36px; }
   h2 {
@@ -151,6 +151,10 @@
   <p class="boot">ТЕРМІНАЛ ПІДКЛЮЧЕНО_</p>
   <h1>Пустельники</h1>
   <p class="lead">Інструменти для гравців і Доглядача: електронні аркуші та генератори просто в браузері, а ще доповнення для Owlbear Rodeo і Foundry VTT.</p>
+  <a class="tool rules" href="https://sergeyten.notion.site/21de66cd8c78803186b2e9a38f160a4f">
+    <span class="name">Правила гри</span>
+    <span class="desc">Вікі «Пустельників»: створення персонажа й каравану, перевірки, справи для Доглядача й усе, що знадобиться в Пустці.</span>
+  </a>
   <ul>
     <li><a class="tool" href="all_generators.html">
       <span class="name">Термінал Доглядача</span>
@@ -297,9 +301,6 @@
     </div>
   </section>
 
-  <footer>
-    Правила: <a href="https://sergeyten.notion.site/21de66cd8c78803186b2e9a38f160a4f">sergeyten.notion.site</a>
-  </footer>
 </main>
 <script>
   document.querySelectorAll('.copy button').forEach(function (b) {
