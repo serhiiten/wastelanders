@@ -382,11 +382,10 @@ def package_d(page, fails, w):
         if not src.endswith("all_generators.html?embed=1#" + tool):
             fails.append(f"D5 {w}px: кнопка на {to} відкрила {src}")
         go(to + "/")
-        page.locator(".call a[data-tool=terminal]").first.click()
-        page.wait_for_selector("iframe.tool-frame.on[data-tool=terminal]", state="visible")
+        # DC8 (2026-11-28): the callout keeps its words without the link; the button under it is the one way in
         n += 1
-        if not page.evaluate("document.querySelector('iframe.tool-frame.on').getAttribute('src')").endswith("#" + tool):
-            fails.append(f"D5 {w}px: посилання у виносці на {to} не відкрило генератор")
+        if page.locator(f'.call a[href$="#{tool}"]').count():
+            fails.append(f"D5/DC8 {w}px: виноска на {to} і далі веде на генератор, хоч кнопка стоїть під нею")
     # 6: «Додаткові матеріали» from the left menu opens its first page, which is not the sheets page
     go("robymo-perevirky/")
     if w < 900:

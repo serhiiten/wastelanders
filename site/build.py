@@ -40,9 +40,8 @@ SHEET_TEXT = "▶ Відкрити аркуш"        # author, 2026-11-28 (char
 SHEETS = ("character_generator.html", "caravan_generator.html")
 EDIT_TEXT = "Редагувати на GitHub"     # plan §2.4
 ALERT_ICON = {"TIP": "☝", "WARNING": "⚠️", "NOTE": "☢"}   # a Notion emoji (no file) gets the section's ☢, as in the Terminal
-LONG_PAGE = 1500                        # a page with a tool longer than this (characters) gets its button at the bottom too:
-                                        # 1500 characters ≈ one screen of text at 1366×768; beyond it the top button
-                                        # needs scrolling back (author, 2026-11-28)
+# (LONG_PAGE, a second tool button at the bottom of a long page, is gone: one link per tool or file on a page, author
+# via the dispatcher, 2026-11-28, DC8; `one_link_each()`)
 TOOLS = {"all_generators.html": ("terminal", "Термінал Доглядача"),       # the tools that open in the wiki's frame
          "character_generator.html": ("character", "Аркуш персонажа"),   # (package B, author 2026-11-28); the names are
          "caravan_generator.html": ("caravan", "Аркуш каравану")}        # the tabs' texts
@@ -502,7 +501,7 @@ class Site:
                 + f'<body class="pg-rule">\n{self.header(rel)}<main class="frame">\n{self.tabs(rel)}<div class="layout">\n'
                 + f'<details class="side screen" open data-pagefind-ignore><summary>☰ Зміст розділу</summary><nav aria-label="Зміст">{self.side(rel, s["slug"], slug)}</nav></details>\n'
                 + f'<article class="paper sheet">\n<header class="sheet-head" data-pagefind-ignore><span class="crumb"><a href="{rel}">{esc(g)}</a> › <a href="{rel}#{s["slug"]}">{esc(s["title"])}</a></span><span>{pos} / {len(s["pages"])}</span></header>\n'
-                + f'<div class="text" data-pagefind-body>\n<h1 id="{heading_id(page.title)}">{esc(page.title)}</h1>\n{tool}\n{htm}\n{tool if len(page.body) > LONG_PAGE else ""}\n</div>\n'
+                + f'<div class="text" data-pagefind-body>\n<h1 id="{heading_id(page.title)}">{esc(page.title)}</h1>\n{one_link_each(tool + chr(10) + htm)}\n</div>\n'
                 + f'{pn}\n<p class="edit" data-pagefind-ignore><a href="{EDIT_URL.format(slug)}" target="_blank" rel="noopener">{EDIT_TEXT}</a></p>\n</article>\n</div>\n</main>\n'
                 + self.foot(rel))
 
@@ -550,6 +549,8 @@ class Site:
             tool = TOOLS.get(link.split("#")[0])
             ext += f' data-tool="{tool[0]}"' if tool and not ext else ""
             menu.append(f'<li><a class="mi" href="{esc(href)}"{ext}><span class="lamp" aria-hidden="true"></span><span class="mi-t">{esc(b.get("label", b["text"]))}</span>{mark}</a></li>')
+        # DC8: a tool the menu opens keeps no second link in «Історія змін» / the credits (the words stay)
+        tail = one_link_each(tail, {m.group("key") for m in TOOL_LINK_RE.finditer("".join(menu))})
         from PIL import Image
         with Image.open(os.path.join(self.wiki.dir, "images", "cover.png")) as im:
             cover_h = round(COVER_W * im.size[1] / im.size[0])   # the same rounding as the resized cover.jpg
@@ -730,6 +731,46 @@ def intro_md(md, where):
         cls = "sub install" if name == INSTALL else "sub"
         out += f'<details class="{cls}"><summary>{esc(name)}</summary>{one(parts[i + 1])}</details>'
     return out
+
+
+TOOL_LINK_RE = re.compile(r'<a (?P<attrs>[^>]*?)href="(?P<href>[^"]*?(?P<key>(?:all_generators|character_generator|caravan_generator)\.html(?:#[\w-]+)?))"(?P<rest>[^>]*)>(?P<words>.*?)</a>', re.S)
+
+
+def one_link_each(htm, buttons=()):
+    """One link per tool or file on a page (author via the dispatcher, 2026-11-28, DC8): a tool (the Terminal with its
+    tab, a sheet) or a file to download that the page names several times keeps one link: its first button («▶ Відкрити…»,
+    «Скачати …»), else its first link in the text; later buttons go, later links in the text lose the link and keep their
+    words. `buttons`: the tools that already have a button elsewhere on the page (the home page's menu). Cards, tabs and
+    menu buttons (a link with a class) and links to wiki pages are not touched."""
+    keys = set(buttons)
+    for m in TOOL_LINK_RE.finditer(htm):
+        if 'class="toolbtn"' in m.group("attrs") + m.group("rest"):
+            keys.add(m.group("key"))
+    seen = set()
+
+    def tool(m):
+        attrs = m.group("attrs") + m.group("rest")
+        k, btn = m.group("key"), 'class="toolbtn"' in attrs
+        if 'class="' in attrs and not btn:
+            return m.group(0)
+        if btn:
+            if k in seen:
+                return ""
+            seen.add(k)
+            return m.group(0)
+        if k in keys or k in seen:
+            return m.group("words")
+        seen.add(k)
+        return m.group(0)
+    htm = TOOL_LINK_RE.sub(tool, htm)
+    files = set()
+
+    def dl(m):
+        if m.group(2) in files:
+            return ""
+        files.add(m.group(2))
+        return m.group(0)
+    return re.sub(r'<(div|span) class="dls"><a class="dlbtn" href="([^"]+)".*?</a></\1>', dl, htm, flags=re.S)
 
 
 def drop_tool_links(htm, tool):

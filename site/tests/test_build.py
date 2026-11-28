@@ -113,8 +113,13 @@ for slug, page in wiki.pages.items():
         ok(not btns, f"3.3 {slug}: no tool button")
         continue
     want = build.SHEET_TEXT if page.tool.split("#")[0] in build.SHEETS else build.TOOL_TEXT
-    want_n = 2 if len(page.body) > build.LONG_PAGE else 1
-    ok(len(btns) == want_n, f"3.3 {slug}: {want_n} tool button(s), top{' and bottom' if want_n == 2 else ''} (got {len(btns)})")
+    # one button, at the top (DC8, 2026-11-28: the long pages' second button at the bottom is gone)
+    ok(len(btns) == 1, f"3.3 / DC8 {slug}: one tool button, at the top (got {len(btns)})")
+    # DC8: no other link in the text to the page's own tool (its words stay as text)
+    txt = pages[slug].split('<div class="text" data-pagefind-body>', 1)[1].split('<nav class="pn"', 1)[0]
+    others = [m.group(0)[:80] for m in build.TOOL_LINK_RE.finditer(txt)
+              if m.group("key") == page.tool and 'class="toolbtn"' not in m.group("attrs") + m.group("rest")]
+    ok(not others, f"DC8 {slug}: a link in the text repeats the button «{page.tool}»: {others[:2]}")
     for href, attrs, text in btns:
         ok(href == "../../" + page.tool, f"3.3 {slug}: button goes to {page.tool} (got {href})")
         ok("_blank" not in attrs, f"3.3 {slug}: tool opens in the same tab")
@@ -433,8 +438,9 @@ for gone, (to, tool) in MOVED.items():
     h = pages[to]
     btn = f'</aside><a class="toolbtn" id="{gone}" href="../../{tool}" data-tool="terminal" data-pagefind-ignore><b>{build.TOOL_TEXT}</b></a>'
     ok(h.count(btn) == 1, f"D5 {to}: the button of {gone} right after its callout")
-    ok(re.search(r'<aside[^>]*>(?:(?!</aside>).)*href="\.\./\.\./' + re.escape(tool) + r'" data-tool="terminal"', h, re.S) is not None,
-       f"D5 {to}: the callout's link opens the tool")
+    # DC8 (2026-11-28): the callout keeps its words, the button right under it is the page's one link to the generator
+    ok(re.search(r'<aside[^>]*>(?:(?!</aside>).)*href="\.\./\.\./' + re.escape(tool) + r'"', h, re.S) is None,
+       f"D5/DC8 {to}: the callout no longer links the generator (its button is right after it)")
     ok(f'href="{to}/#{gone}"' in home, f"D5 the home page's history links {gone} → {to}/#{gone}")
 dod = next(s for _, s in site.sections if s["slug"] == "dodatkovi-materialy")
 ok("arkushi-personazhiv-ta-karavanu" not in dod["pages"] and dod["pages"], "D6 «Додаткові матеріали» without the sheets page")
@@ -514,6 +520,16 @@ ok("Оновлено дизайн листа персонажа та листа 
 ok("Аркуші персонажів та каравану." in re.sub(r"\s+", " ", visible(pages["ihrovyi-protses"])), "DB8 a link inside a sentence keeps its words")
 ok(re.search(r"Аркуші персонажів та каравану\.<span class=\"dls\">(?:<a class=\"dlbtn\"[^>]*>.*?</a>){2}</span><ul>", pages["ihrovyi-protses"]),
    "DB8 the two sheets' buttons stand after the item's text, before its nested list")
+
+
+# DC8 (author via the dispatcher, 2026-11-28): on every page a tool (with its Terminal tab) or a file is linked once:
+# its button, else one link in the text; cards, tabs and the home menu are not counted
+for slug, h in list(pages.items()) + [("(home)", home)]:
+    body = h.split('<div class="text" data-pagefind-body>', 1)[1].split('<nav class="pn"', 1)[0] if slug != "(home)" else h.split("<main", 1)[1]
+    keys = [m.group("key") for m in build.TOOL_LINK_RE.finditer(body) if 'class="' not in m.group("attrs") + m.group("rest") or 'class="toolbtn"' in m.group("attrs") + m.group("rest")]
+    keys += re.findall(r'<a class="dlbtn" href="([^"]+)"', body)
+    dup = sorted({k for k in keys if keys.count(k) > 1})
+    ok(not dup, f"DC8 {slug}: linked more than once: {dup}")
 
 
 def drive_unknown(w):
