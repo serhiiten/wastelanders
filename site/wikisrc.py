@@ -71,6 +71,10 @@ class Page:
         self.title = meta["title"]
         self.notion = meta.get("notion", "")
         self.tool = meta.get("tool")
+        # site-only fields (package D-A, author 2026-11-28): `site: false` keeps a page out of the site (the compendiums
+        # still get it: to_notion_layout ignores the header); `site_at: <slug>` names the page that shows its tool button
+        self.site = meta.get("site", True) is not False
+        self.site_at = meta.get("site_at")
 
 
 def split_front(text):
@@ -154,6 +158,9 @@ class Wiki:
                 out.append(f"contents.yml, кнопка «{b['text']}»: немає сторінки {b['link']}")
             if not os.path.exists(os.path.join(self.dir, "images", b["image"])):
                 out.append(f"contents.yml, кнопка «{b['text']}»: немає картинки images/{b['image']}")
+        for p in self.pages.values():
+            if p.site_at and (p.site or p.site_at not in self.pages or not p.tool):
+                out.append(f"pages/{p.slug}.md: site_at лише разом із site: false і tool, на наявну сторінку")
         for a in self.anchors():
             for k in ("page", "target"):
                 if a[k] not in self.pages:

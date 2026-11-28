@@ -201,8 +201,19 @@ class Site:
         probs = self.wiki.problems()
         if probs:
             raise BuildError("джерело вікі зламане:\n  " + "\n  ".join(probs))
-        self.secs = {s["slug"]: (g, s) for g, s in self.wiki.sections()}
-        self.order = [(g, s, p) for g, s in self.wiki.sections() for p in s["pages"]]
+        # pages kept out of the site (`site: false`, package D-A, author 2026-11-28): the site's sections list only the
+        # shown pages; the source's contents.yml stays whole (the compendiums read it)
+        self.hidden = {k for k, p in self.wiki.pages.items() if not p.site}
+        self.moved = {k: self.wiki.pages[k].site_at for k in self.hidden if self.wiki.pages[k].site_at}
+        self.sections = []
+        for g, s in self.wiki.sections():
+            shown = [p for p in s["pages"] if p not in self.hidden]
+            if not shown:
+                raise BuildError(f"contents.yml: у розділі «{s['title']}» не лишилось сторінок сайту")
+            self.sections.append((g, dict(s, pages=shown)))
+        self.groups = [dict(g, sections=[s for gt, s in self.sections if gt == g["title"]]) for g in self.wiki.contents["groups"]]
+        self.secs = {s["slug"]: (g, s) for g, s in self.sections}
+        self.order = [(g, s, p) for g, s in self.sections for p in s["pages"]]
         self.where = {p: (g, s, n) for n, (g, s, p) in enumerate(self.order)}
         clash = set(self.secs) & set(self.wiki.pages)
         if clash:
@@ -214,7 +225,7 @@ class Site:
 
     # ----- links -----
 
-    def rewrite_links(self, htm, rel, where):
+    def rewrite_links(self, htm, rel, where, cur=None):
         """Source links → site links. `rel`: from this page to rules/ ('' for rules/, '../' for a page)."""
         def href(m):
             h = html.unescape(m.group(1))
@@ -236,6 +247,15 @@ class Site:
                 pm = re.fullmatch(r"([a-z0-9-]+)\.md(#.*)?", h)
                 if not pm or pm.group(1) not in self.wiki.pages:
                     raise BuildError(f"{where}: бите посилання «{h}»")
+                if pm.group(1) in self.moved:      # a page kept off the site: its button's new place (package D-A, 5)
+                    to = self.moved[pm.group(1)]
+                    if to == cur:                  # on that very page the link opens the tool, like the button under it
+                        tool = self.wiki.pages[pm.group(1)].tool
+                        return f'href="{esc(rel + "../" + tool)}" data-tool="{TOOLS[tool.split("#")[0]][0]}"'
+                    h = f"{rel}{to}/#{pm.group(1)}" if to != self.wiki.contents["home"] else f"{rel}#{pm.group(1)}"
+                    return f'href="{esc(h)}"{ext}'
+                if pm.group(1) in self.hidden:
+                    raise BuildError(f"{where}: посилання на сторінку поза сайтом «{h}» (site: false без site_at)")
                 h = f"{rel}{pm.group(1)}/" + (pm.group(2) or "")
                 if pm.group(1) == self.wiki.contents["home"]:
                     h = rel + (pm.group(2) or "")
@@ -338,7 +358,7 @@ class Site:
     def side(self, rel, cur_sec=None, cur_page=None):
         """The green screen: groups → sections; the current section's pages."""
         out = []
-        for g in self.wiki.contents["groups"]:
+        for g in self.groups:
             out.append(f'<h2 class="side-g">{esc(g["title"])}</h2><ul>')
             for s in g["sections"]:
                 on = s["slug"] == cur_sec
@@ -354,12 +374,27 @@ class Site:
             out.append("</ul>")
         return "".join(out)
 
-    def tool_button(self, page, rel):
+    def tool_button(self, page, rel, bid=None):
         if not page.tool:
             return ""
         text = SHEET_TEXT if page.tool.split("#")[0] in SHEETS else TOOL_TEXT
-        return (f'<a class="toolbtn" href="{rel}../{esc(page.tool)}" data-tool="{TOOLS[page.tool.split("#")[0]][0]}" '
+        idattr = f' id="{bid}"' if bid else ""
+        return (f'<a class="toolbtn"{idattr} href="{rel}../{esc(page.tool)}" data-tool="{TOOLS[page.tool.split("#")[0]][0]}" '
                 f'data-pagefind-ignore><b>{text}</b></a>')
+
+    def place_moved_buttons(self, slug, htm, rel):
+        """The tool buttons of the pages kept off the site that name this page in `site_at` stand right after the callout
+        that mentions their generator (author, 2026-11-28, package D-A, 5). The build stops if there is no such callout."""
+        for h, to in sorted(self.moved.items()):
+            if to != slug:
+                continue
+            i = htm.find(f'href="{h}.md"')
+            j = htm.find("</aside>", i) if i >= 0 else -1
+            if j < 0 or htm.rfind("<aside", 0, i) < htm.rfind("</aside>", 0, i):
+                raise BuildError(f"pages/{slug}.md: немає виноски з посиланням на {h}.md, де стала б кнопка (site_at у pages/{h}.md)")
+            j += len("</aside>")
+            htm = htm[:j] + f"<!--BTN:{h}-->" + htm[j:]   # the button goes in after rewrite_links (its href is final)
+        return htm
 
     # ----- pages -----
 
@@ -372,7 +407,10 @@ class Site:
         htm = md_to_html(body)
         htm = add_heading_ids(htm, {heading_id(page.title): 1})
         htm = self.add_para_ids(slug, htm)
-        htm = self.rewrite_links(htm, rel, where)
+        htm = drop_tool_links(htm, page.tool)
+        htm = self.place_moved_buttons(slug, htm, rel)
+        htm = self.rewrite_links(htm, rel, where, cur=slug)
+        htm = re.sub(r"<!--BTN:([a-z0-9-]+)-->", lambda m: self.tool_button(self.wiki.pages[m.group(1)], rel, bid=m.group(1)), htm)
         pos = s["pages"].index(slug) + 1
         prev_ = self.order[n - 1][2] if n > 0 else None
         next_ = self.order[n + 1][2] if n + 1 < len(self.order) else None
@@ -404,10 +442,10 @@ class Site:
         intro, rest = body[:m.start()], body[m2.start():]
         # the sections the home page lists must be exactly contents.yml's (it is the menu's order)
         listed = re.findall(r"\(\.\./contents\.yml#([a-z0-9-]+)\)", body[m.start():m2.start()])
-        if listed != [s["slug"] for _, s in self.wiki.sections()]:
+        if listed != [s["slug"] for _, s in self.sections]:
             raise BuildError(f"pages/{home.slug}.md: розділи на головній не збігаються з contents.yml")
-        lead = self.rewrite_links(add_heading_ids(md_to_html(intro)), rel, f"pages/{home.slug}.md")
-        tail = self.rewrite_links(add_heading_ids(md_to_html(rest)), rel, f"pages/{home.slug}.md")
+        lead = self.rewrite_links(add_heading_ids(md_to_html(intro)), rel, f"pages/{home.slug}.md", cur=home.slug)
+        tail = self.rewrite_links(add_heading_ids(md_to_html(rest)), rel, f"pages/{home.slug}.md", cur=home.slug)
         tail = credits_columns(fold_history(tail, f"pages/{home.slug}.md"), f"pages/{home.slug}.md")
         intro, intro_ids = self.intro_html()
         menu = []
@@ -431,7 +469,7 @@ class Site:
             ext += f' data-tool="{tool[0]}"' if tool and not ext else ""
             menu.append(f'<li><a class="mi" href="{esc(href)}"{ext}><span class="lamp" aria-hidden="true"></span><span class="mi-t">{esc(b.get("label", b["text"]))}</span>{mark}</a></li>')
         cards = []
-        for g in self.wiki.contents["groups"]:
+        for g in self.groups:
             secs = []
             for s in g["sections"]:
                 pages = "".join(f'<li><a href="{p}/">{esc(self.wiki.pages[p].title)}</a></li>' for p in s["pages"])
@@ -490,14 +528,16 @@ class Site:
                           f'<button type="button" class="plate-more" aria-expanded="false" aria-controls="{pid}-more">{MORE_TEXT}</button></section>')
             panels.append(f'<div class="plate-panel n{n}" id="{pid}-more" role="region" aria-labelledby="{pid}-h">{conv(rest)}</div>')
         name, pid, body = secs[3]
-        eco = f'<div class="eco" id="{pid}"><h3>{esc(name)}</h3>{conv(body)}</div>'
+        # «Одна Пустка на всіх» is a fold too, closed by default (author, 2026-11-28, package D-A, 1)
+        eco = (f'<details class="fold eco" id="{pid}"><summary><h3 id="{pid}-h">{esc(name)}</h3></summary>'
+               f'<div class="eco-body">{conv(body)}</div></details>')
         lead = conv(parts[0].strip())
-        # «Де грати» (the lead and the three plates) is a fold, closed by default; «Одна Пустка на всіх» stays open under it
-        # (author, 2026-11-28, package C, 1)
-        out = (f'<article class="paper sheet intro" aria-labelledby="{hid}" data-pagefind-body>'
-               f'<details class="fold intro-fold" id="{hid}-fold"><summary><h2 id="{hid}">{esc(title)}</h2></summary>'
-               f'<div class="intro-head">{lead}</div>'
-               f'<div class="plates">{"".join(plates)}{"".join(panels)}</div></details>{eco}</article>')
+        # «Де грати» (the lead and the three plates) is a fold, closed by default (package C, 1); its summary is a prominent
+        # bar in the style of the groups' header «Правила гравців» (author, 2026-11-28, package D-A, 2)
+        out = (f'<article class="intro" aria-labelledby="{hid}" data-pagefind-body>'
+               f'<details class="intro-fold" id="{hid}-fold"><summary class="group-h"><h2 id="{hid}">{esc(title)}</h2></summary>'
+               f'<div class="intro-in"><div class="intro-head">{lead}</div>'
+               f'<div class="plates">{"".join(plates)}{"".join(panels)}</div></div></details>{eco}</article>')
         return out, ids[:3]
 
     def not_found_html(self):
@@ -517,7 +557,7 @@ class Site:
             shutil.rmtree(out)
         os.makedirs(os.path.join(rules, "img"))
         for slug in self.wiki.pages:
-            if slug == self.wiki.contents["home"]:
+            if slug == self.wiki.contents["home"] or slug in self.hidden:
                 continue
             d = os.path.join(rules, slug)
             os.makedirs(d)
@@ -589,6 +629,16 @@ def intro_md(md, where):
         cls = "sub install" if name == INSTALL else "sub"
         out += f'<details class="{cls}"><summary>{esc(name)}</summary>{one(parts[i + 1])}</details>'
     return out
+
+
+def drop_tool_links(htm, tool):
+    """A paragraph that is only the bare address of the page's own tool («https://…/all_generators.html#tables» under
+    «▶ Відкрити в Терміналі») repeats the button: dropped from the site, the source unchanged (author, 2026-11-28,
+    package D-A, 3). A link with its own words stays."""
+    if not tool:
+        return htm
+    url = re.escape(SITE_URL + tool)
+    return re.sub(r'\s*<p><a href="' + url + r'">' + url + r'</a></p>', "", htm)
 
 
 HISTORY = "Історія змін"

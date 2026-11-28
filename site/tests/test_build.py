@@ -68,7 +68,7 @@ site = build.Site(REPO)
 rules = site.build(out, search=search)
 wiki = site.wiki
 home_slug = wiki.contents["home"]
-pages = {s: read(os.path.join(rules, s, "index.html")) for s in wiki.pages if s != home_slug}
+pages = {s: read(os.path.join(rules, s, "index.html")) for s in wiki.pages if s != home_slug and wiki.pages[s].site}
 home = read(os.path.join(rules, "index.html"))
 everything = dict(pages, **{"index": home, "404": read(os.path.join(out, "404.html"))})
 
@@ -82,13 +82,13 @@ ok(set(os.listdir(rules)) == set(pages) | {"index.html", "site.css", "site.js", 
 groups = re.findall(r'<h2 class="group-h">(.*?)</h2>', home)
 ok(groups == [html.escape(g["title"]) for g in wiki.contents["groups"]], f"3.1 groups on the home page: {groups}")
 secs = re.findall(r'<section class="sec" id="([a-z0-9-]+)"><h3>', home)
-ok(secs == [s["slug"] for _, s in wiki.sections()], "3.1 sections on the home page in contents.yml's order")
-for _, s in wiki.sections():
+ok(secs == [s["slug"] for _, s in site.sections], "3.1 sections on the home page in contents.yml's order")
+for _, s in site.sections:
     block = re.search(r'<section class="sec" id="' + s["slug"] + r'">(.*?)</section>', home, re.S).group(1)
     ok(re.findall(r'<a href="([a-z0-9-]+)/">', block) == s["pages"], f"3.1 pages of «{s['title']}» in order")
 
 # ---------- 3.2: menu, text, callouts, tables, previous / next ----------
-order = [p for _, s in wiki.sections() for p in s["pages"]]
+order = [p for _, s in site.sections for p in s["pages"]]
 for i, slug in enumerate(order):
     h = pages[slug]
     ok('<details class="side screen"' in h and 'aria-current="page" class="side-p cur" href="../' + slug + '/"' in h, f"3.2 {slug}: contents with the page marked")
@@ -104,6 +104,8 @@ ok(sum(h.count("<table") for h in pages.values()) > 50, "3.2 tables exist")
 tools = {s: p.tool for s, p in wiki.pages.items() if p.tool}
 ok(len(tools) == 9, f"3.3 nine pages with a tool (got {len(tools)})")
 for slug, page in wiki.pages.items():
+    if slug not in pages:          # kept off the site (package D-A): its button is checked under D5
+        continue
     btns = re.findall(r'<a class="toolbtn" href="([^"]+)"([^>]*)><b>([^<]+)</b></a>', pages.get(slug, ""))
     for _, attrs, _ in btns:
         ok(f'data-tool="{build.TOOLS[page.tool.split("#")[0]][0]}"' in attrs, f"Б.2 {slug}: the tool button opens in the frame")
@@ -124,7 +126,7 @@ if search:
     pf = os.path.join(rules, "pagefind")
     entry = json.loads(read(os.path.join(pf, "pagefind-entry.json")))
     ok(list(entry.get("languages", {})) == ["uk"], f"3.4 search index language uk: {entry.get('languages')}")
-    ok(entry["languages"]["uk"]["page_count"] >= 92, f"3.4 every page indexed: {entry['languages']['uk']['page_count']}")
+    ok(entry["languages"]["uk"]["page_count"] >= len(pages) + 1, f"3.4 every page indexed: {entry['languages']['uk']['page_count']}")
     ok(all('<script src="' in h and 'pagefind/pagefind-ui.js"' in h for h in everything.values()), "3.4 every page loads the search")
 else:
     print("SKIP 3.4 search index (no Node or --no-search)")
@@ -233,8 +235,8 @@ for (href, attrs, text), b in zip(menu, btns):
         ok(os.path.exists(os.path.join(REPO, link.split("#")[0])), f"3.12 {link} exists")
 # ---------- package A, 1: a section in the left menu opens its first page ----------
 for slug, h in pages.items():
-    for sec, first in ((s["slug"], s["pages"][0]) for _, s in wiki.sections()):
-        title = html.escape(next(s["title"] for _, s in wiki.sections() if s["slug"] == sec))
+    for sec, first in ((s["slug"], s["pages"][0]) for _, s in site.sections):
+        title = html.escape(next(s["title"] for _, s in site.sections if s["slug"] == sec))
         ok(re.search(r'<a class="side-s(?: on)?" href="\.\./' + first + r'/">' + re.escape(title) + "</a>", h) is not None,
            f"A1 {slug}: section «{sec}» in the menu → {first}/")
     break   # one page is enough: the menu is the same on all of them
@@ -248,7 +250,7 @@ ok(not re.search(r"images/(pochaty|stvoryty|telegram|heneratory)", home), "3.12 
 
 # ---------- package B ----------
 # Б.1: the intro «Де грати» between the cover with the menu and the rules' groups; plates closed; texts = the old index.html
-hero_end, intro_at, groups_at = home.index('<div class="hero">'), home.find('<article class="paper sheet intro"'), home.index('<div class="groups">')
+hero_end, intro_at, groups_at = home.index('<div class="hero">'), home.find('<article class="intro"'), home.index('<div class="groups">')
 ok(hero_end < intro_at < groups_at, "Б.1 the intro sits between the cover with the menu and the groups")
 intro = home[intro_at:groups_at]
 ok(re.findall(r'<section class="plate screen n\d" id="([a-z]+)"', intro) == ["browser", "owlbear", "foundry"], "Б.1 three plates: У браузері, Owlbear Rodeo, Foundry VTT")
@@ -306,11 +308,11 @@ ok("home/de-hraty.md" in e and "чотири" in e, f"Б.1 an intro without four
 
 # ---------- package C (author, 2026-11-28) ----------
 # C1: «Де грати» (the lead and the plates) is a fold, closed; «Одна Пустка на всіх» stays outside it
-fold_at = intro.find('<details class="fold intro-fold" id="de-hraty-fold"><summary><h2 id="de-hraty">Де грати</h2></summary>')
-ok(fold_at >= 0 and "<details class=\"fold intro-fold\" id=\"de-hraty-fold\" open" not in intro, "C1 «Де грати» is a closed fold")
-ok(fold_at < intro.find('id="browser"') < intro.find('id="foundry-more"') < intro.find('<div class="eco" id="eco">'),
+fold_at = intro.find('<details class="intro-fold" id="de-hraty-fold"><summary class="group-h"><h2 id="de-hraty">Де грати</h2></summary>')
+ok(fold_at >= 0 and "id=\"de-hraty-fold\" open" not in intro, "C1 «Де грати» is a closed fold; D2 its summary is a .group-h bar")
+ok(fold_at < intro.find('id="browser"') < intro.find('id="foundry-more"') < intro.find('<details class="fold eco" id="eco">'),
    "C1 the lead and the plates are inside the fold, «Одна Пустка на всіх» after them")
-ok(intro[:intro.index('<div class="eco"')].endswith("</div></div></details>"), "C1 «Одна Пустка на всіх» stands outside the fold")
+ok(intro[:intro.index('<details class="fold eco"')].endswith("</div></div></div></details>"), "C1 «Одна Пустка на всіх» stands outside the fold")
 # C5: «Як встановити» is marked so that the plate's button opens it; only that fold of the panel
 ok(intro.count('<details class="sub install"><summary>Як встановити</summary>') == 2
    and intro.count('<details class="sub">') == 1, "C5 the two «Як встановити» folds carry .install, the other fold not")
@@ -367,6 +369,8 @@ for sel in (".fold > summary::before{content:\"▸\"", "details.sub > summary::b
 
 # ---------- 3.13: callouts with their icon; nothing of Notion's left ----------
 for slug, p in wiki.pages.items():
+    if slug != home_slug and slug not in pages:
+        continue
     h = home if slug == home_slug else pages[slug]
     want = len(wikisrc.ALERT_RE.findall(p.body)) if hasattr(wikisrc.ALERT_RE, "findall") else 0
     want = sum(1 for line in p.body.split("\n") if wikisrc.ALERT_RE.match(line))
@@ -396,6 +400,59 @@ for name, h in pages.items():
 for href in re.findall(r'(?:href|src)="(img/[^"]+)"', home) + [m for h in pages.values() for m in re.findall(r'src="\.\./(img/[^"]+)"', h)]:
     ok(os.path.exists(os.path.join(rules, href)), f"image {href}")
 ok(not any('<a href="' + build.SITE_URL in h or re.search(r'<a [^>]*href="' + re.escape(build.SITE_URL), h) for h in everything.values()), "links to the tools are relative (same tab)")
+
+# ---------- package D-A (author, 2026-11-28) ----------
+# D1: «Одна Пустка на всіх» is a fold, closed by default
+ok(re.search(r'<details class="fold eco" id="eco"><summary><h3 id="eco-h">Одна Пустка на всіх</h3></summary>', intro) is not None,
+   "D1 «Одна Пустка на всіх» is a closed fold")
+# D2: the «Де грати» bar looks like the groups' header: the same CSS class, and it is not a plain .fold
+ok('<details class="intro-fold"' in intro and 'class="fold intro-fold"' not in intro, "D2 «Де грати» is the .group-h bar, not a plain fold")
+# D3: no page keeps a bare address of its own tool under the button
+for slug, h in pages.items():
+    t = wiki.pages[slug].tool
+    if t:
+        ok(build.SITE_URL + t + "</a>" not in h and ">" + build.SITE_URL + t + "<" not in h, f"D3 {slug}: the bare address of {t} is gone")
+ok(build.drop_tool_links('<p><a href="https://x/">слова</a></p>', "x") == '<p><a href="https://x/">слова</a></p>', "D3 a link with its own words stays")
+# D4: a text table may take the whole sheet; the CSS makes the sheet a container and the table as wide as it
+ok(".paper.sheet{container-type:inline-size}" in css and ".text > table{width:max-content;max-width:calc(100cqw - 80px)}" in css,
+   "D4 tables take the sheet's width, not the text's 84ch")
+# D5: the three «Автоматичний генератор …» pages are off the site; their buttons stand after the callout that names them;
+#     every link to them leads there (on that very page: to the tool); D6: the sheets page of «Додаткові матеріали» is gone
+MOVED = {"avtomatychnyi-henerator-sprav": ("struktura-sesii-stvorennia-sprav", "all_generators.html#case"),
+         "avtomatychnyi-henerator-bytv": ("skladnist-bytv", "all_generators.html#battle"),
+         "avtomatychnyi-henerator-podorozhei": ("podorozhi-ta-vypadkovi-podii", "all_generators.html#travel")}
+ok(site.moved == {k: v[0] for k, v in MOVED.items()}, f"D5 moved pages: {site.moved}")
+ok(site.hidden == set(MOVED) | {"arkushi-personazhiv-ta-karavanu"}, f"D5/D6 pages off the site: {sorted(site.hidden)}")
+for gone in site.hidden:
+    ok(not os.path.exists(os.path.join(rules, gone)), f"D5/D6 {gone}: no page on the site")
+    ok(all(f'href="../{gone}/' not in h and f'href="{gone}/' not in h for h in everything.values()), f"D5/D6 no link to {gone}")
+for gone, (to, tool) in MOVED.items():
+    h = pages[to]
+    btn = f'</aside><a class="toolbtn" id="{gone}" href="../../{tool}" data-tool="terminal" data-pagefind-ignore><b>{build.TOOL_TEXT}</b></a>'
+    ok(h.count(btn) == 1, f"D5 {to}: the button of {gone} right after its callout")
+    ok(re.search(r'<aside[^>]*>(?:(?!</aside>).)*href="\.\./\.\./' + re.escape(tool) + r'" data-tool="terminal"', h, re.S) is not None,
+       f"D5 {to}: the callout's link opens the tool")
+    ok(f'href="{to}/#{gone}"' in home, f"D5 the home page's history links {gone} → {to}/#{gone}")
+dod = next(s for _, s in site.sections if s["slug"] == "dodatkovi-materialy")
+ok("arkushi-personazhiv-ta-karavanu" not in dod["pages"] and dod["pages"], "D6 «Додаткові матеріали» without the sheets page")
+ok(">Аркуші персонажів та каравану<" not in home, "D6 the home page does not list the sheets page")
+# the source keeps them (the compendiums read it): contents.yml whole, the Notion layout has every page
+ok(len(wiki.pages) == 92 and all(p in [x for _, s in wiki.sections() for x in s["pages"]] for p in site.hidden),
+   "D5/D6 the source keeps the pages and contents.yml lists them")
+_lay = tempfile.mkdtemp(prefix="wiki-notion-")
+ok(len([f for f in os.listdir(wiki.to_notion_layout(_lay)) if f.endswith(".md")]) == 92, "D5/D6 the Notion layout still has all 92 pages")
+shutil.rmtree(_lay, ignore_errors=True)
+
+
+def moved_no_callout(w):
+    p = os.path.join(w, "pages", "skladnist-bytv.md")
+    t = read(p).replace("(avtomatychnyi-henerator-bytv.md)", "(pravyla-bytv.md)")
+    with open(p, "w", encoding="utf-8", newline="") as fh:
+        fh.write(t)
+
+
+e = broken(moved_no_callout)
+ok("skladnist-bytv.md" in e and "avtomatychnyi-henerator-bytv" in e, f"D5 a moved button without its callout stops the build: «{e[:160]}»")
 
 # ---------- the Terminal's shared look (header, tabs, paper) stays the same as in the Terminal ----------
 TPL = os.path.join(REPO, "..", "pustelnyky_src (1)", "pustelnyky_src", "template.html")

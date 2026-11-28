@@ -11,7 +11,7 @@ from playwright.sync_api import sync_playwright  # noqa: E402
 
 OUT = sys.argv[1]
 BASE = (sys.argv[2] if len(sys.argv) > 2 else "http://localhost:8800").rstrip("/") + "/wastelanders/rules/"
-SHOTS = [("home", ""), ("rule", "robymo-perevirky/"), ("tool", "avtomatychnyi-henerator-bytv/"),
+SHOTS = [("home", ""), ("rule", "robymo-perevirky/"), ("tool", "heneratory-natkhnennia/"),
          ("callouts", "aspekty-personazhiv-hravtsiv/"), ("anchor", "vydovi-osoblyvosti/#kiborh"), ("404", "no-such-page/")]
 
 

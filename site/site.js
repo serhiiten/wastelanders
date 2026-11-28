@@ -49,6 +49,12 @@
   /* Вступ «Де грати»: «Докладніше» відкриває панель під табличками, одну за раз */
   function openPlate(id, toggle) {
     var plate = id && document.getElementById(id);
+    /* адреса на згортку («Одна Пустка на всіх», пакет Г-А, 1) розгортає її */
+    if (plate && plate.tagName === 'DETAILS' && plate.classList.contains('fold')) {
+      plate.open = true;
+      if (!toggle) plate.scrollIntoView({ block: 'start' });
+      return true;
+    }
     if (!plate || !plate.classList.contains('plate')) return false;
     var btn = plate.querySelector('.plate-more'), panel = document.getElementById(id + '-more');
     var open = toggle ? btn.getAttribute('aria-expanded') !== 'true' : true;

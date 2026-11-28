@@ -18,9 +18,18 @@ BASE = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8800").rstrip("/
 HERE = os.path.dirname(os.path.abspath(__file__))
 RULES = os.path.join(HERE, "..", "..", "_site", "rules")
 SIZES = [(1366, 768), (375, 812)]
+# the pages kept off the site (package D-A): package_d asks for them and expects 404
+GONE = ("avtomatychnyi-henerator-bytv/", "avtomatychnyi-henerator-sprav/", "avtomatychnyi-henerator-podorozhei/", "arkushi-personazhiv-ta-karavanu/")
 
 MEASURE = r"""() => {
-  const out = {overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth, small: [], tiny: []};
+  const out = {overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth, small: [], tiny: [], cramped: []};
+  // D4 (package D-A): a text table scrolls sideways only when the whole sheet is too narrow for it
+  for (const t of document.querySelectorAll('.text > table')) {
+    const sheet = t.closest('.sheet'), text = t.parentElement, cs = getComputedStyle(text);
+    const room = sheet.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if (t.scrollWidth > t.clientWidth + 1 && t.clientWidth < room - 2)
+      out.cramped.push(Math.round(t.clientWidth) + ' of ' + Math.round(room) + ' px «' + t.innerText.trim().slice(0, 30) + '»');
+  }
   const vis = el => { const r = el.getBoundingClientRect(), s = getComputedStyle(el);
     return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none' && !el.closest('[hidden]') &&
            !(el.closest('details:not([open])') && !el.closest('summary')); };
@@ -62,7 +71,7 @@ def scenarios(page, fails):
     names = {"all_generators.html": ("terminal", "Термінал Доглядача"), "character_generator.html": ("character", "Аркуш персонажа"),
              "caravan_generator.html": ("caravan", "Аркуш каравану")}
     for slug, p in sorted(wiki.pages.items()):
-        if not p.tool:
+        if not p.tool or not p.site:
             continue
         page.goto(BASE + slug + "/"); settle()
         page.click(".toolbtn")
@@ -139,7 +148,7 @@ def scenarios(page, fails):
         fails.append("Б.1 «Копіювати» не скопіювало адресу доповнення")
     # package A, 1: a section in the left menu opens its first page
     page.goto(BASE + "robymo-perevirky/"); settle()
-    for _, s in list(wiki.sections())[::4]:
+    for _, s in [(g, dict(s, pages=[x for x in s["pages"] if wiki.pages[x].site])) for g, s in wiki.sections()][::4]:
         page.goto(BASE + "robymo-perevirky/"); settle()
         page.locator("a.side-s", has_text=s["title"]).first.click(); settle()
         n += 1
@@ -234,7 +243,8 @@ def package_c(page, fails, w):
     if not page.locator("#owlbear .plate-more").is_visible():
         fails.append(f"C1 {w}px: клік не розгорнув «Де грати»")
     # 2: the text fills its block: the lead paragraph and «Одна Пустка на всіх» as wide as their box (± 2 px)
-    r = page.evaluate("""() => [...document.querySelectorAll('.intro-head p, .intro .eco p')].map(p => {
+    page.click("#eco > summary")                # «Одна Пустка на всіх» is a closed fold since package D-A
+    r = page.evaluate("""() => [...document.querySelectorAll('.intro-head p, .intro .eco-body p')].map(p => {
         const b = p.parentElement, cs = getComputedStyle(b);
         return [p.getBoundingClientRect().width, b.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)]; })""")
     n += 1
@@ -290,6 +300,80 @@ def package_c(page, fails, w):
         n += 1
         if bad or cnt < (4 if not slug else 0) or (slug and w < 900 and cnt < 1):
             fails.append(f"C6 {w}px {slug or 'головна'}: згортки без стрілки чи стрілка не повернута ({cnt} згорток): {bad}")
+    return n
+
+
+def package_d(page, fails, w):
+    """Package D-A (author, 2026-11-28), real clicks at both widths: «Одна Пустка на всіх» is a closed fold (1); «Де грати»
+    is a bar like the groups' header, a click opens it (2); no bare tool address under the button (3); tables are checked
+    on every page in the main loop (4); the three generator pages are gone, their links lead to the button after the
+    callout, which opens the tool, and so does the callout's link (5); the sheets page is off «Додаткові матеріали» (6)."""
+    n = 0
+
+    def go(path):
+        page.goto(BASE + path); page.wait_for_load_state("networkidle")
+    go("")
+    n += 2
+    if page.evaluate("document.getElementById('eco').open") or page.locator(".eco-body").is_visible():
+        fails.append(f"D1 {w}px: «Одна Пустка на всіх» не згорнута на старті")
+    page.click("#eco > summary")
+    if not page.locator(".eco-body p").is_visible():
+        fails.append(f"D1 {w}px: клік не розгорнув «Одна Пустка на всіх»")
+    # 2: the bar wears the groups' header look (background, colour, case) and opens on a click
+    look = page.evaluate("""() => { const a = getComputedStyle(document.querySelector('#de-hraty-fold > summary')),
+        b = getComputedStyle(document.querySelector('.group .group-h'));
+        return [a.backgroundImage === b.backgroundImage, a.backgroundColor === b.backgroundColor, a.color === b.color,
+                a.textTransform, document.querySelector('#de-hraty-fold > summary').getBoundingClientRect().height]; }""")
+    n += 2
+    if look[:4] != [True, True, True, "uppercase"] or look[4] < 44:
+        fails.append(f"D2 {w}px: «Де грати» не схожа на шапку «Правила гравців» (тло, колір, регістр, висота): {look}")
+    page.click("#de-hraty-fold > summary")
+    if not page.locator("#owlbear .plate-more").is_visible():
+        fails.append(f"D2 {w}px: клік на смугу не розгорнув «Де грати»")
+    # 3: the tool pages show the button and no bare address
+    for slug in ("heneratory-natkhnennia/", "elektronnyi-arkush-personazha/", "elektronnyi-arkush-karavanu/"):
+        go(slug)
+        n += 1
+        if "serhiiten.github.io" in page.evaluate("document.querySelector('.text').innerText") or page.locator(".text .toolbtn").count() != 1:
+            fails.append(f"D3 {w}px {slug}: голе посилання лишилось чи кнопки не одна")
+    # 5: gone; the home page's history link → the page, the button near the top; the button and the callout's link open it
+    for gone, to, tool in (("avtomatychnyi-henerator-bytv", "skladnist-bytv", "battle"),
+                           ("avtomatychnyi-henerator-sprav", "struktura-sesii-stvorennia-sprav", "case"),
+                           ("avtomatychnyi-henerator-podorozhei", "podorozhi-ta-vypadkovi-podii", "travel"),
+                           ("arkushi-personazhiv-ta-karavanu", None, None)):
+        resp = page.goto(BASE + gone + "/")
+        n += 1
+        if resp.status != 404:
+            fails.append(f"D5 {w}px: {gone}/ віддає {resp.status}, не 404")
+        if not to:
+            continue
+        go("")
+        page.click("#istoriia-zmin > summary")
+        page.locator(f'#istoriia-zmin a[href="{to}/#{gone}"]').click()
+        page.wait_for_load_state("networkidle"); page.wait_for_timeout(200)
+        top = page.evaluate(f"(e => e && e.getBoundingClientRect().top)(document.getElementById('{gone}'))")
+        n += 2
+        if page.url != BASE + to + "/#" + gone or top is None or not (-5 <= top <= 200):
+            fails.append(f"D5 {w}px: посилання з «Історії змін» привело на {page.url}, кнопка на {top} px")
+        page.click(f"#{gone}")
+        page.wait_for_selector("iframe.tool-frame.on[data-tool=terminal]", state="visible")
+        src = page.evaluate("document.querySelector('iframe.tool-frame.on').getAttribute('src')")
+        if not src.endswith("all_generators.html?embed=1#" + tool):
+            fails.append(f"D5 {w}px: кнопка на {to} відкрила {src}")
+        go(to + "/")
+        page.locator(".call a[data-tool=terminal]").first.click()
+        page.wait_for_selector("iframe.tool-frame.on[data-tool=terminal]", state="visible")
+        n += 1
+        if not page.evaluate("document.querySelector('iframe.tool-frame.on').getAttribute('src')").endswith("#" + tool):
+            fails.append(f"D5 {w}px: посилання у виносці на {to} не відкрило генератор")
+    # 6: «Додаткові матеріали» from the left menu opens its first page, which is not the sheets page
+    go("robymo-perevirky/")
+    if w < 900:
+        page.click("details.side > summary")
+    page.locator("a.side-s", has_text="Додаткові матеріали").first.click(); page.wait_for_load_state("networkidle")
+    n += 1
+    if "arkushi" in page.url or page.locator("a.side-p", has_text="Аркуші персонажів та каравану").count():
+        fails.append(f"D6 {w}px: «Додаткові матеріали» досі мають сторінку аркушів ({page.url})")
     return n
 
 
@@ -507,7 +591,7 @@ def main():
             page = ctx.new_page()
             errors = []
             page.on("console", lambda m: errors.append(m.text) if m.type == "error" and "status of 404" not in m.text else None)
-            page.on("response", lambda r: errors.append(f"{r.status} {r.url}") if r.status >= 400 and "no-such-page" not in r.url else None)
+            page.on("response", lambda r: errors.append(f"{r.status} {r.url}") if r.status >= 400 and "no-such-page" not in r.url and not any(g in r.url for g in GONE) else None)
             page.on("pageerror", lambda e: errors.append(str(e)))
             quick = os.environ.get("PUST_ONLY_FRAME")     # debugging only the frame: python check_pages.py with PUST_ONLY_FRAME=1
             if quick:
@@ -527,6 +611,9 @@ def main():
                     fails.append(f"{where}: текст < 12 px: " + "; ".join(r["small"][:3]))
                 if r["tiny"]:
                     fails.append(f"{where}: ціль < 24×24: " + "; ".join(r["tiny"][:3]))
+                checks += 1
+                if r["cramped"]:
+                    fails.append(f"D4 {where}: таблиця прокручується, хоч на аркуші є місце: " + "; ".join(r["cramped"][:3]))
                 if slug == "no-such-page/":
                     checks += 2
                     if resp.status != 404:
@@ -554,6 +641,7 @@ def main():
             if w == 1366:
                 checks += scenarios(page, fails)
             checks += package_c(page, fails, w)
+            checks += package_d(page, fails, w)
             checks += embed_checks(page, fails, w) + open_each(page, fails, w)
             checks += 1
             if errors:
