@@ -279,6 +279,12 @@ export const T = {
   quickTitle: 'Швидкий старт',
   quickToc: 'Зміст: перейти до розділу',
 
+  // «Швидкий старт» на весь екран (сесія А, автор 2026-11-28, п.5 фідбеку, макет А «Книжка» https://claude.ai/artifact/GKjyP6myc1hqvameiXPgh4)
+  quickFull: 'На весь екран',
+  quickFold: 'Згорнути',
+  quickFoldHint: 'Згорнути у вузьке вікно',
+  quickSide: 'Зміст',
+
   // лічильники Доглядача (сесія Б, автор 2026-11-27, вигляд Б «Рядки»); терміни — вікі, «Лічильники»
   menuCounters: 'Лічильники',
   menuCountersHint: 'Лічильники напруги й глобальних проблем у віконці над мапою: бачать усі, змінюєш лише ти. Гравці цього пункту не бачать.',
@@ -399,4 +405,11 @@ export function helpFor(key, gm) {
   const h = Object.hasOwn(HELP, key) ? HELP[key] : null
   if (!h) return null
   return h.gm ? h[gm ? 'gm' : 'pl'] : h
+}
+
+// ---- «Ходи Доглядача» (сесія В, автор 2026-11-28, фідбек п.8) ----
+// Назва вікна й сам текст ходів — дослівно з Foundry (ext/lib/moves-data.mjs, генератор tools/make-moves.mjs);
+// напис таблички «Ходи» — як на табличці Foundry (module/wastelanders.mjs: «Ходи», aria-label «Ходи Доглядача»).
+export const MOVES_T = {
+  btn: 'Ходи',
 }

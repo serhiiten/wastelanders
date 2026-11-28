@@ -37,12 +37,26 @@
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   #text a{color:var(--rust-text)}
   #text a:focus-visible{outline:2px solid var(--focus-out);outline-offset:1px}
+  #main{flex:1;display:flex;min-height:0}
+  #text{flex:1;min-width:0}
+  #bar button.word{width:auto;padding:0 10px}
+  /* на весь екран (сесія А, автор 2026-11-28, макет А «Книжка»): зміст завжди ліворуч, текст колонкою ~62 знаки по центру */
+  #side{flex:none;width:clamp(200px,20vw,280px);overflow:auto;border-right:1px solid var(--line);padding:10px 8px 24px;display:flex;flex-direction:column;gap:2px}
+  #side .sj{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:14px 6px 4px}
+  #side .sj:first-child{margin-top:2px}
+  #side > *{flex:none}
+  #side button{white-space:normal;text-align:left;background:transparent;border:0;border-radius:6px;min-height:28px;padding:3px 8px;font-size:14px;line-height:1.3;width:100%}
+  #side button:hover{background:var(--btn-h)}
+  #side button.on{background:var(--btn);color:var(--rust-text);font-weight:700}
+  body.full #nav{display:none}
+  body.full #text{padding:8px 32px 40vh;font-size:16px}
+  body.full #text > *{max-width:62ch;margin-left:auto;margin-right:auto}
 </style>
 </head>
 <body>
-<div id="bar"><span class="ttl"><span id="b-icon"></span><span id="b-title"></span></span><button type="button" id="b-left"></button><button type="button" id="b-right"></button><button type="button" id="b-close"></button></div>
+<div id="bar"><span class="ttl"><span id="b-icon"></span><span id="b-title"></span></span><button type="button" id="b-full"></button><button type="button" id="b-left"></button><button type="button" id="b-right"></button><button type="button" id="b-fold" class="word" hidden></button><button type="button" id="b-close"></button></div>
 <div id="nav"><label for="toc" class="sr" id="toc-l"></label><select id="toc"></select></div>
-<div id="text" tabindex="-1"></div>
+<div id="main"><nav id="side" hidden></nav><div id="text" tabindex="-1"></div></div>
 <script type="module" src="quickstart.mjs"></script>
 </body>
 </html>

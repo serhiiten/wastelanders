@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ходи Доглядача</title>
+<link rel="stylesheet" href="ui.css">
+<style>
+  /* Вікно «Ходи Доглядача» (автор, 2026-11-28, макет Б у темі Owlbear): заголовок і ✕ як у довідки «?», текст — як картка
+     ходів Foundry (css/pust-terminal.css, .pust-gm-moves), але кольорами ui.css, тож світла й темна тема свої. */
+  html,body{height:100%}
+  body{display:flex;flex-direction:column;overflow:hidden}
+  #bar{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;border-bottom:1px solid var(--line);flex:none}
+  #bar > svg{width:16px;height:16px;color:var(--rust-text);flex:none}
+  #bar h1{flex:1;min-width:0;font-size:16px;margin:0}
+  #bar button{background:transparent;width:28px;min-height:26px;padding:0;display:grid;place-items:center}
+  #bar button .ic{width:16px;height:16px}
+  #body{flex:1;overflow:auto;min-height:0;padding:2px 14px 12px;font:14px/1.4 "Ubuntu Mono",Consolas,monospace}
+  .hd{margin:12px 0 6px;color:var(--rust-text);font:800 13px/1.3 "Roboto Condensed","Arial Narrow",sans-serif;letter-spacing:.05em;text-transform:uppercase}
+  .grp{margin:10px 0 5px;padding-bottom:2px;border-bottom:1px solid var(--line);color:var(--mut);font:700 12px/1.3 "Roboto Condensed","Arial Narrow",sans-serif;letter-spacing:.06em;text-transform:uppercase}
+  .hd + .grp{margin-top:2px}
+  ul{margin:0;padding-left:18px}
+  li{margin:0 0 5px}
+  li::marker{color:var(--rust-text)}
+  b{color:var(--fg)}
+  .note{margin:10px 0 0;padding-top:6px;border-top:1px dashed var(--line);color:var(--mut);font-style:italic;font-size:13px}
+</style>
+</head>
+<body>
+<div id="bar"><h1 id="title"></h1><button type="button" id="close"></button></div>
+<div id="body"></div>
+<script type="module" src="moves.mjs"></script>
+</body>
+</html>

@@ -27,6 +27,8 @@ export const ID = {
   quickB: NS + '/quickstart-b',
   help: NS + '/help',            // довідка «?» біля кнопок меню (сесія Б)
   counters: NS + '/counters',    // віконце лічильників над мапою (сесія Б), відкриває тло кожного клієнта
+  movesBtn: NS + '/moves-btn',   // табличка «Ходи» в правому верхньому куті, лише Доглядачу (автор, 2026-11-28, фідбек п.8)
+  moves: NS + '/moves',          // вікно «Ходи Доглядача» під табличкою
 }
 export const SIZE = { modal: { width: 900, height: 900 }, narrow: { width: 460, height: 760 }, assign: { width: 320, height: 420 }, log: { width: 460, height: 280 }, help: { width: 300, height: 340 } }
 
@@ -85,18 +87,26 @@ export const sheetUrl = (base, itemId, narrow = false, slot = '', roller = false
  * над ним (автор, 2026-11-27; було 80, і караван біля лівого краю на 1366×768 заходив під лоток на 36 px).
  */
 export const SAFE = { top: 80, left: 280, right: 80, bottom: 128 }
+/**
+ * «До лівого краю» — до самого краю (автор, 2026-11-28, фідбек п.10): виняток із правила «наші вікна не накривають
+ * інтерфейс Owlbear» (`docs/ui-rules.md` §4). Вікно біля лівого краю стоїть на x 16 (поріг MUI Popover, marginThreshold)
+ * і лягає НАД панеллю «Players» і меню розширення: наші вікна — MUI Popover (z 1300, окремий шар), а ті — у #root
+ * (живий замір 2026-11-28). Верх лишається SAFE.top (іконки Owlbear y 8–48), лічильники — як були (belowCtr).
+ * SAFE.left лишився для вікна біля токена: воно не пристає до краю й обходить «Players».
+ */
+export const EDGE = 16
 
 /**
  * Рамка вузького вікна в межах екрана поза зонами SAFE: x, y — бажаний лівий верхній кут, vp = {width, height} в'юпорта
  * (0 — невідомо). Висота менша за 760, якщо екран низький (1366×768 → 560). → поля popover з height.
  */
-export function narrowBox(x, y, vp, log = null, w = SIZE.narrow.width, ctr = ctrSlot()) {
+export function narrowBox(x, y, vp, log = null, w = SIZE.narrow.width, ctr = ctrSlot(), minLeft = SAFE.left) {
   const height = vp.height > 0 ? Math.max(320, Math.min(SIZE.narrow.height, vp.height - SAFE.top - SAFE.bottom)) : SIZE.narrow.height
   const maxX = vp.width > 0 ? vp.width - SAFE.right - w : x
   const maxY = vp.height > 0 ? vp.height - SAFE.bottom - height : y
   const box = {
     anchorReference: 'POSITION',
-    anchorPosition: { left: Math.round(Math.max(SAFE.left, Math.min(x, maxX))), top: Math.round(Math.max(SAFE.top, Math.min(y, maxY))) },
+    anchorPosition: { left: Math.round(Math.max(minLeft, Math.min(x, maxX))), top: Math.round(Math.max(SAFE.top, Math.min(y, maxY))) },
     anchorOrigin: { horizontal: 'LEFT', vertical: 'TOP' },
     transformOrigin: { horizontal: 'LEFT', vertical: 'TOP' },
     marginThreshold: 16,
@@ -214,9 +224,10 @@ export function anchorFor(bounds, vp, gap = 12, log = null) {
   return narrowBox(x, top, vp, log)
 }
 
-/** «До лівого / правого краю екрана» (автор 2026-11-26, варіант В: SDK не рухає відкрите вікно). vp = {width, height}. */
+/** «До лівого / правого краю екрана» (автор 2026-11-26, варіант В: SDK не рухає відкрите вікно). vp = {width, height}.
+ * Лівий край — EDGE (автор, 2026-11-28), правий — SAFE.right (колонка інструментів Owlbear). */
 export function dockAnchor(side, vp, log = null, w = SIZE.narrow.width, ctr = ctrSlot()) {
-  return narrowBox(side === 'right' ? vp.width - SAFE.right - w : SAFE.left, SAFE.top, vp, log, w, ctr)
+  return side === 'right' ? narrowBox(vp.width - SAFE.right - w, SAFE.top, vp, log, w, ctr) : narrowBox(EDGE, SAFE.top, vp, log, w, ctr, EDGE)
 }
 
 /**
@@ -235,16 +246,16 @@ export function popAt(at, side) {
 
 /**
  * «Генератори» біля одного краю й «Вороги» біля другого (пакет за спільним заходом, 2026-11-27): на екрані, вужчому за
- * SAFE.left + 460 + GAP + 460 + SAFE.right = 1292 px, два вікна по 460 налазили одне на одне (1134 px: 280–740 і 595–1055).
- * Тоді обидва вужчають порівну, щоб між ними лишився GAP (1134 → по 381). Не вужче за PAIR_MIN: на ще меншому екрані
- * (нижче за 1092 px) вони знову налазять, новіше — зверху, як було. Інші вікна (аркуш, караван) у пару не входять.
+ * EDGE + 460 + GAP + 460 + SAFE.right = 1028 px, два вікна по 460 налазять одне на одне. Тоді обидва вужчають порівну,
+ * щоб між ними лишився GAP (1000 → по 446). Не вужче за PAIR_MIN: на ще меншому екрані (нижче за 828 px) вони знову
+ * налазять, новіше — зверху, як було. До 2026-11-28 лівий край був SAFE.left 280, і поріг був 1292 px (1134 → по 381). Інші вікна (аркуш, караван) у пару не входять.
  */
 export const PAIR_MIN = 360
 const PAIR = { [ID.gen]: 'gen', [ID.genB]: 'gen', [ID.enemies]: 'en', [ID.enemiesB]: 'en' }
 export function pairWidth(vw) {
   const W = SIZE.narrow.width
-  if (!(vw > 0) || vw >= SAFE.left + 2 * W + GAP + SAFE.right) return W
-  return Math.max(PAIR_MIN, Math.floor((vw - SAFE.left - SAFE.right - GAP) / 2))
+  if (!(vw > 0) || vw >= EDGE + 2 * W + GAP + SAFE.right) return W
+  return Math.max(PAIR_MIN, Math.floor((vw - EDGE - SAFE.right - GAP) / 2))
 }
 /** Відкрите вікно-пара для id (інший тип із пари, біля протилежного краю): [id, rec] або null. side — бік самого id. */
 export function partnerOf(ss, id, side) {

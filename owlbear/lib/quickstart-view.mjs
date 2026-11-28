@@ -27,3 +27,33 @@ export function currentPage(tops, scrollTop, pad = 24) {
   for (const t of tops) { if (t.top <= scrollTop + pad) cur = t.id; else break }
   return cur
 }
+
+// ---- на весь екран (сесія А, автор 2026-11-28, п.5 фідбеку, макет А «Книжка») ----
+/** id вікна «Швидкий старт» на весь екран (Owlbear modal fullScreen); вузьке вікно — ID.quick / ID.quickB у pick.mjs. */
+export const QS_FULL = 'ua.pustelnyky.obr/quickstart-full'
+
+/**
+ * Місце в тексті, що переживає іншу ширину вікна: сторінка, на якій стоїть верх прокрутки, і частка від 0 до 1
+ * всередині неї. tops — [{id, top}] у порядку тексту, end — висота всього тексту (кінець останньої сторінки).
+ */
+export function pageAnchor(tops, scrollTop, end) {
+  const id = currentPage(tops, scrollTop, 0)
+  const i = tops.findIndex(t => t.id === id)
+  if (i < 0) return { id: '', frac: 0 }
+  const from = tops[i].top, to = i + 1 < tops.length ? tops[i + 1].top : end
+  const frac = to > from ? Math.min(1, Math.max(0, (scrollTop - from) / (to - from))) : 0
+  return { id, frac: Math.round(frac * 1000) / 1000 }
+}
+
+/** Прокрутка для збереженого місця в нових tops; невідома сторінка — 0. */
+export function anchorTop(tops, anchor, end) {
+  const i = anchor ? tops.findIndex(t => t.id === anchor.id) : -1
+  if (i < 0) return 0
+  const from = tops[i].top, to = i + 1 < tops.length ? tops[i + 1].top : end
+  return Math.round(from + (to - from) * (+anchor.frac || 0))
+}
+
+/** Збережене місце з sessionStorage: {id, frac} або null (старий формат — число пікселів — не переносимо). */
+export function readAnchor(raw) {
+  try { const a = JSON.parse(raw); return a && typeof a.id === 'string' ? { id: a.id, frac: +a.frac || 0 } : null } catch { return null }
+}
