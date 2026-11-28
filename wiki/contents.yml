@@ -189,14 +189,18 @@ buttons:
     image: stvoryty-karavan.png
     link: caravan_generator.html
   - text: "СТВОРИТИ СПРАВУ"
+    label: "Термінал Доглядача"   # author, 2026-11-28 (package A, 7)
     image: stvoryty-spravu.png
-    link: all_generators.html#case
+    link: all_generators.html
   - text: "ПОЧАТИ ПОДОРОЖ"
+    label: "Доповнення Owlbear"   # author, 2026-11-28 (package A, 7)
     image: pochaty-podorozh.png
-    link: all_generators.html#travel
+    link: index.html#owlbear      # TODO package B (3): open the Owlbear fold of the intro on the wiki home instead
   - text: "СТВОРИТИ БИТВУ"
+    label: "Модуль Foundry VTT"   # author, 2026-11-28 (package A, 7)
     image: stvoryty-bytvu.png
-    link: all_generators.html#battle
+    link: index.html#foundry      # TODO package B (3): open the Foundry VTT fold of the intro on the wiki home instead
   - text: "генератори натхнення"
     image: heneratory-natkhnennia.png
     link: all_generators.html#tables
+    menu: false                   # not in the site's menu (author, 2026-11-28, package A, 7); the picture stays in the source

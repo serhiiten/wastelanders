@@ -41,7 +41,8 @@ MEASURE = r"""() => {
 
 
 def scenarios(page, fails):
-    """Real clicks: the tool buttons (3.3), the home menu (3.12), the search (3.4), the theme (3.10), the anchors (3.11)."""
+    """Real clicks: the tool buttons (3.3), the home menu (3.12, A7), the left menu's sections (A1), the history fold (A4),
+    the search (3.4), the theme (3.10), the anchors (3.11)."""
     import yaml
     sys.path.insert(0, os.path.join(HERE, ".."))
     import wikisrc
@@ -67,8 +68,13 @@ def scenarios(page, fails):
         page.go_back(); settle()
         if page.url != BASE + slug + "/":
             fails.append(f"3.3 {slug}: «Назад» привів на {page.url}")
-    # 3.12: the 8 menu buttons
-    for i, b in enumerate(wiki.contents["buttons"]):
+    # 3.12 + package A, 7: the 7 menu buttons («Генератори натхнення» hidden, author 2026-11-28)
+    btns = [b for b in wiki.contents["buttons"] if b.get("menu") is not False]
+    page.goto(BASE); settle()
+    n += 1
+    if page.locator("a.mi").count() != len(btns):
+        fails.append(f"A7 у меню {page.locator('a.mi').count()} кнопок, а не {len(btns)}")
+    for i, b in enumerate(btns):
         page.goto(BASE); settle()
         a = page.locator("a.mi").nth(i)
         shown = a.locator(".mi-t").inner_text().strip()
@@ -83,8 +89,34 @@ def scenarios(page, fails):
         a.click(); settle()
         want = BASE + b["link"][:-3] + "/" if b["link"].endswith(".md") else site_root + b["link"]
         n += 1
-        if page.url != want:
+        got = page.url if "#" in want else page.url.split("#")[0]   # the Terminal adds its open tab to the address itself
+        if got != want:
             fails.append(f"3.12 «{b['text']}»: відкрилось {page.url}, а не {want}")
+        if "#" in b["link"]:   # A7: Owlbear / Foundry VTT land on their card of index.html, at the top of the window
+            n += 1
+            top = page.evaluate("(() => { const e = document.getElementById(location.hash.slice(1)); return e ? e.getBoundingClientRect().top : null; })()")
+            if top is None or not (-5 <= top <= 200):   # ≤ 200 px: the same rule as the anchors (3.11)
+                fails.append(f"A7 «{b.get('label', b['text'])}»: картки {b['link']} немає вгорі вікна (top {top})")
+    # package A, 1: a section in the left menu opens its first page
+    page.goto(BASE + "robymo-perevirky/"); settle()
+    for _, s in list(wiki.sections())[::4]:
+        page.goto(BASE + "robymo-perevirky/"); settle()
+        page.locator("a.side-s", has_text=s["title"]).first.click(); settle()
+        n += 1
+        if page.url != BASE + s["pages"][0] + "/":
+            fails.append(f"A1 розділ «{s['title']}» у меню відкрив {page.url}, а не першу сторінку {s['pages'][0]}")
+    # package A, 4: «Історія змін» is closed until clicked
+    page.goto(BASE); settle()
+    fold = page.locator("details.fold")
+    n += 3
+    if fold.count() != 1 or fold.get_attribute("open") is not None:
+        fails.append("A4 «Історія змін» не згорнута на старті")
+    elif page.locator("details.fold li").first.is_visible():
+        fails.append("A4 зміст «Історії змін» видно в згорнутій згортці")
+    else:
+        page.locator("details.fold > summary").click()
+        if not page.locator("details.fold li").first.is_visible():
+            fails.append("A4 клік не розгорнув «Історію змін»")
     # 3.4: the search
     page.goto(BASE + "robymo-perevirky/"); settle()
     # «Доглядач» ≥ 10 results: the search sees the whole wiki, not a few pages (author, 2026-11-28)
@@ -130,6 +162,8 @@ def scenarios(page, fails):
         src = "" if a["page"] == wiki.contents["home"] else a["page"] + "/"
         page.goto(BASE + src); settle()
         link = page.locator(f'a[href*="{a["target"]}/#"]', has_text=a["text"]).first
+        if link.evaluate("e => !!e.closest('details.fold:not([open])')"):   # inside «Історія змін» (A4): open it first, as a reader does
+            page.locator("details.fold > summary").click()
         link.click(); settle()
         n += 2
         if f"/{a['target']}/#" not in page.url:

@@ -207,10 +207,16 @@ for a in anchors:
     ok(f'href="{rel}{a["target"]}/#{hid}"' in h, f"3.11 {a['page']}: «{a['text']}» → {a['target']}#{hid}")
     ok(f' id="{hid}"' in t, f"3.11 {a['target']}: has #{hid} («{a['heading']}»)")
 
-# ---------- 3.12: the 8 buttons of the Notion home page ----------
+# ---------- 3.12: the buttons of the Notion home page (package A, 7: three relabelled, one hidden, author 2026-11-28) ----------
 menu = re.findall(r'<a class="mi" href="([^"]+)"([^>]*)><span class="lamp" aria-hidden="true"></span><span class="mi-t">([^<]+)</span>', home)
-btns = wiki.contents["buttons"]
-ok(len(menu) == len(btns) == 8, f"3.12 eight menu buttons (got {len(menu)})")
+btns = [b for b in wiki.contents["buttons"] if b.get("menu") is not False]
+ok(len(menu) == len(btns) == 7, f"3.12 seven menu buttons (got {len(menu)})")
+ok([b.get("label", b["text"]) for b in btns][4:] == ["Термінал Доглядача", "Доповнення Owlbear", "Модуль Foundry VTT"],
+   "A7 the last three buttons: Термінал Доглядача, Доповнення Owlbear, Модуль Foundry VTT")
+ok("ГЕНЕРАТОРИ НАТХНЕННЯ" not in home.split('<nav class="panel"')[1].split("</nav>")[0].upper(), "A7 «Генератори натхнення» is not in the menu")
+ok([b["link"] for b in btns][4:] == ["all_generators.html", "index.html#owlbear", "index.html#foundry"], "A7 the buttons' links")
+site_index = read(os.path.join(REPO, "index.html"))
+ok('id="owlbear"' in site_index and 'id="foundry"' in site_index, "A7 index.html has the #owlbear and #foundry cards")
 for (href, attrs, text), b in zip(menu, btns):
     ok(html.unescape(text) == b.get("label", b["text"]), f"3.12 button text «{text}» = «{b.get('label', b['text'])}»")
     link = b["link"]
@@ -221,6 +227,19 @@ for (href, attrs, text), b in zip(menu, btns):
     else:
         ok(href == "../" + link and "_blank" not in attrs, f"3.12 «{b['text']}» → {href}, same tab")
         ok(os.path.exists(os.path.join(REPO, link.split("#")[0])), f"3.12 {link} exists")
+# ---------- package A, 1: a section in the left menu opens its first page ----------
+for slug, h in pages.items():
+    for sec, first in ((s["slug"], s["pages"][0]) for _, s in wiki.sections()):
+        title = html.escape(next(s["title"] for _, s in wiki.sections() if s["slug"] == sec))
+        ok(re.search(r'<a class="side-s(?: on)?" href="\.\./' + first + r'/">' + re.escape(title) + "</a>", h) is not None,
+           f"A1 {slug}: section «{sec}» in the menu → {first}/")
+    break   # one page is enough: the menu is the same on all of them
+ok(not re.search(r'class="side-s[^"]*" href="[^"]*#', "".join(pages.values())), "A1 no section link in the menu goes to the home page")
+# ---------- package A, 4: «Історія змін» is a fold, closed ----------
+ok(re.search(r'<details class="fold" id="istoriia-zmin"><summary><h2>Історія змін</h2></summary>', home) is not None,
+   "A4 «Історія змін» is a closed fold")
+ok(home.rstrip().count("</details>") >= 1 and "Версія 2.0" in home.split('id="istoriia-zmin"')[1].split("</details>")[0],
+   "A4 the history is inside the fold")
 ok(not re.search(r"images/(pochaty|stvoryty|telegram|heneratory)", home), "3.12 the picture buttons are not on the page")
 
 # ---------- 3.13: callouts with their icon; nothing of Notion's left ----------

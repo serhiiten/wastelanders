@@ -286,7 +286,8 @@ class Site:
             out.append(f'<h2 class="side-g">{esc(g["title"])}</h2><ul>')
             for s in g["sections"]:
                 on = s["slug"] == cur_sec
-                out.append(f'<li><a class="side-s{" on" if on else ""}" href="{rel}#{s["slug"]}">{esc(s["title"])}</a>')
+                # a section opens its first page (author, 2026-11-28, package A, 1)
+                out.append(f'<li><a class="side-s{" on" if on else ""}" href="{rel}{s["pages"][0]}/">{esc(s["title"])}</a>')
                 if on:
                     out.append("<ul>")
                     for p in s["pages"]:
@@ -350,9 +351,12 @@ class Site:
             raise BuildError(f"pages/{home.slug}.md: розділи на головній не збігаються з contents.yml")
         lead = self.rewrite_links(add_heading_ids(md_to_html(intro)), rel, f"pages/{home.slug}.md")
         tail = self.rewrite_links(add_heading_ids(md_to_html(rest)), rel, f"pages/{home.slug}.md")
+        tail = fold_history(tail, f"pages/{home.slug}.md")
         menu = []
         for b in self.wiki.contents.get("buttons", []):
-            link = b["link"]
+            if b.get("menu") is False:      # kept in the source, not in the site's menu (author, 2026-11-28)
+                continue
+            link = b["link"]                # TODO package B (3): Owlbear / Foundry VTT open their fold of the intro
             ext = ""
             if link.endswith(".md"):
                 href = link[:-3] + "/"
@@ -429,6 +433,19 @@ class Site:
         im = Image.open(os.path.join(src, "cover.png")).convert("RGB")
         im = im.resize((COVER_W, round(COVER_W * im.size[1] / im.size[0])), Image.LANCZOS)
         im.save(os.path.join(dst, "cover.jpg"), "JPEG", quality=72, optimize=True, progressive=True)
+
+
+HISTORY = "Історія змін"
+
+
+def fold_history(htm, where):
+    """«Історія змін» on the home page is a fold, closed by default (author, 2026-11-28, package A, 4).
+    It is the page's last section: everything after its heading goes into the fold."""
+    m = re.search(r'<h2 id="([^"]+)">' + HISTORY + r'</h2>', htm)
+    if not m:
+        raise BuildError(f"{where}: немає заголовка «{HISTORY}»")
+    return (htm[:m.start()] + f'<details class="fold" id="{m.group(1)}"><summary><h2>{HISTORY}</h2></summary>'
+            + htm[m.end():] + "</details>")
 
 
 def write(path, text):
