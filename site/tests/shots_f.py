@@ -22,6 +22,8 @@ SHOTS = [   # (name, page, element to scroll to)
     ("f3-home-rules-columns", "", "section.group-wide + section.group"),
     ("f4-short-page", "shvydkyi-start-hravtsiam/", None),
     ("f4-long-page", "ihrovyi-protses/", None),
+    ("f6-mapa", "mapa-zakhidnoho-uzberezhzhia-ssha-2277/", None),
+    ("f6-fishky", "fishky-personazhiv-ta-nipiv/", None),
 ]
 
 

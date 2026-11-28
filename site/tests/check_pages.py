@@ -19,6 +19,9 @@ BASE = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8800").rstrip("/
 HERE = os.path.dirname(os.path.abspath(__file__))
 RULES = os.path.join(HERE, "..", "..", "_site", "rules")
 SIZES = [(1366, 768), (375, 812)]
+sys.path.insert(0, os.path.join(HERE, ".."))
+import wikisrc  # noqa: E402
+DOWNLOADS = wikisrc.Wiki(os.path.join(HERE, "..", "..")).downloads()   # wiki/downloads.yml (DC6: file names)
 # the pages kept off the site (package D-A): package_d asks for them and expects 404
 GONE = ("avtomatychnyi-henerator-bytv/", "avtomatychnyi-henerator-sprav/", "avtomatychnyi-henerator-podorozhei/", "arkushi-personazhiv-ta-karavanu/")
 
@@ -435,6 +438,20 @@ def package_db(page, fails, w):
                 fails.append(f"DB8 {w}px {slug}: {name} → {r.status} {ctype} {size} байт")
         if "drive.google.com" in page.content():
             fails.append(f"DB8 {w}px {slug}: на сторінці лишилось посилання на Google Drive")
+        # DC6 (author via the dispatcher, 2026-11-28): no heading or paragraph left that only repeats a file's name (the
+        # map's «Пустельники - Мапа Західного узбережжя США 2277» above its button): its words = the Drive name's words
+        left = page.evaluate("""names => { const w = s => [...new Set(s.toLowerCase().match(/[\\p{L}\\p{N}']+/gu) || [])].sort().join(' ');
+            const want = new Set(names.map(n => w(n.replace(/\\.[a-z0-9]+$/i, ''))));
+            return [...document.querySelectorAll('.text :is(h2,h3,h4,h5,h6,p,li)')].filter(e => !e.closest('.dlbtn'))
+              .map(e => { const c = e.cloneNode(true); c.querySelectorAll('.dls').forEach(x => x.remove()); return c.textContent.trim(); })
+              .filter(t => t && want.has(w(t))); }""", [d["name"] for d in DOWNLOADS])
+        n += 1
+        if left:
+            fails.append(f"DC6 {w}px {slug}: рядок лише повторює назву файлу: {left[:2]}")
+        heads = page.evaluate("document.querySelectorAll('.text :is(h1,h2,h3,h4,h5,h6) .dls').length")
+        n += 1
+        if heads:
+            fails.append(f"DC6 {w}px {slug}: кнопка «Скачати» всередині заголовка")
     # a real click downloads the file under the name it had on Drive (map: small; the player's reminder: a PDF)
     for slug, f in (("mapa-zakhidnoho-uzberezhzhia-ssha-2277", "Мапа Західного узбережжя США 2277 - Пустельники.png"),
                     ("pamiatka-hravtsia", "Пам'ятка гравця - Пустельники.pdf")):

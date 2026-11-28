@@ -360,7 +360,9 @@ class Site:
             if len(ids) != 1 or rest:
                 return m.group(0)
             return f'<div class="dls">{self.dl_button(known(ids[0]))}</div>' if buttons else ""
-        htm = re.sub(r"<(p|h[1-6])>(.*?)</\1>", lambda m: whole(m) if "drive.google.com" in m.group(2) else m.group(0), htm, flags=re.S)
+        # a heading carries its id (heading_ids): without `[^>]*` the map's «## [Пустельники - Мапа …](drive)» stayed a
+        # heading of the link's words above its button (author via the dispatcher, 2026-11-28, DC6)
+        htm = re.sub(r"<(p|h[1-6])(?:\s[^>]*)?>(.*?)</\1>", lambda m: whole(m) if "drive.google.com" in m.group(2) else m.group(0), htm, flags=re.S)
         out, pos, pending = [], 0, []
         links = list(DRIVE_RE.finditer(htm))
         for k, m in enumerate(links):
