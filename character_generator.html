@@ -877,6 +877,20 @@ h3 .cnt{font:600 12px var(--f-mono);text-transform:none;letter-spacing:0;color:#
 }
 @media (max-width:1023px){
   .qgrid>.qi:not(.qport):not(.qroll){padding:5px 8px 6px;border:1px dashed rgba(19,35,26,.45);border-radius:8px}
+  /* рамки одного розміру (автор, 2026-11-28): сітка з рівних колонок, рядки рамок 1fr — однакові й між рядками;
+     портрет і «Зробити перевірку» — окремими рядками на всю ширину. 3 колонки тут, 2 до 480 px, 1 до 359 px */
+  .qgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:1fr 1fr auto;align-items:stretch;gap:8px 10px}
+  .qgrid:has(>.qport){grid-template-rows:auto 1fr 1fr auto}
+  .qgrid>.qport{grid-column:1/-1;justify-self:start}
+  .qgrid>.qroll{grid-column:1/-1}
+}
+@media (max-width:480px){
+  .qgrid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:1fr 1fr 1fr auto}
+  .qgrid:has(>.qport){grid-template-rows:auto 1fr 1fr 1fr auto}
+}
+@media (max-width:359px){
+  .qgrid{grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(6,1fr) auto}
+  .qgrid:has(>.qport){grid-template-rows:auto repeat(6,1fr) auto}
 }
 @media (min-width:1024px) and (max-width:1180px){ .qi .hp input{width:36px} #q-caps{width:52px} .qi .stp{width:23px} .qi>span{font-size:11px;letter-spacing:.03em} .qic{width:14px;height:14px;margin-right:3px} }
 /* Компактний аркуш (рядок 5.1, макет А, як компактний аркуш Foundry): одна колонка до 520 px; −/+ не менші за 24 px */
@@ -5599,7 +5613,7 @@ function cmpQuick(d){
     chip('Жетони Долі', stepBtn('fdCur',-1,'Мінус 1 жетон Долі','q')+num('q-fdcur','fdCur',st.fdCur,d.fd,false,'Поточні жетони Долі')+stepBtn('fdCur',1,'Плюс 1 жетон Долі','q'))+
     chip('Припаси', supIn, svc('buy-sup',supBuyView(d),'cart'), lamps?'lamped':'')+
     chip('Кришки', stepBtn('caps',-1,'Мінус 1 кришка','q')+num('q-caps','caps',st.caps,null,false,'Кришки')+stepBtn('caps',1,'Плюс 1 кришка','q'))+
-    chip('Зароблено ОД', '<b class="cq-amber'+(d.xpLeft<0?' bad':'')+'">'+d.xpLeft+'</b>', '', '', 'Ще не витрачені ОД: '+d.xpLeft+'. Від зароблених віднімається ціна взятих покращень.');
+    chip('Зароблено ОД', stepBtn('xp',-1,'Мінус 1 ОД','q')+'<b class="cq-amber'+(d.xpLeft<0?' bad':'')+'">'+d.xpLeft+'</b>'+stepBtn('xp',1,'Плюс 1 ОД','q'), '', '', 'Ще не витрачені ОД: '+d.xpLeft+'. Від зароблених віднімається ціна взятих покращень.');
   const ko = hp<=0 ? '<div class="zerohp cq-ko" role="alert"><b>0 ОЗ — персонаж вибуває зі сцени.</b>'+(chem().superKO?' <b>'+esc(chem().superKO)+'</b>':'')+'<span class="zbtns"><button type="button" class="btn sm" data-act="consq-roll">Перевірка отримання наслідків</button>'+koButtons(d)+'</span></div>' : '';
   const sts=statusChips(d).filter(x=>!x.src); // що дають перки й особливості — у їхніх рядках нижче (як у Foundry)
   const tb=(act,k,lab)=>'<button type="button" class="btn sm cq-time" data-act="'+act+'" title="'+esc(QTIP[k])+'" aria-label="'+lab+'">'+cic(CIC[k])+'</button>';
