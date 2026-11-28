@@ -18,7 +18,9 @@ SITE = os.path.join(REPO, "_site")
 class Handler(http.server.SimpleHTTPRequestHandler):
     extensions_map = {**http.server.SimpleHTTPRequestHandler.extensions_map,
                       ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
-                      ".css": "text/css; charset=utf-8", ".json": "application/json"}
+                      ".css": "text/css; charset=utf-8", ".json": "application/json",
+                      # the files to download (package D-B): what GitHub Pages sends, not Windows' registry types
+                      ".pdf": "application/pdf", ".zip": "application/zip", ".png": "image/png"}
 
     def translate_path(self, path):
         path = path.split("?", 1)[0].split("#", 1)[0]

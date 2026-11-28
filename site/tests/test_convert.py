@@ -28,13 +28,15 @@ def ok(cond, msg):
 
 
 wiki = wikisrc.Wiki(REPO)
+# the export has the compendium pages only; the site-only pages (`compendium: false`, package D-B) are not Notion's
+cpages = {k: p for k, p in wiki.pages.items() if p.compendium}
 
 # ---------- the source on its own ----------
 ok(wiki.problems() == [], "source problems: " + "; ".join(wiki.problems()[:10]))
-ok(len(wiki.pages) == 92, f"92 pages (got {len(wiki.pages)})")
-ok(len(wiki.sections()) == 18, f"18 sections (got {len(wiki.sections())})")
-ok([g["title"] for g in wiki.contents["groups"]] == ["ПРАВИЛА ГРАВЦІВ", "ПРАВИЛА ДОГЛЯДАЧА (ВЕДУЧОГО)"], "two groups")
-for p in wiki.pages.values():
+ok(len(cpages) == 92, f"92 pages (got {len(cpages)})")
+ok(len(wiki.compendium_sections()) == 18, f"18 sections (got {len(wiki.compendium_sections())})")
+ok(sorted({g for g, _ in wiki.compendium_sections()}) == sorted(["ПРАВИЛА ГРАВЦІВ", "ПРАВИЛА ДОГЛЯДАЧА (ВЕДУЧОГО)"]), "two groups")
+for p in cpages.values():
     ok(re.fullmatch(r"[0-9a-f]{32}", p.notion or "") is not None, f"{p.slug}: notion id")
     plain = wikisrc.EMOJI_KEEP_RE.sub("", p.body)
     for bad in ("notion://", "%D0", "%D1", ".csv", "<aside>", "fouparrow", "fodownarrow", "НА_ГОЛОВНУ"):
@@ -105,7 +107,7 @@ else:
             with open(os.path.join(export, f), encoding="utf-8", newline="") as fh:
                 exp[m.group(2)] = fh.read()
     ok(len(exp) == 92, f"92 pages in the export (got {len(exp)})")
-    by_id = {p.notion: p for p in wiki.pages.values()}
+    by_id = {p.notion: p for p in cpages.values()}
     ok(set(by_id) == set(exp), "the same Notion ids: " + ", ".join(sorted(set(by_id) ^ set(exp))))
     same = 0
     for nid, text in exp.items():
@@ -126,13 +128,13 @@ else:
     ok(same == 92, f"every page's text is the export's (same: {same})")
     # sections: the export's order files
     import csv
-    for _, s in wiki.sections():
+    for _, s in wiki.compendium_sections():
         f = next(x for x in os.listdir(export) if x.endswith(f"{s['notion']}.csv"))
         with open(os.path.join(export, f), encoding="utf-8-sig", newline="") as fh:
             names = [r[0] for r in list(csv.reader(fh))[1:] if r and r[0].strip()]
         ok([wiki.pages[x].title for x in s["pages"]] == names, f"section «{s['title']}»: the export's order")
         ok(f == wiki.notion_file(s, ".csv"), f"section «{s['title']}»: Notion file name {f}")
-    for p in wiki.pages.values():
+    for p in cpages.values():
         ok(os.path.exists(os.path.join(export, wiki.notion_file(p, ".md"))), f"{p.slug}: Notion file name")
     # the layout tools/wiki_sync reads: every .csv (ordered and _all) parses to the export's rows
     with tempfile.TemporaryDirectory() as tmp:

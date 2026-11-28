@@ -29,6 +29,7 @@ EMOJI_KEEP_RE = re.compile(r"<!-- notion-emoji: (\S+) (\S+) -->")
 PAGE_LINK_RE = re.compile(r"\]\(([a-z0-9-]+)\.md(#[^)]*)?\)")
 SECTION_LINK_RE = re.compile(r"\]\(\.\./contents\.yml#([a-z0-9-]+)\)")
 IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(\.\./images/([^)]+)\)")
+FILE_RE = re.compile(r"\]\(\.\./files/([^)]+)\)")          # a file to download (wiki/files/, package D-B)
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 # Notion's file names: «:» and «.» dropped, spaces squeezed, cut to 50 characters
 QUOTE_SAFE = "()',-_~!*"
@@ -75,6 +76,9 @@ class Page:
         # still get it: to_notion_layout ignores the header); `site_at: <slug>` names the page that shows its tool button
         self.site = meta.get("site", True) is not False
         self.site_at = meta.get("site_at")
+        # `compendium: false` (package D-B, author 2026-11-28): a page only for the site (the reminders and the quick start
+        # brought over from Foundry): to_notion_layout leaves it out, so tools/wiki_sync and the compendiums never see it
+        self.compendium = meta.get("compendium", True) is not False
 
 
 def split_front(text):
@@ -104,8 +108,26 @@ class Wiki:
         """[(group title, section)] in order; a section: {slug, title, notion, pages}."""
         return [(g["title"], s) for g in self.contents["groups"] for s in g["sections"]]
 
+    def compendium_sections(self):
+        """The sections as the compendiums see them: without the site-only pages (`compendium: false`); a section left
+        with no page is not there at all (the quick start's sections)."""
+        out = []
+        for g, s in self.sections():
+            pages = [p for p in s["pages"] if p not in self.pages or self.pages[p].compendium]
+            if pages:
+                out.append((g, dict(s, pages=pages)))
+        return out
+
     def by_title(self, title):
         return next((p for p in self.pages.values() if p.title == title), None)
+
+    def downloads(self):
+        """wiki/downloads.yml: [{file, drive?, name, label}] (package D-B)."""
+        path = os.path.join(self.dir, "downloads.yml")
+        if not os.path.exists(path):
+            return []
+        with open(path, encoding="utf-8") as fh:
+            return yaml.safe_load(fh) or []
 
     def anchors(self):
         path = os.path.join(self.dir, "notion-anchors.yml")
@@ -145,13 +167,25 @@ class Wiki:
             for m in IMAGE_RE.finditer(p.body):
                 if not os.path.exists(os.path.join(self.dir, "images", m.group(2))):
                     out.append(f"{where}: немає картинки images/{m.group(2)}")
+            for m in FILE_RE.finditer(p.body):
+                if not os.path.isfile(os.path.join(self.dir, "files", urllib.parse.unquote(m.group(1)))):
+                    out.append(f"{where}: немає файлу files/{m.group(1)}")
+            if p.compendium:
+                if FILE_RE.search(p.body):
+                    out.append(f"{where}: посилання на files/ лише на сторінках сайту (compendium: false)")
+                for m in PAGE_LINK_RE.finditer(p.body):
+                    if m.group(1) in self.pages and not self.pages[m.group(1)].compendium:
+                        out.append(f"{where}: посилання на сторінку лише для сайту «{m.group(1)}.md» (компендіуми її не мають)")
+            elif p.notion:
+                out.append(f"{where}: сторінка лише для сайту (compendium: false) без notion")
             for bad, why in (("notion://", "посилання Notion"), ("%D0", "адреса Notion у %-кодуванні"),
                              ("%D1", "адреса Notion у %-кодуванні"), (".csv", "посилання на .csv")):
                 if bad in EMOJI_KEEP_RE.sub("", p.body):
                     out.append(f"{where}: {why} («{bad}»)")
             for m in re.finditer(r"\]\(((?![a-z]+:)(?!#)[^)\s]+)\)", p.body):
                 href = m.group(1)
-                if not (PAGE_LINK_RE.match("](" + href + ")") or href.startswith("../contents.yml#") or href.startswith("../images/")):
+                if not (PAGE_LINK_RE.match("](" + href + ")") or href.startswith("../contents.yml#") or href.startswith("../images/")
+                        or href.startswith("../files/")):
                     out.append(f"{where}: невідоме посилання «{href}»")
         for b in self.contents.get("buttons", []):
             if b["link"].endswith(".md") and b["link"][:-3] not in self.pages:
@@ -161,6 +195,16 @@ class Wiki:
         for p in self.pages.values():
             if p.site_at and (p.site or p.site_at not in self.pages or not p.tool):
                 out.append(f"pages/{p.slug}.md: site_at лише разом із site: false і tool, на наявну сторінку")
+        dl = self.downloads()
+        fdir = os.path.join(self.dir, "files")
+        on_disk = set(os.listdir(fdir)) if os.path.isdir(fdir) else set()
+        for d in dl:
+            if d["file"] not in on_disk:
+                out.append(f"downloads.yml: немає файлу files/{d['file']}")
+            if not str(d.get("label", "")).startswith("Скачати "):
+                out.append(f"downloads.yml, {d['file']}: напис кнопки — «Скачати …»")
+        for f in sorted(on_disk - {d["file"] for d in dl}):
+            out.append(f"files/{f}: його немає в downloads.yml")
         for a in self.anchors():
             for k in ("page", "target"):
                 if a[k] not in self.pages:
@@ -175,7 +219,7 @@ class Wiki:
         return f"{notion_name(page_or_section['title'] if isinstance(page_or_section, dict) else page_or_section.title)} {page_or_section['notion'] if isinstance(page_or_section, dict) else page_or_section.notion}{ext}"
 
     def to_notion_md(self, page):
-        secs = {s["slug"]: s for _, s in self.sections()}
+        secs = {s["slug"]: s for _, s in self.compendium_sections()}
         body = unalert(page.body)
         body = EMOJI_KEEP_RE.sub(lambda m: f'<img src="notion://custom_emoji/{m.group(1)}" alt="notion://custom_emoji/{m.group(1)}" width="{m.group(2)}" />', body)
         body = PAGE_LINK_RE.sub(lambda m: "](" + urllib.parse.quote(self.notion_file(self.pages[m.group(1)], ".md"), safe=QUOTE_SAFE) + (m.group(2) or "") + ")", body)
@@ -187,9 +231,11 @@ class Wiki:
         """Write the wiki as the Notion export laid it out (`<Title> <id>.md`, `<Section> <id>.csv` / `_all.csv`)."""
         os.makedirs(dst, exist_ok=True)
         for p in self.pages.values():
+            if not p.compendium:          # a page only for the site (package D-B)
+                continue
             with open(os.path.join(dst, self.notion_file(p, ".md")), "w", encoding="utf-8", newline="") as fh:
                 fh.write(self.to_notion_md(p))
-        for _, s in self.sections():
+        for _, s in self.compendium_sections():
             for ext in (".csv", "_all.csv"):
                 with open(os.path.join(dst, self.notion_file(s, ext)), "w", encoding="utf-8-sig", newline="") as fh:
                     out = csv.writer(fh, lineterminator="\r\n")

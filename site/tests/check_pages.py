@@ -14,6 +14,7 @@ import sys
 os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "F:/Claude/pustelnyky-venv/browsers")   # the workspace venv keeps its browsers here
 from playwright.sync_api import sync_playwright  # noqa: E402
 
+REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 BASE = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8800").rstrip("/") + "/wastelanders/rules/"
 HERE = os.path.dirname(os.path.abspath(__file__))
 RULES = os.path.join(HERE, "..", "..", "_site", "rules")
@@ -394,6 +395,71 @@ def package_d(page, fails, w):
     return n
 
 
+def package_db(page, fails, w):
+    """Package D-B (author, 2026-11-28): every «Скачати …» button gives its file (status 200, the file's type and size),
+    stands inside the text and is at least 44 px high; a real click downloads under the Drive name (no Drive anywhere);
+    the reminders and the quick start are pages of the site, the quick start a group of its own."""
+    n = 0
+    files = os.path.join(REPO, "wiki", "files")
+    kinds = {"pdf": ("application/pdf",), "png": ("image/png",),
+             # the dispatcher's server may predate serve.py's .zip type (Windows says x-zip-compressed); Pages sends zip
+             "zip": ("application/zip", "application/x-zip-compressed")}
+    pages_with = ["ihrovyi-protses", "pokrokova-instruktsiia", "henerator-pustelnykiv-ruchnyi", "pokrashchennia-karavanu",
+                  "stvorennia-karavanu", "stvorennia-kampanii", "mapa-zakhidnoho-uzberezhzhia-ssha-2277",
+                  "fishky-personazhiv-ta-nipiv", "pamiatka-hravtsia", "pamiatka-dohliadacha", "shvydkyi-start-avtory-ta-litsenziia"]
+    seen = {}
+    for slug in pages_with:
+        page.goto(BASE + slug + "/"); page.wait_for_load_state("networkidle")
+        info = page.evaluate("""() => { const t = document.querySelector('.text').getBoundingClientRect();
+            return [...document.querySelectorAll('a.dlbtn')].map(a => { const r = a.getBoundingClientRect();
+              return {href: a.href, dl: a.getAttribute('download'), text: a.querySelector('b').textContent, h: r.height,
+                      inside: r.left >= t.left - 1 && r.right <= t.right + 1, vw: r.right <= innerWidth}; }); }""")
+        n += 1
+        if not info:
+            fails.append(f"DB8 {w}px {slug}: немає кнопки «Скачати»")
+        for b in info:
+            n += 1
+            if not b["text"].startswith("Скачати "):
+                fails.append(f"DB8 {w}px {slug}: напис кнопки «{b['text']}»")
+            if b["h"] < 44 or not b["inside"] or not b["vw"]:
+                fails.append(f"DB8 {w}px {slug}: кнопка «{b['text']}» {b['h']:.0f} px заввишки, у тексті {b['inside']}, у вікні {b['vw']}")
+            if b["href"] in seen:
+                continue
+            r = page.request.head(b["href"])
+            name = b["href"].rsplit("/", 1)[1]
+            ctype = r.headers.get("content-type", "").split(";")[0]
+            seen[b["href"]] = (r.status, ctype)
+            size = int(r.headers.get("content-length", "-1"))
+            if r.status != 200 or ctype not in kinds[name.rsplit(".", 1)[1]] or size != os.path.getsize(os.path.join(files, name)):
+                fails.append(f"DB8 {w}px {slug}: {name} → {r.status} {ctype} {size} байт")
+        if "drive.google.com" in page.content():
+            fails.append(f"DB8 {w}px {slug}: на сторінці лишилось посилання на Google Drive")
+    # a real click downloads the file under the name it had on Drive (map: small; the player's reminder: a PDF)
+    for slug, f in (("mapa-zakhidnoho-uzberezhzhia-ssha-2277", "Мапа Західного узбережжя США 2277 - Пустельники.png"),
+                    ("pamiatka-hravtsia", "Пам'ятка гравця - Пустельники.pdf")):
+        page.goto(BASE + slug + "/"); page.wait_for_load_state("networkidle")
+        with page.expect_download() as d:
+            page.locator("a.dlbtn").first.click()
+        n += 1
+        dl = d.value
+        if dl.suggested_filename != f:
+            fails.append(f"DB8 {w}px {slug}: збережено як «{dl.suggested_filename}», а не «{f}»")
+        dl.cancel()
+    # the quick start: its own group first on the home page, three sections; «Скачати PDF» first on its first page
+    page.goto(BASE); page.wait_for_load_state("networkidle")
+    g = page.evaluate("""() => [...document.querySelectorAll('.group')].map(x => [x.querySelector('.group-h').textContent,
+        x.querySelectorAll('.sec').length])""")
+    n += 1
+    if not g or g[0] != ["ШВИДКИЙ СТАРТ", 3]:
+        fails.append(f"DB9 {w}px: перша група на головній не «Швидкий старт» із трьома розділами: {g[:1]}")
+    page.goto(BASE + "shvydkyi-start-avtory-ta-litsenziia/"); page.wait_for_load_state("networkidle")
+    first = page.evaluate("document.querySelector('.text h1').nextElementSibling.textContent")
+    n += 1
+    if "Скачати PDF" not in first:
+        fails.append(f"DB9 {w}px: перше після назви на першій сторінці — не «Скачати PDF»: «{first[:40]}»")
+    return n
+
+
 def frame_scenarios(page, fails, site_root):
     """Package B: the tools in the wiki's frame (rows Б.2, Б.3, Б.4, Б.6, Б.10)."""
     n = 0
@@ -659,6 +725,7 @@ def main():
                 checks += scenarios(page, fails)
             checks += package_c(page, fails, w)
             checks += package_d(page, fails, w)
+            checks += package_db(page, fails, w)
             checks += embed_checks(page, fails, w) + open_each(page, fails, w)
             checks += 1
             if errors:

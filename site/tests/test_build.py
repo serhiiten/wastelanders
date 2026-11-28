@@ -76,7 +76,7 @@ everything = dict(pages, **{"index": home, "404": read(os.path.join(out, "404.ht
 ok(sorted(os.listdir(out)) == ["404.html", "rules"], f"3.14 _site holds only rules/ and 404.html: {os.listdir(out)}")
 ok(git_state() == before_git, "3.14 the build changed files in the repository: " + "; ".join(sorted(set(git_state()) ^ set(before_git))[:5]))
 ok(tool_hashes() == before_tools, "3.14 the build changed a tool file")
-ok(set(os.listdir(rules)) == set(pages) | {"index.html", "site.css", "site.js", "img", "pagefind"}, "3.14 rules/: pages, index, css, js, img, pagefind only")
+ok(set(os.listdir(rules)) == set(pages) | {"index.html", "site.css", "site.js", "img", "pagefind", "files"}, "3.14 rules/: pages, index, css, js, img, pagefind, files only")
 
 # ---------- 3.1: the home lists the groups and sections in the wiki's order ----------
 groups = re.findall(r'<h2 class="group-h">(.*?)</h2>', home)
@@ -97,7 +97,7 @@ for i, slug in enumerate(order):
     if i > 0:
         ok(f'class="pn-prev" href="../{order[i - 1]}/"' in h, f"3.2 {slug}: previous is {order[i - 1]}")
     body = wiki.pages[slug].body
-    ok(h.count("<table") == len(re.findall(r"^\s*\|[-: |]+\|\s*$", body, re.M)), f"3.2 {slug}: every table rendered")
+    ok(h.count("<table") == len(re.findall(r"^\s*\|[-: |]+\|\s*$", body, re.M)) + body.count("<table"), f"3.2 {slug}: every table rendered")
 ok(sum(h.count("<table") for h in pages.values()) > 50, "3.2 tables exist")
 
 # ---------- 3.3: tool buttons on the 9 pages, same tab, to an existing tool ----------
@@ -392,7 +392,8 @@ for name, h in pages.items():
     for href in re.findall(r'href="(\.\./[^"]*)"', h):
         m = re.fullmatch(r"\.\./(?:([a-z0-9-]+)/)?(?:#(.+))?", href)
         if not m:
-            ok(os.path.exists(os.path.join(REPO, href[6:].split("#")[0])) or href.startswith("../site.") or href.startswith("../img/") or href.startswith("../pagefind/") or href.startswith("../../favicon"), f"link {name}: {href}")
+            ok(os.path.exists(os.path.join(REPO, href[6:].split("#")[0])) or href.startswith("../site.") or href.startswith("../img/") or href.startswith("../pagefind/") or href.startswith("../../favicon")
+               or os.path.isfile(os.path.join(rules, href[3:])) and href.startswith("../files/"), f"link {name}: {href}")
             continue
         tgt, frag = m.group(1) or "", m.group(2)
         ok(tgt == "" or tgt in pages, f"link {name}: page {tgt}")
@@ -424,7 +425,7 @@ MOVED = {"avtomatychnyi-henerator-sprav": ("struktura-sesii-stvorennia-sprav", "
          "avtomatychnyi-henerator-bytv": ("skladnist-bytv", "all_generators.html#battle"),
          "avtomatychnyi-henerator-podorozhei": ("podorozhi-ta-vypadkovi-podii", "all_generators.html#travel")}
 ok(site.moved == {k: v[0] for k, v in MOVED.items()}, f"D5 moved pages: {site.moved}")
-ok(site.hidden == set(MOVED) | {"arkushi-personazhiv-ta-karavanu"}, f"D5/D6 pages off the site: {sorted(site.hidden)}")
+ok(site.hidden == set(MOVED) | {"arkushi-personazhiv-ta-karavanu", "pamiatky-hravtsia-ta-dohliadacha"}, f"D5/D6 pages off the site: {sorted(site.hidden)}")
 for gone in site.hidden:
     ok(not os.path.exists(os.path.join(rules, gone)), f"D5/D6 {gone}: no page on the site")
     ok(all(f'href="../{gone}/' not in h and f'href="{gone}/' not in h for h in everything.values()), f"D5/D6 no link to {gone}")
@@ -439,7 +440,7 @@ dod = next(s for _, s in site.sections if s["slug"] == "dodatkovi-materialy")
 ok("arkushi-personazhiv-ta-karavanu" not in dod["pages"] and dod["pages"], "D6 «Додаткові матеріали» without the sheets page")
 ok(">Аркуші персонажів та каравану<" not in home, "D6 the home page does not list the sheets page")
 # the source keeps them (the compendiums read it): contents.yml whole, the Notion layout has every page
-ok(len(wiki.pages) == 92 and all(p in [x for _, s in wiki.sections() for x in s["pages"]] for p in site.hidden),
+ok(len(wiki.pages) == 92 + 23 and all(p in [x for _, s in wiki.sections() for x in s["pages"]] for p in site.hidden),
    "D5/D6 the source keeps the pages and contents.yml lists them")
 _lay = tempfile.mkdtemp(prefix="wiki-notion-")
 ok(len([f for f in os.listdir(wiki.to_notion_layout(_lay)) if f.endswith(".md")]) == 92, "D5/D6 the Notion layout still has all 92 pages")
@@ -455,6 +456,123 @@ def moved_no_callout(w):
 
 e = broken(moved_no_callout)
 ok("skladnist-bytv.md" in e and "avtomatychnyi-henerator-bytv" in e, f"D5 a moved button without its callout stops the build: «{e[:160]}»")
+
+# ---------- package D-B (author, 2026-11-28): the reminders and the quick start (site only), files to download ----------
+SITE_ONLY = sorted(s for s, p in wiki.pages.items() if not p.compendium)
+QS = [p for g in wiki.contents["groups"] if g["title"] == "ШВИДКИЙ СТАРТ" for s in g["sections"] for p in s["pages"]]
+ok(len(QS) == 21 and set(QS) | {"pamiatka-hravtsia", "pamiatka-dohliadacha"} == set(SITE_ONLY),
+   f"DB7/9 the site-only pages: the two reminders and the 21 pages of the quick start ({len(SITE_ONLY)})")
+for slug in SITE_ONLY:
+    ok(slug in pages, f"DB7/9 {slug}: a page of the site")
+ok(groups and groups[0] == "ШВИДКИЙ СТАРТ", f"DB9 «Швидкий старт» is the first group on the home page: {groups[:1]}")
+ok("pamiatky-hravtsia-ta-dohliadacha" not in pages, "DB7 the old page of Drive links is off the site")
+dm = [s for _, s in site.sections if s["slug"] == "dodatkovi-materialy"][0]["pages"]
+ok(dm[:2] == ["pamiatka-hravtsia", "pamiatka-dohliadacha"], f"DB7 the reminders in «Додаткові матеріали»: {dm}")
+
+# the compendiums never see a site-only page: the Notion layout (what tools/wiki_sync reads) leaves them out
+lay = tempfile.mkdtemp(prefix="wiki-layout-")
+wiki.to_notion_layout(lay)
+names = os.listdir(lay)
+ok(len([n for n in names if n.endswith(".md")]) == len(wiki.pages) - len(SITE_ONLY), f"DB the layout holds only the compendium pages ({len(names)} files)")
+csv_rows = {row for n in names if n.endswith(".csv") for row in open(os.path.join(lay, n), encoding="utf-8-sig").read().splitlines()}
+for slug in SITE_ONLY:
+    t = wiki.pages[slug].title
+    ok(not any(n.startswith(wikisrc.notion_name(t) + " ") and n.endswith(".md") for n in names) and t not in csv_rows,
+       f"DB the layout has no file or section row for «{t}»")
+ok(not any("ШВИДКИЙ" in n or n.startswith("Гравцям ") or n.startswith("Доглядачу ") for n in names), "DB no section CSV of the quick start")
+shutil.rmtree(lay, ignore_errors=True)
+
+# downloads: buttons «Скачати …», served by the site, never Drive
+DL = {d["file"]: d for d in wiki.downloads()}
+ok(len(DL) == 9, f"DB8 nine files to download ({len(DL)})")
+ok(sorted(os.listdir(os.path.join(rules, "files"))) == sorted(DL), "DB8 rules/files/ holds exactly the files of downloads.yml")
+for f, d in DL.items():
+    size = os.path.getsize(os.path.join(REPO, "wiki", "files", f))
+    ok(size < 50_000_000, f"DB8 {f}: under 50 MB (the author's limit for the repository, 2026-11-28): {size}")
+for name, h in everything.items():
+    ok("drive.google.com" not in h, f"DB8 {name}: a link to Google Drive is left")
+BTN = re.compile(r'<a class="dlbtn" href="\.\./files/([^"]+)" download="([^"]+)" data-pagefind-ignore><b>([^<]+)</b><small>(\w+) · [\d,]+ МБ</small></a>')
+want = {"ihrovyi-protses": 6, "pokrokova-instruktsiia": 1, "henerator-pustelnykiv-ruchnyi": 2, "pokrashchennia-karavanu": 1,
+        "stvorennia-karavanu": 1, "stvorennia-kampanii": 1, "mapa-zakhidnoho-uzberezhzhia-ssha-2277": 1,
+        "fishky-personazhiv-ta-nipiv": 1, "pamiatka-hravtsia": 1, "pamiatka-dohliadacha": 1, "shvydkyi-start-avtory-ta-litsenziia": 1}
+for slug, h in pages.items():
+    btns = BTN.findall(h)
+    ok(len(btns) == h.count('class="dlbtn"') == want.get(slug, 0), f"DB8 {slug}: {want.get(slug, 0)} download buttons (got {len(btns)})")
+    for f, dname, text, kind in btns:
+        ok(f in DL and html.unescape(dname) == DL[f]["name"], f"DB8 {slug}: button to {f} saves as its Drive name")
+        ok(html.unescape(text).startswith("Скачати "), f"DB8 {slug}: button text «{text}»")
+        ok(kind == f.rsplit(".", 1)[1].upper(), f"DB8 {slug}: the button says the file's kind")
+ok(re.search(r'<div class="text" data-pagefind-body>\s*<h1[^>]*>[^<]*</h1>\s*<div class="dls"><a class="dlbtn" href="\.\./files/shvydkyi-start\.pdf"[^>]*><b>Скачати PDF</b>',
+             pages["shvydkyi-start-avtory-ta-litsenziia"]), "DB9 «Скачати PDF» at the top of the quick start's first page")
+for slug, f in (("pamiatka-hravtsia", "pamiatka-hravtsia.pdf"), ("pamiatka-dohliadacha", "pamiatka-dohliadacha.pdf")):
+    txt = pages[slug].split('<div class="text"', 1)[1].split('<nav class="pn"', 1)[0]
+    ok(re.search(r'<div class="dls"><a class="dlbtn" href="\.\./files/' + f + r'"[^>]*>.*?</a></div>\s*</div>\s*$', txt, re.S),
+       f"DB7 {slug}: the printable PDF's button at the bottom of the page")
+ok("dlbtn" not in home, "DB8 «Історія змін» keeps the words of its Drive links, no buttons")
+ok("Оновлено дизайн листа персонажа та листа каравану" in visible(home).replace("  ", " "), "DB8 the changelog's link words stay as text")
+ok("Аркуші персонажів та каравану." in re.sub(r"\s+", " ", visible(pages["ihrovyi-protses"])), "DB8 a link inside a sentence keeps its words")
+ok(re.search(r"Аркуші персонажів та каравану\.<span class=\"dls\">(?:<a class=\"dlbtn\"[^>]*>.*?</a>){2}</span><ul>", pages["ihrovyi-protses"]),
+   "DB8 the two sheets' buttons stand after the item's text, before its nested list")
+
+
+def drive_unknown(w):
+    p = os.path.join(w, "pages", "naslidky.md")
+    with open(p, "a", encoding="utf-8", newline="") as fh:
+        fh.write("\n[тест](https://drive.google.com/file/d/NOPE000000/view)\n")
+
+
+def links_site_only(w):
+    p = os.path.join(w, "pages", "naslidky.md")
+    with open(p, "a", encoding="utf-8", newline="") as fh:
+        fh.write("\n[тест](pamiatka-hravtsia.md)\n")
+
+
+def file_unlisted(w):
+    with open(os.path.join(w, "files", "zayvyi.pdf"), "wb") as fh:
+        fh.write(b"%PDF-")
+
+
+e = broken(drive_unknown)
+ok("NOPE000000" in e and "downloads.yml" in e, f"DB8 a Drive file not in downloads.yml stops the build: «{e[:120]}»")
+e = broken(links_site_only)
+ok("naslidky.md" in e and "pamiatka-hravtsia" in e, f"DB a compendium page linking to a site-only page stops the build: «{e[:120]}»")
+e = broken(file_unlisted)
+ok("zayvyi.pdf" in e, f"DB8 a file in files/ outside downloads.yml stops the build: «{e[:120]}»")
+
+# the imported text is Foundry's (reminders) / the Owlbear version's without its hints, plus the PDF's enemy blocks
+# (quick start), word for word: the page's visible text equals the import's HTML (until the page is edited by hand)
+DEV = os.path.join(REPO, "..", "wastelandersrpg_foundry_dev")
+OWL = os.path.join(REPO, "..", "pustelnyky-owlbear")
+node = shutil.which("node") or shutil.which("node.exe")
+if node and os.path.isdir(DEV) and os.path.isdir(OWL):
+    r = subprocess.run([node, os.path.join(REPO, "site", "import_foundry.mjs"), "--expected"], capture_output=True, text=True, encoding="utf-8")
+    ok(r.returncode == 0, f"DB import_foundry.mjs --expected failed: {r.stderr[-300:]}")
+    exp = json.loads(r.stdout or "{}")
+    ok(sorted(exp) == SITE_ONLY, "DB the import makes exactly the site-only pages")
+
+    def words(h):
+        h = re.sub(r'<div class="dls">.*?</div>|<p><a href="\.\./files/[^"]+">[^<]*</a></p>|<span class="call-ico"[^>]*>.*?</span>', " ", h, flags=re.S)
+        return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", h)).replace(" ", " ")).strip()
+    import hashlib
+    for slug in SITE_ONLY:
+        page = wiki.pages[slug]
+        if hashlib.sha1(page.body.encode("utf-8")).hexdigest()[:12] != page.meta.get("import_sha"):
+            print(f"SKIP DB verbatim {slug}: edited since the import")
+            continue
+        txt = pages[slug].split('<div class="text" data-pagefind-body>', 1)[1].split('<nav class="pn"', 1)[0]
+        txt = re.sub(r"<h1[^>]*>.*?</h1>", "", txt, flags=re.S)
+        ok(words(txt) == words(exp.get(slug, "")), f"DB {slug}: the site's text differs from the import's: "
+           + next((f"…{a[max(0, i - 40):i + 40]}… / …{b[max(0, i - 40):i + 40]}…" for a, b in [(words(txt), words(exp.get(slug, "")))]
+                   for i in [next((k for k in range(min(len(a), len(b))) if a[k] != b[k]), min(len(a), len(b)))]), ""))
+else:
+    print("SKIP DB verbatim (no node, DEV clone or pustelnyky-owlbear next to the repository)")
+
+
+# terms (CLAUDE.md of the workspace; DEV's tests/terms.test.mjs does not read the site): the site-only pages too
+TERMS_BAD = re.compile(r"ГМ|кубик|папк|псі|псіон|псиоників", re.I)
+for slug in SITE_ONLY:
+    bad = TERMS_BAD.findall(wiki.pages[slug].body)
+    ok(not bad, f"DB terms {slug}: {bad[:3]}")
 
 # ---------- the Terminal's shared look (header, tabs, paper) stays the same as in the Terminal ----------
 TPL = os.path.join(REPO, "..", "pustelnyky_src (1)", "pustelnyky_src", "template.html")

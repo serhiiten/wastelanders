@@ -49,6 +49,9 @@ TOOLS = {"all_generators.html": ("terminal", "Термінал Доглядач�
 INTRO = ("home", "de-hraty.md")         # the intro «Де грати» on the home page (package B): not a wiki page
 MORE_TEXT = "Докладніше"                 # mockup Г3 «Таблички», chosen by the author 2026-11-28
 COPY_TEXT = "Копіювати"                  # index.html's copy button
+DRIVE_RE = re.compile(r'<a href="https://drive\.google\.com/file/d/([\w-]+)/[^"]*">(.*?)</a>|https://drive\.google\.com/file/d/([\w-]+)/\S*?(?=<|\s|$)', re.S)
+FILE_LINK_RE = re.compile(r'<p><a href="\.\./files/([^"]+)">([^<]+)</a></p>')
+BLOCK_END = re.compile(r"</p>|</li>|<ul>|<ol>|</h[1-6]>|</td>|</th>")
 COVER_W = 1400                         # the cover is 2752 px / 2.1 MB in the source; 1400 px covers a 1366 px
                                        # screen (author, 2026-11-28)
 
@@ -218,6 +221,9 @@ class Site:
         clash = set(self.secs) & set(self.wiki.pages)
         if clash:
             raise BuildError("contents.yml: розділ і сторінка з однаковою адресою: " + ", ".join(sorted(clash)))
+        self.downloads = self.wiki.downloads()
+        self.by_drive = {d["drive"]: d for d in self.downloads if d.get("drive")}
+        self.by_file = {d["file"]: d for d in self.downloads}
         self.ids = {}            # page slug → {heading text → id}
         self.para_ids = {}       # page slug → {bold paragraph name → id} (Notion anchors to a paragraph)
         self.anchor_fix = {}     # (page, text, target) → heading id
@@ -241,6 +247,8 @@ class Site:
                 h = f"{rel}#{sec}"
             elif h.startswith("../images/"):
                 h = rel + "img/" + h[len("../images/"):]
+            elif h.startswith("../files/"):
+                h = rel + "files/" + h[len("../files/"):]
             elif h.startswith("#") or h.startswith("mailto:"):
                 pass
             else:
@@ -306,6 +314,61 @@ class Site:
             if not n:
                 raise BuildError(f"pages/{slug}.md: не знайдено абзацу «{t}» для якоря")
         return htm
+
+    # ----- files to download (package D-B, author 2026-11-28) -----
+
+    def dl_button(self, d, label=None):
+        size = os.path.getsize(os.path.join(self.wiki.dir, "files", d["file"])) / 1e6
+        kind = d["file"].rsplit(".", 1)[-1].upper()
+        return (f'<a class="dlbtn" href="../files/{esc(d["file"])}" download="{esc(d["name"])}" data-pagefind-ignore>'
+                f'<b>{esc(label or d["label"])}</b><small>{kind} · {f"{size:.1f}".replace(".", ",")} МБ</small></a>')
+
+    def downloads_html(self, htm, where, buttons=True):
+        """Every download is a button «Скачати …» served by the site, never a link to Google Drive (author, 2026-11-28,
+        package D-B, 8). A paragraph or heading that is only a Drive link (or its bare address) becomes the button; a Drive
+        link inside a sentence keeps its words as plain text and its button stands at the end of that paragraph or list
+        item. `buttons=False` (the home page's «Історія змін»): the words only, no buttons. A site page's paragraph that is
+        only a link to `../files/…` is that file's button with the link's words."""
+        def known(fid):
+            if fid not in self.by_drive:
+                raise BuildError(f"{where}: файл Google Drive {fid} не описано у wiki/downloads.yml")
+            return self.by_drive[fid]
+
+        def file_btn(m):
+            d = self.by_file.get(html.unescape(m.group(1)))
+            if not d:
+                raise BuildError(f"{where}: файл files/{m.group(1)} не описано у wiki/downloads.yml")
+            return f'<div class="dls">{self.dl_button(d, html.unescape(m.group(2)))}</div>'
+        htm = FILE_LINK_RE.sub(file_btn, htm)
+
+        def whole(m):   # a block that holds one Drive link or address and nothing else
+            ids = [x.group(1) or x.group(3) for x in DRIVE_RE.finditer(m.group(2))]
+            rest = DRIVE_RE.sub("", m.group(2)).strip()
+            if len(ids) != 1 or rest:
+                return m.group(0)
+            return f'<div class="dls">{self.dl_button(known(ids[0]))}</div>' if buttons else ""
+        htm = re.sub(r"<(p|h[1-6])>(.*?)</\1>", lambda m: whole(m) if "drive.google.com" in m.group(2) else m.group(0), htm, flags=re.S)
+        out, pos, pending = [], 0, []
+        links = list(DRIVE_RE.finditer(htm))
+        for k, m in enumerate(links):
+            if m.group(3):
+                raise BuildError(f"{where}: гола адреса Google Drive посеред тексту: {m.group(0)[:80]}")
+            d = known(m.group(1))
+            end = BLOCK_END.search(htm, m.end())
+            if not end:
+                raise BuildError(f"{where}: посилання на Google Drive поза абзацом")
+            out.append(htm[pos:m.start()] + m.group(2))
+            pos = m.end()
+            if d not in pending:
+                pending.append(d)
+            # the buttons go in where the block ends, once its last Drive link is done
+            if k + 1 == len(links) or links[k + 1].start() > end.start():
+                if buttons:
+                    out.append(htm[pos:end.start()] + '<span class="dls">' + "".join(self.dl_button(x) for x in pending) + "</span>")
+                    pos = end.start()
+                pending = []
+        out.append(htm[pos:])
+        return "".join(out)
 
     # ----- pieces of the layout -----
 
@@ -408,6 +471,7 @@ class Site:
         htm = add_heading_ids(htm, {heading_id(page.title): 1})
         htm = self.add_para_ids(slug, htm)
         htm = drop_tool_links(htm, page.tool)
+        htm = self.downloads_html(htm, where)
         htm = self.place_moved_buttons(slug, htm, rel)
         htm = self.rewrite_links(htm, rel, where, cur=slug)
         htm = re.sub(r"<!--BTN:([a-z0-9-]+)-->", lambda m: self.tool_button(self.wiki.pages[m.group(1)], rel, bid=m.group(1)), htm)
@@ -442,10 +506,13 @@ class Site:
         intro, rest = body[:m.start()], body[m2.start():]
         # the sections the home page lists must be exactly contents.yml's (it is the menu's order)
         listed = re.findall(r"\(\.\./contents\.yml#([a-z0-9-]+)\)", body[m.start():m2.start()])
-        if listed != [s["slug"] for _, s in self.sections]:
+        if listed != [s["slug"] for _, s in self.wiki.compendium_sections()]:   # the site-only quick start is not on it
             raise BuildError(f"pages/{home.slug}.md: розділи на головній не збігаються з contents.yml")
         lead = self.rewrite_links(add_heading_ids(md_to_html(intro)), rel, f"pages/{home.slug}.md", cur=home.slug)
-        tail = self.rewrite_links(add_heading_ids(md_to_html(rest)), rel, f"pages/{home.slug}.md", cur=home.slug)
+        # the Drive links of «Історія змін» (the old sheets, the tokens) keep their words only: a changelog is no place for
+        # download buttons (package D-B)
+        tail = self.rewrite_links(self.downloads_html(add_heading_ids(md_to_html(rest)), f"pages/{home.slug}.md", buttons=False),
+                                  rel, f"pages/{home.slug}.md", cur=home.slug)
         tail = credits_columns(fold_history(tail, f"pages/{home.slug}.md"), f"pages/{home.slug}.md")
         intro, intro_ids = self.intro_html()
         menu = []
@@ -570,6 +637,9 @@ class Site:
         write(os.path.join(rules, "site.css"), CSS)
         write(os.path.join(rules, "site.js"), JS)
         self.copy_images(os.path.join(rules, "img"))
+        os.makedirs(os.path.join(rules, "files"))
+        for d in self.downloads:
+            shutil.copyfile(os.path.join(self.wiki.dir, "files", d["file"]), os.path.join(rules, "files", d["file"]))
         if search:
             run_pagefind(rules)
         else:   # empty stubs so the pages load without errors in tests

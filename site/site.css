@@ -210,6 +210,18 @@ html[data-theme="dark"] .themebtn .th-sun{display:inline-flex}
 .toolbtn b{font:700 26px/1 'Handjet',monospace;letter-spacing:.05em;color:#3dff47;text-shadow:0 0 8px rgba(61,255,71,.5)}
 .toolbtn:hover{background-color:#1c3324}
 .toolbtn:hover b{color:#7dff84}
+/* кнопка «Скачати …» (пакет Г-Б): той самий зелений екран, менша; у рядку абзацу чи пункту списку — під текстом */
+.dls{display:flex;flex-wrap:wrap;gap:8px 10px;margin:8px 0 14px}
+li > .dls,p > .dls{margin:8px 0 4px}
+.dlbtn{display:inline-flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;min-height:44px;padding:9px 14px;text-decoration:none;
+  box-sizing:border-box;max-width:100%;
+  background:#13231a repeating-linear-gradient(0deg, rgba(61,255,71,.06) 0 2px, transparent 2px 4px);
+  border:2px solid #3dff47;border-radius:6px;box-shadow:0 0 0 2px var(--rust-0), 0 3px 8px rgba(0,0,0,.3)}
+.dlbtn b{font:700 21px/1.1 'Handjet',monospace;letter-spacing:.05em;color:#3dff47;text-shadow:0 0 8px rgba(61,255,71,.5)}
+.dlbtn b::before{content:"⤓ "}
+.dlbtn small{font:400 13px/1.2 'Ubuntu Mono',monospace;color:#9fe8a4}
+.dlbtn:hover{background-color:#1c3324}
+.dlbtn:hover b{color:#7dff84}
 /* попередня / наступна */
 .pn{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:10px 40px 0;max-width:calc(84ch + 80px)}
 .pn a{display:block;min-height:44px;padding:10px 14px;text-decoration:none;border-radius:4px;

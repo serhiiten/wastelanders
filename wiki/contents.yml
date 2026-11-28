@@ -5,6 +5,38 @@
 home: pustelnyky
 
 groups:
+  - title: "ШВИДКИЙ СТАРТ"          # site only (package D-B, author 2026-11-28): the pages are `compendium: false`
+    sections:
+      - slug: hravtsiam
+        title: "Гравцям"
+        pages:
+          - shvydkyi-start-avtory-ta-litsenziia
+          - shvydkyi-start-hravtsiam
+          - shvydkyi-start-kym-mozhna-hraty
+          - shvydkyi-start-koly-robysh-shchos-ryzykovane-ta-krute
+          - shvydkyi-start-aspekty-ta-zhetony-doli
+          - shvydkyi-start-zdorovia-perky-sporiadzhennia
+          - shvydkyi-start-karavan
+      - slug: dohliadachu
+        title: "Доглядачу"
+        pages:
+          - shvydkyi-start-dohliadachu-tsili-ta-pryntsypy
+          - shvydkyi-start-koly-kydaty-kistky
+          - shvydkyi-start-khody-dohliadacha-ta-lichylnyky
+          - shvydkyi-start-bytvy
+      - slug: startova-pryhoda
+        title: "Стартова пригода «Світ ловив, та (не) спіймав»"
+        pages:
+          - shvydkyi-start-sprava-na-odnu-ihrovu-sesiiu
+          - shvydkyi-start-podii-zaviazka-marshrut-podorozh
+          - shvydkyi-start-lehka-bytva-papa-detonator
+          - shvydkyi-start-serednia-bytva-robo-kovboi-viktor
+          - shvydkyi-start-serednia-bytva-zasidka-lehionu
+          - shvydkyi-start-vazhka-bytva-zahin-ketrin
+          - shvydkyi-start-povorotna-tochka
+          - shvydkyi-start-protystoiannia
+          - shvydkyi-start-finaly
+          - shvydkyi-start-kinets-hry
   - title: "ПРАВИЛА ГРАВЦІВ"
     sections:
       - slug: vstup
@@ -170,6 +202,8 @@ groups:
         pages:
           - arkushi-personazhiv-ta-karavanu
           - pamiatky-hravtsia-ta-dohliadacha
+          - pamiatka-hravtsia                 # site only (package D-B): text from Foundry; the page above is off the site
+          - pamiatka-dohliadacha
           - mapa-zakhidnoho-uzberezhzhia-ssha-2277
           - fishky-personazhiv-ta-nipiv
 

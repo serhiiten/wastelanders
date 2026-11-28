@@ -1,0 +1,40 @@
+# Files to download (package D-B, author 2026-11-28): they lie in wiki/files/ and were taken from the author's Google Drive
+# folder (https://drive.google.com/drive/folders/1Hcgc1QZue_kQoUi2deEAi7wNCbbzd15T) on 2026-11-28.
+# `drive`: the file's Drive id: a page's link to it (the pages keep Notion's text, the compendiums read it) becomes a
+# button «Скачати …» on the site, its words stay as text. `name`: the name the browser saves it under (the Drive title).
+# `label`: the button's text. Format: wiki/README.md, «Файли для скачування».
+- file: mapa-zakhidnoho-uzberezhzhia-ssha-2277.png
+  drive: 1xKiOiOTx_njiePokf38ntzWieop9-ZN8
+  name: "Мапа Західного узбережжя США 2277 - Пустельники.png"
+  label: "Скачати мапу"
+- file: fishky-personazhiv-ta-nipiv.zip
+  drive: 1rMFTkVQZsoTeqeSGK66ztvh3tM5jq1X9
+  name: "fallout tokens.zip"
+  label: "Скачати фішки"
+- file: pamiatka-hravtsia.pdf
+  drive: 1IaDrgBEAQ1DbtAdQ9qut84y6Fnc2WWVq
+  name: "Пам'ятка гравця - Пустельники.pdf"
+  label: "Скачати пам'ятку гравця"
+- file: pamiatka-dohliadacha.pdf
+  drive: 1-VsxHxeFG2vxkYgBU8Oj8EmBt592knkM
+  name: "Пам'ятка Доглядача - Пустельники.pdf"
+  label: "Скачати пам'ятку Доглядача"
+- file: arkush-personazha-zapovniuvanyi.pdf
+  drive: 1kvHwIjNGd581lAv3USvziFCi7uTe_OPO
+  name: "Аркуш персонажа (заповнюваний) - Пустельники.pdf"
+  label: "Скачати аркуш персонажа"
+- file: arkush-karavanu-zapovniuvanyi.pdf
+  drive: 1B41WiF0cnhuLhkIUwdg9JTp83jPThXf4
+  name: "Аркуш каравану (заповнюваний) - Пустельники.pdf"
+  label: "Скачати аркуш каравану"
+- file: arkush-personazha-dlia-druku.pdf
+  drive: 1OPJeDBO4_gwmWuN63I4BRBVOx3gci1rM
+  name: "Аркуш персонажа (для друку) - Пустельники.pdf"
+  label: "Скачати аркуш персонажа для друку"
+- file: arkush-karavanu-dlia-druku.pdf
+  drive: 1fYZkiAp69MceH2RXum0oldbOLzAlYvqi
+  name: "Аркуш каравану (для друку) - Пустельники.pdf"
+  label: "Скачати аркуш каравану для друку"
+- file: shvydkyi-start.pdf
+  name: "Пустельники - швидкий старт.pdf"
+  label: "Скачати PDF"
