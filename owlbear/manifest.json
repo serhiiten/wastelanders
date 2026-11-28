@@ -4,11 +4,11 @@
   "manifest_version": 1,
   "description": "Аркуші персонажів і каравану на токенах, картки ворогів, генератори Доглядача й спільний журнал кидків для «Пустельників».",
   "author": "Сергій Тен",
-  "icon": "/wastelanders/owlbear/icon.svg",
+  "icon": "/wastelanders/owlbear/icon-ext.svg",
   "background_url": "/wastelanders/owlbear/background.html",
   "action": {
     "title": "Пустельники",
-    "icon": "/wastelanders/owlbear/icon.svg",
+    "icon": "/wastelanders/owlbear/icon-ext.svg",
     "popover": "/wastelanders/owlbear/menu.html",
     "width": 320,
     "height": 480
