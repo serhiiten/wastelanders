@@ -42,6 +42,23 @@ button,input,select,textarea{font:inherit;color:inherit}
 }
 .logo small{display:block;font:600 15px/1.2 var(--f-ui);letter-spacing:.14em;color:var(--ink-soft);text-shadow:none;margin-top:14px}
 .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+/* Згортка «Аркуш» над кнопками шапки (автор, 2026-11-28: на телефоні ряд кнопок займав пів екрана). Поріг 560 px — той самий,
+   що й уся телефонна розкладка аркуша (@media max-width:560px: одна колонка, панель кидків на всю ширину); ширше кнопки
+   стають у 1–3 ряди й не заважають. Вужче за поріг згортка за замовчуванням закрита, ширше відкрита; перетин порога
+   (поворот телефона) знову ставить стан за шириною; вибір користувача не запам'ятовується між відкриттями аркуша. */
+.tbfold{min-width:0;max-width:100%}
+.tbfold>summary{list-style:none;display:flex;align-items:center;gap:8px;width:max-content;max-width:100%;margin:0 0 8px;cursor:pointer;user-select:none;
+  font:600 15px/1.2 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.tbfold>summary::-webkit-details-marker{display:none}
+.tbfold>summary .fold{margin-left:0}
+.tbfold>summary:hover .fold{background:rgba(255,255,255,.35)}
+.tbfold:not([open])>summary{margin:0}
+.tbfold:not([open])>summary .fold svg{transform:rotate(-90deg)}
+.tbfold .tools{min-width:0}
+.tbfold .tools>*{max-width:100%}
+html[data-theme="dark"] .tbfold>summary{color:#b9b3a8}
+html[data-theme="dark"] .tbfold>summary .fold{color:#ece5d3;border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.08)}
+html[data-theme="dark"] .tbfold>summary:hover .fold{background:rgba(255,255,255,.18)}
 .btn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font:600 15px/1 var(--f-disp);text-transform:uppercase;letter-spacing:.06em;
   color:#15130f;background:linear-gradient(#a39d93,#77716a);border:2px solid var(--rim);border-radius:8px;padding:9px 13px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 0 rgba(0,0,0,.2),0 2px 0 var(--rim);transition:transform .06s}
@@ -954,6 +971,8 @@ html.embed header.top .logo, html.embed #theme-btn, html.embed .credit{display:n
 try{ if(/(?:^|&)embed=1(?:&|$)/.test(location.search.slice(1)) && window.parent !== window) document.documentElement.classList.add('embed'); }catch(e){}</script>
 <header class="top">
   <h1 class="logo">Пустельники<small>Електронний аркуш персонажа</small></h1>
+  <details class="tbfold" id="tb-fold" open>
+  <summary><span class="tbt">Аркуш</span><span class="fold sm" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></summary>
   <div class="tools">
     <button type="button" class="btn rust" data-act="random"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.6"/><circle cx="15.5" cy="15.5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="15.5" cy="8.5" r="1.6"/><circle cx="8.5" cy="15.5" r="1.6"/></svg></span><span class="blbl"><span class="l-norm">Випадковий персонаж</span><span class="l-warn" aria-hidden="true">Точно замінити?</span></span></button>
     <div class="more qs">
@@ -976,7 +995,12 @@ try{ if(/(?:^|&)embed=1(?:&|$)/.test(location.search.slice(1)) && window.parent 
     <button type="button" class="btn helpbtn" data-act="guide" id="guide-btn" aria-expanded="false" aria-controls="guide" title="Як створити персонажа" aria-label="Як створити персонажа">?</button>
     <button type="button" class="btn themebtn" data-act="theme" id="theme-btn" aria-pressed="false" title="Увімкнути темну тему" aria-label="Увімкнути темну тему"><span class="th-moon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/></svg></span><span class="th-sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/></svg></span></button>
   </div>
+  </details>
 </header>
+<script>/* згортка «Аркуш»: вужче за 560 px закрита, ширше відкрита; вибір не запам'ятовується (див. CSS .tbfold) */
+(function(){ var f=document.getElementById('tb-fold'); if(!f||!window.matchMedia) return; var mq=matchMedia('(max-width:560px)');
+  var set=function(){ f.open=!mq.matches; }; set();
+  if(mq.addEventListener) mq.addEventListener('change',set); else if(mq.addListener) mq.addListener(set); })();</script>
 <section class="plate guide" id="guide" aria-labelledby="guide-h" hidden><div class="ghead"><h2 id="guide-h" tabindex="-1">Як створити персонажа</h2><button type="button" class="x" data-act="guide" aria-label="Закрити інструкцію">✕</button></div><p class="glead">Хочеш грати просто зараз — натисни «Випадковий персонаж» або «Швидкий старт». Хочеш зробити персонажа самостійно — дотримуйся цієї інструкції. Аркуш сам рахує пункти, ОЗ і жетони Долі та підкаже, якщо щось не відповідає правилам.</p><ol class="gsteps"><li><b>Обери архетип.</b> Цей крок необов'язковий, але архетип допоможе тобі визначитися з образом персонажа й наступними кроками створення. <span class="gwhere">→ <a href="#sec-who" data-act="guide-go" data-id="sec-who">Пустельник</a></span></li><li><b>Обери вид.</b> Вид визначає мінімальні та максимальні значення атрибутів, дає видові особливості, а також сам по собі є аспектом. <span class="gwhere">→ <a href="#sec-who" data-act="guide-go" data-id="sec-who">Пустельник</a></span></li><li><b>Розподіли пункти атрибутів.</b> Початкове значення кожного з семи атрибутів — 0, і в тебе є 3 вільні пункти. Знизиш атрибут нижче 0 — отримаєш додатковий пункт. На старті атрибути не можуть бути нижчими за −1 і вищими за +2, а максимум будь-якого атрибута — +3, але вид може змінювати ці межі. Або розподіли набір: +2, +2, +1, 0, 0, −1, −1. <span class="gwhere">→ <a href="#sec-attrs" data-act="guide-go" data-id="sec-attrs">Атрибути</a></span></li><li><b>Обери дві навички на рівні учня,</b> або три, якщо граєш за людину. <span class="gwhere">→ <a href="#sec-skills" data-act="guide-go" data-id="sec-skills">Навички</a></span></li><li><b>Обери два перки,</b> або три, якщо граєш за людину. <span class="gwhere">→ <a href="#sec-perks" data-act="guide-go" data-id="sec-perks">Перки</a></span></li><li><b>Обери від нуля до двох особливостей.</b> Не забувай про видові особливості. <span class="gwhere">→ <a href="#sec-feats" data-act="guide-go" data-id="sec-feats">Особливості</a></span></li><li><b>Розрахуй очки здоров'я (ОЗ).</b> На старті максимум ОЗ становить 15: +3 за кожну одиницю ВТР понад 0 і −3 за кожну нижче 0. Аркуш рахує ОЗ сам, разом із бонусами та штрафами від перків і особливостей. <span class="gwhere">→ <a href="#sec-health" data-act="guide-go" data-id="sec-health">Здоров'я та Доля</a></span></li><li><b>Запиши жетони Долі (ЖД).</b> На початку кожної ігрової сесії персонаж відновлює 2 + УДЧ жетонів Долі. Аркуш рахує це сам. <span class="gwhere">→ <a href="#sec-health" data-act="guide-go" data-id="sec-health">Здоров'я та Доля</a></span></li><li><b>Дай персонажеві ім'я, зовнішність і аспекти.</b> Кинь випадкові або вигадай самостійно. <span class="gwhere">→ <a href="#sec-who" data-act="guide-go" data-id="sec-who">Пустельник</a></span></li><li><b>Придбай спорядження.</b> Кожен персонаж починає гру з 10 кришками на закупівлю та 3 одиницями Припасів. Крім того, один вид легкої зброї ти отримуєш безкоштовно. <span class="gwhere">→ <a href="#sec-gear" data-act="guide-go" data-id="sec-gear">Мотлох</a></span></li><li><b>Кинь випадкову деталь персонажа.</b> <span class="gwhere">→ <a href="#sec-who" data-act="guide-go" data-id="sec-who">Пустельник</a></span></li></ol><p class="gfoot">Коли персонажі будуть готові, разом з іншими гравцями створіть свій караван і оберіть для нього 2 покращення.</p></section>
 <main>
   <div id="builder"></div>
