@@ -723,8 +723,9 @@ def intro_md(md, where):
                 h = h[:run.start()] + '<div class="feats">' + "".join(f"<div>{f}</div>" for f in grp) + "</div>" + h[run.end():]
         return h
     out = one(parts[0])
-    if cards:
-        out += '<ul class="toolcards">' + "".join(cards) + "</ul>"
+    # the tool cards («Термінал Доглядача», «Аркуш персонажа», «Аркуш каравану») repeated the menu's buttons: not on the
+    # site (author via the dispatcher, 2026-11-28, DC9); the source keeps them (still checked above), the panel its text
+    del cards
     for i in range(1, len(parts), 2):
         name = parts[i].strip()
         # «Як встановити» opens together with its plate (author, 2026-11-28, package C, 5)

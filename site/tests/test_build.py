@@ -276,7 +276,9 @@ old = read(FIX)
 old_play = old[old.index('<section class="play"'):old.index("</section>", old.index('<section class="play"'))]
 old_tools = old[old.index('<ul>\n    <li><a class="tool"'):old.index("</ul>", old.index('<ul>\n    <li><a class="tool"'))]
 new_text = plain(intro)
-pieces = [x for blk in (old_play, old_tools) for x in re.split(r"<[^>]+>", blk)]
+# the old tool cards (old_tools) are off the site since DC9 (author via the dispatcher, 2026-11-28): they repeated the menu
+ok('class="tool"' not in intro and "toolcards" not in intro, "DC9 no tool cards inside «Де грати»")
+pieces = [x for blk in (old_play,) for x in re.split(r"<[^>]+>", blk)]
 pieces = [plain(x) for x in pieces if plain(x) and plain(x) not in ("Скопійовано",)]
 missing = [x for x in pieces if x not in new_text]
 ok(not missing, f"Б.1 every text of the old index.html is in the intro word for word, missing: {missing[:3]}")
