@@ -484,7 +484,7 @@ shutil.rmtree(lay, ignore_errors=True)
 
 # downloads: buttons «Скачати …», served by the site, never Drive
 DL = {d["file"]: d for d in wiki.downloads()}
-ok(len(DL) == 9, f"DB8 nine files to download ({len(DL)})")
+ok(len(DL) == 15, f"DB8 fifteen files to download: D-B's nine and the six ready-made characters of DC2 ({len(DL)})")
 ok(sorted(os.listdir(os.path.join(rules, "files"))) == sorted(DL), "DB8 rules/files/ holds exactly the files of downloads.yml")
 for f, d in DL.items():
     size = os.path.getsize(os.path.join(REPO, "wiki", "files", f))
@@ -494,7 +494,8 @@ for name, h in everything.items():
 BTN = re.compile(r'<a class="dlbtn" href="\.\./files/([^"]+)" download="([^"]+)" data-pagefind-ignore><b>([^<]+)</b><small>(\w+) · [\d,]+ МБ</small></a>')
 want = {"ihrovyi-protses": 6, "pokrokova-instruktsiia": 1, "henerator-pustelnykiv-ruchnyi": 2, "pokrashchennia-karavanu": 1,
         "stvorennia-karavanu": 1, "stvorennia-kampanii": 1, "mapa-zakhidnoho-uzberezhzhia-ssha-2277": 1,
-        "fishky-personazhiv-ta-nipiv": 1, "pamiatka-hravtsia": 1, "pamiatka-dohliadacha": 1, "shvydkyi-start-avtory-ta-litsenziia": 1}
+        "fishky-personazhiv-ta-nipiv": 1, "pamiatka-hravtsia": 1, "pamiatka-dohliadacha": 1, "shvydkyi-start-avtory-ta-litsenziia": 1,
+        "shvydkyi-start-kym-mozhna-hraty": 6}
 for slug, h in pages.items():
     btns = BTN.findall(h)
     ok(len(btns) == h.count('class="dlbtn"') == want.get(slug, 0), f"DB8 {slug}: {want.get(slug, 0)} download buttons (got {len(btns)})")
@@ -527,6 +528,13 @@ def links_site_only(w):
         fh.write("\n[тест](pamiatka-hravtsia.md)\n")
 
 
+def file_mid_sentence(w):
+    p = os.path.join(w, "pages", "shvydkyi-start-kym-mozhna-hraty.md")
+    t = open(p, encoding="utf-8").read().replace("Стать і зовнішність", "[Скачати Волті](../files/hotovyi-personazh-volti.pdf) Стать і зовнішність", 1)
+    with open(p, "w", encoding="utf-8", newline="") as fh:
+        fh.write(t)
+
+
 def file_unlisted(w):
     with open(os.path.join(w, "files", "zayvyi.pdf"), "wb") as fh:
         fh.write(b"%PDF-")
@@ -536,8 +544,20 @@ e = broken(drive_unknown)
 ok("NOPE000000" in e and "downloads.yml" in e, f"DB8 a Drive file not in downloads.yml stops the build: «{e[:120]}»")
 e = broken(links_site_only)
 ok("naslidky.md" in e and "pamiatka-hravtsia" in e, f"DB a compendium page linking to a site-only page stops the build: «{e[:120]}»")
+e = broken(file_mid_sentence)
+ok("посеред тексту" in e, f"DC2 a link to files/ inside a sentence stops the build: «{e[:120]}»")
 e = broken(file_unlisted)
 ok("zayvyi.pdf" in e, f"DB8 a file in files/ outside downloads.yml stops the build: «{e[:120]}»")
+
+# DC2 (after package D-B, author 2026-11-28): the ready-made characters' sheets, a button at the end of each one's
+# list item on «Ким можна грати» (its label the name as the item writes it), the caravan's at the end of the first paragraph
+kym = pages.get("shvydkyi-start-kym-mozhna-hraty", "")
+for name, f in [("Волті", "volti"), ("Банджо", "bandzho"), ("Доктор Шредер", "shreder"), ("Бабай", "babai"), ("Лихе Око", "lykhe-oko")]:
+    ok(re.search(r'<li><strong>' + name + r'</strong>[^<]*<span class="dls"><a class="dlbtn" href="\.\./files/hotovyi-personazh-' + f
+                 + r'\.pdf" download="Аркуш персонажа - ' + name + r' \([^"]+\)\.pdf" data-pagefind-ignore><b>Скачати ' + name + r'</b>', kym),
+       f"DC2 «{name}»: the button «Скачати {name}» at the end of the item")
+ok(re.search(r'на власний розсуд\.<span class="dls"><a class="dlbtn" href="\.\./files/hotovyi-karavan-ostannii-shans\.pdf"[^>]*><b>Скачати караван «Останній Шанс»</b>', kym),
+   "DC2 the caravan's button at the end of the first paragraph")
 
 # the imported text is Foundry's (reminders) / the Owlbear version's without its hints, plus the PDF's enemy blocks
 # (quick start), word for word: the page's visible text equals the import's HTML (until the page is edited by hand)
@@ -551,12 +571,30 @@ if node and os.path.isdir(DEV) and os.path.isdir(OWL):
     ok(sorted(exp) == SITE_ONLY, "DB the import makes exactly the site-only pages")
 
     def words(h):
-        h = re.sub(r'<div class="dls">.*?</div>|<p><a href="\.\./files/[^"]+">[^<]*</a></p>|<span class="call-ico"[^>]*>.*?</span>', " ", h, flags=re.S)
+        h = re.sub(r'<div class="dls">.*?</div>|<span class="dls">.*?</span>|<p><a href="\.\./files/[^"]+">[^<]*</a></p>|<span class="call-ico"[^>]*>.*?</span>', " ", h, flags=re.S)
         return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", h)).replace(" ", " ")).strip()
     import hashlib
+    # the author's edits of the imported text, made on the site's pages after the import (slug: [(import's, site's)]);
+    # the page still counts as the import when undoing them gives its import_sha, and its text is then compared with
+    # the import plus these edits. «Сімона» as in Foundry, not the PDF's «Симона» (author, 2026-11-28, after D-B).
+    SITE_EDITS = {
+        "shvydkyi-start-vazhka-bytva-zahin-ketrin": [("Писарі Братства Сталі (2): Симона і Чедвік",
+                                                       "Писарі Братства Сталі (2): Сімона і Чедвік")],
+    }
+    for slug, edits in SITE_EDITS.items():
+        for a, b in edits:
+            ok(b in wiki.pages[slug].body, f"DC1 {slug}: the site's edit «{b}» is not on the page")
+            ok(a not in wiki.pages[slug].body, f"DC1 {slug}: the import's «{a}» is still on the page")
+            ok(a in exp.get(slug, ""), f"DC1 {slug}: the import no longer has «{a}»: drop the edit from SITE_EDITS")
+    ok("Симона" not in "".join(pages.values()), "DC1 «Симона» (the PDF's) is still on the site: Foundry's is «Сімона»")
     for slug in SITE_ONLY:
         page = wiki.pages[slug]
-        if hashlib.sha1(page.body.encode("utf-8")).hexdigest()[:12] != page.meta.get("import_sha"):
+        body = page.body
+        for a, b in SITE_EDITS.get(slug, []):
+            body = body.replace(b, a)
+            exp[slug] = exp.get(slug, "").replace(a, b)
+        body = re.sub(r" \[Скачати [^\]]+\]\(\.\./files/[^)]+\)(?=\n)", "", body)  # DC2's buttons: not the import's text
+        if hashlib.sha1(body.encode("utf-8")).hexdigest()[:12] != page.meta.get("import_sha"):
             print(f"SKIP DB verbatim {slug}: edited since the import")
             continue
         txt = pages[slug].split('<div class="text" data-pagefind-body>', 1)[1].split('<nav class="pn"', 1)[0]

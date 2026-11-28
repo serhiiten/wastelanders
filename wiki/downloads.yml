@@ -38,3 +38,24 @@
 - file: shvydkyi-start.pdf
   name: "Пустельники - швидкий старт.pdf"
   label: "Скачати PDF"
+# The ready-made characters and caravan of «Швидкий старт» (after package D-B, author 2026-11-28): the Drive subfolder
+# «Пустельники - готові персонажі», taken on 2026-11-28; buttons at the end of each character's item on «Ким можна грати»,
+# the label the name as the page writes it. Not from a page's Drive link, so no `drive`.
+- file: hotovyi-personazh-volti.pdf
+  name: "Аркуш персонажа - Волті (людина, технік).pdf"
+  label: "Скачати Волті"
+- file: hotovyi-personazh-bandzho.pdf
+  name: "Аркуш персонажа - Банджо (гуль, стрілець).pdf"
+  label: "Скачати Банджо"
+- file: hotovyi-personazh-shreder.pdf
+  name: "Аркуш персонажа - Доктор Шредер (робот, (боже)вільний вчений).pdf"
+  label: "Скачати Доктор Шредер"
+- file: hotovyi-personazh-babai.pdf
+  name: "Аркуш персонажа - Бабай (супермутант, здоровило).pdf"
+  label: "Скачати Бабай"
+- file: hotovyi-personazh-lykhe-oko.pdf
+  name: "Аркуш персонажа - Лихе Око (Пазур Смерті, рейнджер).pdf"
+  label: "Скачати Лихе Око"
+- file: hotovyi-karavan-ostannii-shans.pdf
+  name: "Аркуш каравану - \"Останній Шанс\".pdf"
+  label: "Скачати караван «Останній Шанс»"

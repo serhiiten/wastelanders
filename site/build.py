@@ -46,11 +46,14 @@ LONG_PAGE = 1500                        # a page with a tool longer than this (c
 TOOLS = {"all_generators.html": ("terminal", "Термінал Доглядача"),       # the tools that open in the wiki's frame
          "character_generator.html": ("character", "Аркуш персонажа"),   # (package B, author 2026-11-28); the names are
          "caravan_generator.html": ("caravan", "Аркуш каравану")}        # the tabs' texts
+QUICK_GROUP = "ШВИДКИЙ СТАРТ"           # on the home page one full-width block right under «Де грати», the two rules
+                                        # groups side by side under it, each whole (author, 2026-11-28, after D-B)
 INTRO = ("home", "de-hraty.md")         # the intro «Де грати» on the home page (package B): not a wiki page
 MORE_TEXT = "Докладніше"                 # mockup Г3 «Таблички», chosen by the author 2026-11-28
 COPY_TEXT = "Копіювати"                  # index.html's copy button
 DRIVE_RE = re.compile(r'<a href="https://drive\.google\.com/file/d/([\w-]+)/[^"]*">(.*?)</a>|https://drive\.google\.com/file/d/([\w-]+)/\S*?(?=<|\s|$)', re.S)
 FILE_LINK_RE = re.compile(r'<p><a href="\.\./files/([^"]+)">([^<]+)</a></p>')
+FILE_END_RE = re.compile(r'\s*<a href="\.\./files/([^"]+)">([^<]+)</a>(?=</p>|</li>)')  # «Ким можна грати» (after D-B)
 BLOCK_END = re.compile(r"</p>|</li>|<ul>|<ol>|</h[1-6]>|</td>|</th>")
 COVER_W = 1400                         # the cover is 2752 px / 2.1 MB in the source; 1400 px covers a 1366 px
                                        # screen (author, 2026-11-28)
@@ -328,7 +331,8 @@ class Site:
         package D-B, 8). A paragraph or heading that is only a Drive link (or its bare address) becomes the button; a Drive
         link inside a sentence keeps its words as plain text and its button stands at the end of that paragraph or list
         item. `buttons=False` (the home page's «Історія змін»): the words only, no buttons. A site page's paragraph that is
-        only a link to `../files/…` is that file's button with the link's words."""
+        only a link to `../files/…` is that file's button with the link's words; such a link at the very end of a
+        paragraph or list item is its button at that end (the ready-made characters, after package D-B)."""
         def known(fid):
             if fid not in self.by_drive:
                 raise BuildError(f"{where}: файл Google Drive {fid} не описано у wiki/downloads.yml")
@@ -340,6 +344,15 @@ class Site:
                 raise BuildError(f"{where}: файл files/{m.group(1)} не описано у wiki/downloads.yml")
             return f'<div class="dls">{self.dl_button(d, html.unescape(m.group(2)))}</div>'
         htm = FILE_LINK_RE.sub(file_btn, htm)
+
+        def end_btn(m):  # a link to `../files/…` that ends its paragraph or list item: its button stands at that end
+            d = self.by_file.get(html.unescape(m.group(1)))
+            if not d:
+                raise BuildError(f"{where}: файл files/{m.group(1)} не описано у wiki/downloads.yml")
+            return f'<span class="dls">{self.dl_button(d, html.unescape(m.group(2)))}</span>'
+        htm = FILE_END_RE.sub(end_btn, htm)
+        if '<a href="../files/' in htm:
+            raise BuildError(f"{where}: посилання на файл files/ посеред тексту (кнопка стоїть окремим абзацом або в кінці абзацу чи пункту)")
 
         def whole(m):   # a block that holds one Drive link or address and nothing else
             ids = [x.group(1) or x.group(3) for x in DRIVE_RE.finditer(m.group(2))]
@@ -536,12 +549,15 @@ class Site:
             ext += f' data-tool="{tool[0]}"' if tool and not ext else ""
             menu.append(f'<li><a class="mi" href="{esc(href)}"{ext}><span class="lamp" aria-hidden="true"></span><span class="mi-t">{esc(b.get("label", b["text"]))}</span>{mark}</a></li>')
         cards = []
+        if not self.groups or self.groups[0]["title"] != QUICK_GROUP:
+            raise BuildError(f"contents.yml: перша група має бути «{QUICK_GROUP}» (на головній — блок на всю ширину під «Де грати»)")
         for g in self.groups:
             secs = []
             for s in g["sections"]:
                 pages = "".join(f'<li><a href="{p}/">{esc(self.wiki.pages[p].title)}</a></li>' for p in s["pages"])
                 secs.append(f'<section class="sec" id="{s["slug"]}"><h3>{esc(s["title"])}</h3><ul>{pages}</ul></section>')
-            cards.append(f'<section class="group"><h2 class="group-h">{esc(g["title"])}</h2>{"".join(secs)}</section>')
+            wide = " group-wide" if g["title"] == QUICK_GROUP else ""
+            cards.append(f'<section class="group{wide}"><h2 class="group-h">{esc(g["title"])}</h2>{"".join(secs)}</section>')
         return (self.head("Пустельники — правила гри", rel, canonical="")
                 + f'<body class="pg-home">\n{self.header(rel)}<main class="frame">\n{self.tabs(rel)}'
                 + f'<div class="hero"><div class="hero-art"><div class="hero-lead screen-text" data-pagefind-body>{lead}</div></div>'

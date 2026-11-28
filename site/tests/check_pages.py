@@ -406,7 +406,8 @@ def package_db(page, fails, w):
              "zip": ("application/zip", "application/x-zip-compressed")}
     pages_with = ["ihrovyi-protses", "pokrokova-instruktsiia", "henerator-pustelnykiv-ruchnyi", "pokrashchennia-karavanu",
                   "stvorennia-karavanu", "stvorennia-kampanii", "mapa-zakhidnoho-uzberezhzhia-ssha-2277",
-                  "fishky-personazhiv-ta-nipiv", "pamiatka-hravtsia", "pamiatka-dohliadacha", "shvydkyi-start-avtory-ta-litsenziia"]
+                  "fishky-personazhiv-ta-nipiv", "pamiatka-hravtsia", "pamiatka-dohliadacha", "shvydkyi-start-avtory-ta-litsenziia",
+                  "shvydkyi-start-kym-mozhna-hraty"]   # DC2: the ready-made characters' six sheets
     seen = {}
     for slug in pages_with:
         page.goto(BASE + slug + "/"); page.wait_for_load_state("networkidle")
@@ -457,6 +458,64 @@ def package_db(page, fails, w):
     n += 1
     if "Скачати PDF" not in first:
         fails.append(f"DB9 {w}px: перше після назви на першій сторінці — не «Скачати PDF»: «{first[:40]}»")
+    return n
+
+
+def package_dc(page, fails, w):
+    """After package D-B (author, 2026-11-28). DC3: on the home page «Швидкий старт» is one block the groups' whole width
+    right under «Де грати»; under it «Правила гравців» and «Правила Доглядача» side by side (one under the other on a
+    narrow screen), each a single whole block. DC4: every page reserves the scrollbar's room (`scrollbar-gutter: stable`),
+    so the content stands at the same place on a page that scrolls and one that does not; a tool in the frame gets the
+    whole width (no empty strip beside its own scrollbar). Headless Chromium may draw no classic scrollbar: then the
+    places match anyway, and the CSS check is what guards it here (the live check is in the browser pane)."""
+    n = 0
+    page.goto(BASE); page.wait_for_load_state("networkidle")
+    g = page.evaluate("""() => { const box = e => { const r = e.getBoundingClientRect(); return [r.left, r.right, r.top + scrollY, r.bottom + scrollY]; };
+        return {intro: box(document.querySelector('.intro')), groups: box(document.querySelector('.groups')),
+                cards: [...document.querySelectorAll('.groups > .group')].map(x => [x.querySelector('.group-h').textContent, ...box(x)])}; }""")
+    n += 4
+    c = g["cards"]
+    if len(c) != 3 or c[0][0] != "ШВИДКИЙ СТАРТ":
+        fails.append(f"DC3 {w}px: групи на головній: {[x[0] for x in c]}")
+        return n
+    if abs(c[0][1] - g["groups"][0]) > 1 or abs(c[0][2] - g["groups"][1]) > 1:
+        fails.append(f"DC3 {w}px: «Швидкий старт» не на всю ширину: {c[0][1:3]} / {g['groups'][:2]}")
+    if not (g["intro"][3] <= c[0][3] <= g["intro"][3] + 40):
+        fails.append(f"DC3 {w}px: «Швидкий старт» не одразу під «Де грати»: {c[0][3]} / {g['intro'][3]}")
+    if not all(x[3] >= c[0][4] for x in c[1:]):
+        fails.append(f"DC3 {w}px: правила не під «Швидким стартом»")
+    side = abs(c[1][3] - c[2][3]) < 1 and c[1][2] <= c[2][1]
+    under = c[2][3] >= c[1][4] and abs(c[1][1] - c[2][1]) < 1
+    if (w > 900 and not side) or (w <= 900 and not under):
+        fails.append(f"DC3 {w}px: «{c[1][0]}» і «{c[2][0]}» не {'поруч' if w > 900 else 'одна під одною'}: {c[1][1:]} / {c[2][1:]}")
+    # DC4: the CSS, then a long page in the usual window (it scrolls) and a short one in a window so tall that it does not
+    gut = page.evaluate("getComputedStyle(document.documentElement).scrollbarGutter")
+    n += 1
+    if gut != "stable":
+        fails.append(f"DC4 {w}px: scrollbar-gutter на html — «{gut}», не stable")
+    size = page.viewport_size
+    at = {}
+    for slug, tall in (("shvydkyi-start-avtory-ta-litsenziia", True), ("ihrovyi-protses", False)):
+        page.set_viewport_size({"width": w, "height": 2600} if tall else size)
+        page.goto(BASE + slug + "/"); page.wait_for_load_state("networkidle")
+        at[slug] = page.evaluate("""() => { const d = document.documentElement, r = document.querySelector('.paper.sheet').getBoundingClientRect();
+            return [d.scrollHeight > d.clientHeight, d.clientWidth, Math.round(r.left), Math.round(r.width)]; }""")
+    page.set_viewport_size(size)
+    n += 1
+    (s_, l_) = at.values()
+    if s_[0] or not l_[0]:
+        fails.append(f"DC4 {w}px: коротка сторінка мала б не прокручуватися, довга — прокручуватися: {at}")
+    if s_[1:] != l_[1:]:
+        fails.append(f"DC4 {w}px: ширина чи місце контенту різні на короткій і довгій сторінці: {at}")
+    # a tool in the frame: the whole width, the reserved room off
+    page.goto(BASE); page.wait_for_load_state("networkidle")
+    page.locator('.tabs a[data-tool="terminal"]').click()
+    page.wait_for_selector("iframe.on", state="attached"); page.wait_for_timeout(600)
+    fr = page.evaluate("""() => { const f = document.querySelector('iframe.on').getBoundingClientRect(), d = document.documentElement;
+        return [getComputedStyle(d).scrollbarGutter, Math.round(f.width), innerWidth, d.scrollWidth - d.clientWidth]; }""")
+    n += 1
+    if fr[0] != "auto" or fr[1] != fr[2] or fr[3] > 0:
+        fails.append(f"DC4 {w}px: Термінал у рамці не на всю ширину (gutter, рамка, вікно, зайве): {fr}")
     return n
 
 
@@ -726,6 +785,7 @@ def main():
             checks += package_c(page, fails, w)
             checks += package_d(page, fails, w)
             checks += package_db(page, fails, w)
+            checks += package_dc(page, fails, w)
             checks += embed_checks(page, fails, w) + open_each(page, fails, w)
             checks += 1
             if errors:
