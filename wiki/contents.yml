@@ -179,6 +179,7 @@ buttons:
     image: pochaty-hru.png
     link: pro-hru.md
   - text: "тг"
+    label: "TELEGRAM"       # the button's text on the site (author, 2026-11-28); `text` is the Notion picture's name
     image: telegram.png
     link: https://t.me/wastelanderstrpg
   - text: "СТВОРИТИ ПЕРСОНАЖА"
