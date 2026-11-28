@@ -381,7 +381,7 @@ class Site:
         return (self.head("Сторінку не знайдено — Пустельники", rel, '<meta name="robots" content="noindex">\n')
                 + f'<body class="pg-404">\n{self.header(rel)}<main class="frame">\n{self.tabs(rel)}<div class="layout">\n'
                 + f'<details class="side screen" open data-pagefind-ignore><summary>☰ Зміст розділу</summary><nav aria-label="Зміст">{self.side(rel)}</nav></details>\n'
-                + '<article class="paper sheet"><div class="text"><h1>404</h1><p>Такої сторінки немає. Усі правила — на <a href="/wastelanders/rules/">головній правил</a>.</p></div></article>\n'
+                + '<article class="paper sheet"><div class="text"><h1>404</h1><p>Можливо до Великої Війни тут щось і було, але згоріло в ядерному полум\'ї. Повернутися на <a href="/wastelanders/rules/">головну</a>?</p></div></article>\n'
                 + "</div>\n</main>\n" + self.foot(rel))
 
     # ----- writing -----
