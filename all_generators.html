@@ -8685,7 +8685,7 @@ function hpState(value, max) {
     if(!s || s === 'after-load') setTimeout(gameMarkSaved, 1500)
     window.addEventListener('beforeunload', e=>{
       // автотести (керований браузер) перезавантажують сторінку самі — їм не заважаємо
-      if(GAME_LEAVE_OK || syIsPlayer() || navigator.webdriver || typeof SY_NO_LEAVE_WARN !== 'undefined') return   // в офлайн-версії — без попередження
+      if(GAME_LEAVE_OK || syIsPlayer() || navigator.webdriver || typeof SY_NO_LEAVE_WARN !== 'undefined') return   // SY_NO_LEAVE_WARN не оголошено ніде: з 2026-11-28 попередження є й в офлайн-версії (автор, пакет Б вікі)
       try{ localStorage.setItem(TR_KEY, JSON.stringify(TR)) }catch(_){}
       if(!gameUnsaved()) return
       e.preventDefault(); e.returnValue = 'Є незбережені зміни гри. Збережи гру («Зберегти / завантажити гру»), інакше їх буде видно лише в цьому браузері.'
@@ -10741,7 +10741,6 @@ const COVER_PREFIX = "Прикритий: ";
   // Трекер, аркуші й мапа в кількох місцях звертаються до онлайн-синхронізації; у цій версії її немає —
   // заглушки поводяться так, як повна версія без під'єднаної онлайн-гри (усе вирішує Доглядач на цьому пристрої).
   var SYNC = null
-  var SY_NO_LEAVE_WARN = true   // офлайн-версія: без браузерного попередження про незбережені зміни при закритті вікна
   function syDirty(){}
   function syLogAdd(){}
   function syLogClear(){}
