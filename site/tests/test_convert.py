@@ -95,6 +95,8 @@ def canon(text):
             continue
         out.append(line.rstrip())
     text = "\n".join(out).rstrip() + "\n"
+    # Notion CDN icon of a callout: cut from the source on purpose (author, 2026-11-28), the export keeps it
+    text = re.sub(r'^<img src="https://app\.notion\.com/icons/[^>]*>\n\n', "", text, flags=re.M)
     text = re.sub(r"!\[([^\]]*)\]\((?![a-z]+:)[^)]*\)", r"![\1]()", text)
 
     def link(m):

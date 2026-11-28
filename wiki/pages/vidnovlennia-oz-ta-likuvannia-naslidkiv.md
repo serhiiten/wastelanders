@@ -15,8 +15,6 @@ notion: "21de66cd8c7880e098feddb3ec12ff60"
 - **19 чи вище:** пацієнт відновлює 2d6 ОЗ
 
 > [!NOTE]
-> <img src="https://app.notion.com/icons/first-aid_red.svg" alt="https://app.notion.com/icons/first-aid_red.svg" width="40px" />
->
 > Одному пацієнту можна надавати медичну допомогу лише раз на день або двічі, якщо в тебе є перк «Медик».
 >
 
